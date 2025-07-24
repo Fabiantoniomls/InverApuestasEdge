@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import {
   Book,
   Calculator,
+  Globe,
   LayoutDashboard,
   LogOut,
   Scaling,
@@ -119,6 +120,18 @@ export default function DashboardLayout({
                 {menuItems.find(item => item.href === pathname)?.label || 'Dashboard'}
               </h1>
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Globe className="h-5 w-5" />
+                  <span className="sr-only">Change language</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>English</DropdownMenuItem>
+                <DropdownMenuItem>Español</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </header>
           <main className="p-4 md:p-6">{children}</main>
         </div>
