@@ -1,6 +1,11 @@
 'use server';
 
 import { z } from 'zod';
+import { dataExplorer } from '@/ai/flows/data-explorer-flow';
+import { quantitativeModel } from '@/ai/flows/quantitative-model-flow';
+import { portfolioManager } from '@/ai/flows/portfolio-manager-flow';
+import { fundamentalAnalysis } from '@/ai/flows/fundamental-analysis-flow';
+
 
 export type ActionState = {
   message?: string;
@@ -41,25 +46,74 @@ export async function handleQuantitativeAnalysis(
       fields,
     };
   }
+  try {
+    const { 
+        teamA, teamB, teamAUrl, teamBUrl, 
+        leagueHomeAvg, leagueAwayAvg,
+        oddsHome, oddsDraw, oddsAway,
+        bankroll, stakingStrategy
+    } = validatedFields.data;
 
-  await new Promise(resolve => setTimeout(resolve, 2000));
+    // 1. Data Explorer Flow
+    const [teamAData, teamBData] = await Promise.all([
+      dataExplorer({ teamName: teamA, dataSourceUrl: teamAUrl }),
+      dataExplorer({ teamName: teamB, dataSourceUrl: teamBUrl }),
+    ]);
 
-  const teamA = validatedFields.data.teamA;
-  const teamB = validatedFields.data.teamB;
+    // 2. Quantitative Model Flow
+    const modelProbabilities = await quantitativeModel({
+      teamA_data: {
+          homeGoalsFor: teamAData.home.goalsFor,
+          homeGoalsAgainst: teamAData.home.goalsAgainst,
+          homeXGFor: teamAData.home.xGFor,
+          homeXGAgainst: teamAData.home.xGAgainst,
+          awayGoalsFor: teamAData.away.goalsFor,
+          awayGoalsAgainst: teamAData.away.goalsAgainst,
+          awayXGFor: teamAData.away.xGFor,
+          awayXGAgainst: teamAData.away.xGAgainst,
+      },
+      teamB_data: {
+          homeGoalsFor: teamBData.home.goalsFor,
+          homeGoalsAgainst: teamBData.home.goalsAgainst,
+          homeXGFor: teamBData.home.xGFor,
+          homeXGAgainst: teamBData.home.xGAgainst,
+          awayGoalsFor: teamBData.away.goalsFor,
+          awayGoalsAgainst: teamBData.away.goalsAgainst,
+          awayXGFor: teamBData.away.xGFor,
+          awayXGAgainst: teamBData.away.xGAgainst,
+      },
+      leagueAverages: {
+          homeGoals: leagueHomeAvg,
+          awayGoals: leagueAwayAvg,
+      },
+    });
 
-  // Mocked response from portfolioManagerFlow
-  const mockData = {
-      valueBets: [
-          { match: `${teamA} vs ${teamB}`, outcome: 'Home Win', odds: validatedFields.data.oddsHome, estProbability: 45.5, value: 0.15 },
-          { match: `${teamA} vs ${teamB}`, outcome: 'Draw', odds: validatedFields.data.oddsDraw, estProbability: 28.0, value: -0.05 },
-          { match: `${teamA} vs ${teamB}`, outcome: 'Away Win', odds: validatedFields.data.oddsAway, estProbability: 26.5, value: 0.02 },
-      ],
-      recommendations: [
-          { match: `${teamA} vs ${teamB}`, outcome: 'Home Win', value: 0.15, recommendedStake: 25.50 },
-      ]
+    const matchDescription = `${teamA} vs ${teamB}`;
+    const valueBets = [
+      { match: matchDescription, outcome: 'Home Win', odds: oddsHome, modelProbability: modelProbabilities.homeWin, value: modelProbabilities.homeWin * oddsHome - 1 },
+      { match: matchDescription, outcome: 'Draw', odds: oddsDraw, modelProbability: modelProbabilities.draw, value: modelProbabilities.draw * oddsDraw - 1 },
+      { match: matchDescription, outcome: 'Away Win', odds: oddsAway, modelProbability: modelProbabilities.awayWin, value: modelProbabilities.awayWin * oddsAway - 1 },
+    ];
+    
+    // 3. Portfolio Manager Flow
+    const recommendations = await portfolioManager({
+        bankroll,
+        stakingStrategy,
+        potentialBets: valueBets,
+    });
+    
+    const responseData = {
+        valueBets: valueBets.map(bet => ({ ...bet, estProbability: bet.modelProbability * 100 })),
+        recommendations: recommendations.filter(rec => rec.recommendedStake > 0),
+    };
+
+    return { message: "Analysis complete.", data: responseData };
+  } catch (e: any) {
+    return {
+      message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
+      issues: [e.message || 'Unknown error'],
+    };
   }
-
-  return { message: "Analysis complete.", data: mockData };
 }
 
 const fundamentalSchema = z.object({
@@ -91,18 +145,26 @@ export async function handleFundamentalAnalysis(
     };
   }
   
-  await new Promise(resolve => setTimeout(resolve, 2000));
+   try {
+    const result = await fundamentalAnalysis(validatedFields.data);
+    const { matchDescription, oddsTeamA, oddsDraw, oddsTeamB } = validatedFields.data;
 
-  const { matchDescription, oddsTeamA, oddsDraw, oddsTeamB } = validatedFields.data;
+    const responseData = {
+        analysis: result.analysis,
+        valueBets: [
+            { match: matchDescription, outcome: 'Team A Win', odds: oddsTeamA, estProbability: result.teamAProbability * 100, value: result.valueTeamA },
+            { match: matchDescription, outcome: 'Draw', odds: oddsDraw, estProbability: (result.drawProbability || 0) * 100, value: result.valueDraw || 0 },
+            { match: matchDescription, outcome: 'Team B Win', odds: oddsTeamB, estProbability: result.teamBProbability * 100, value: result.valueTeamB },
+        ],
+        // Fundamental analysis doesn't produce staking recommendations directly
+        recommendations: [],
+    };
 
-  const mockData = {
-    analysis: "Based on Team A's strong recent form and key player returning from injury, they appear to have a significant advantage over Team B, who has struggled in away games. The model reflects this, giving Team A a higher probability of winning than the market odds suggest, indicating a value bet.",
-    valueBets: [
-        { match: matchDescription, outcome: 'Team A Win', odds: oddsTeamA, estProbability: 55.0, value: 0.21 },
-        { match: matchDescription, outcome: 'Draw', odds: oddsDraw, estProbability: 25.0, value: -0.10 },
-        { match: matchDescription, outcome: 'Team B Win', odds: oddsTeamB, estProbability: 20.0, value: -0.25 },
-    ]
-  };
-
-  return { message: "Analysis complete.", data: mockData };
+    return { message: "Analysis complete.", data: responseData };
+  } catch (e: any) {
+     return {
+      message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
+      issues: [e.message || 'Unknown error'],
+    };
+  }
 }
