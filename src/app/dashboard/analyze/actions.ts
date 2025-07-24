@@ -5,6 +5,7 @@ import { dataExplorer } from '@/ai/flows/data-explorer-flow';
 import { quantitativeModel } from '@/ai/flows/quantitative-model-flow';
 import { portfolioManager } from '@/ai/flows/portfolio-manager-flow';
 import { fundamentalAnalysis } from '@/ai/flows/fundamental-analysis-flow';
+import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
 
 
 export type ActionState = {
@@ -163,6 +164,59 @@ export async function handleFundamentalAnalysis(
     return { message: "Analysis complete.", data: responseData };
   } catch (e: any) {
      return {
+      message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
+      issues: [e.message || 'Unknown error'],
+    };
+  }
+}
+
+const singleMatchSchema = z.object({
+  match: z.string().min(1, { message: "Match details are required." }),
+});
+
+export async function handleSingleMatchAnalysis(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const validatedFields = singleMatchSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!validatedFields.success) {
+    const fields: Record<string, string> = {};
+    for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
+        fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
+    }
+    return {
+      message: "Error: Please fix the issues below.",
+      issues: validatedFields.error.flatten().formErrors,
+      fields,
+    };
+  }
+
+  try {
+    const result = await analyzeSingleMatch(validatedFields.data);
+    const matchDescription = `${result.teamA} vs ${result.teamB}`;
+    
+    const responseData = {
+        analysis: result.analysis,
+        valueBets: [
+            { match: matchDescription, outcome: `${result.teamA} Win`, odds: result.odds.teamA, estProbability: 0, value: 0 },
+            { match: matchDescription, outcome: 'Draw', odds: result.odds.draw || 0, estProbability: 0, value: 0 },
+            { match: matchDescription, outcome: `${result.teamB} Win`, odds: result.odds.teamB, estProbability: 0, value: 0 },
+        ],
+        recommendations: result.valueBetFound && result.recommendation ? [{
+            match: matchDescription,
+            outcome: result.recommendation,
+            value: 0, // Value not calculated in this flow
+            recommendedStake: 0 // Staking not calculated
+        }] : [],
+    };
+
+     // Filter out draw if odds are 0
+    responseData.valueBets = responseData.valueBets.filter(bet => bet.odds > 0);
+
+    return { message: "Analysis complete.", data: responseData };
+  } catch (e: any) {
+    return {
       message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
       issues: [e.message || 'Unknown error'],
     };
