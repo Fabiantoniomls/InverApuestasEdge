@@ -1,24 +1,30 @@
+
+'use client';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { QuantitativeAnalysisForm } from "./quantitative-analysis-form"
 import { FundamentalAnalysisForm } from "./fundamental-analysis-form"
 import { StakingStrategyTable } from "./staking-strategy-table"
+import { useLanguage } from "@/context/language-context";
 
 export default function AnalyzePage() {
+  const { t } = useLanguage();
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
             <Tabs defaultValue="quantitative">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="quantitative">Quantitative Analysis</TabsTrigger>
-                <TabsTrigger value="fundamental">Fundamental Analysis</TabsTrigger>
+                <TabsTrigger value="quantitative">{t.quantitativeAnalysis}</TabsTrigger>
+                <TabsTrigger value="fundamental">{t.fundamentalAnalysis}</TabsTrigger>
               </TabsList>
               <TabsContent value="quantitative">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="font-headline">Quantitative Football Modeling</CardTitle>
+                    <CardTitle className="font-headline">{t.quantitativeFootballModeling}</CardTitle>
                     <CardDescription>
-                      Use the Poisson-xG hybrid model to find value bets in football markets.
+                      {t.quantitativeDescription}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -29,9 +35,9 @@ export default function AnalyzePage() {
               <TabsContent value="fundamental">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="font-headline">Fundamental Match Analysis</CardTitle>
+                    <CardTitle className="font-headline">{t.fundamentalMatchAnalysis}</CardTitle>
                     <CardDescription>
-                      Perform qualitative analysis for Football or Tennis based on contextual factors.
+                      {t.fundamentalDescription}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>

@@ -36,42 +36,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { LanguageProvider, useLanguage } from '@/context/language-context';
 
-const translations = {
-  en: {
-    dashboard: 'Dashboard',
-    analyze: 'Analyze',
-    ledger: 'Ledger',
-    profile: 'Profile',
-    myAccount: 'My Account',
-    settings: 'Settings',
-    logout: 'Log out',
-    changeLanguage: 'Change language',
-    english: 'English',
-    spanish: 'Español',
-  },
-  es: {
-    dashboard: 'Panel',
-    analyze: 'Analizar',
-    ledger: 'Registro',
-    profile: 'Perfil',
-    myAccount: 'Mi Cuenta',
-    settings: 'Ajustes',
-    logout: 'Cerrar Sesión',
-    changeLanguage: 'Cambiar idioma',
-    english: 'Inglés',
-    spanish: 'Español',
-  },
-};
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [language, setLanguage] = React.useState<'en' | 'es'>('en');
-  const t = translations[language];
+  const { t, setLanguage } = useLanguage();
 
   const menuItems = [
     { href: '/dashboard', label: t.dashboard, icon: LayoutDashboard },
@@ -167,4 +136,16 @@ export default function DashboardLayout({
       </div>
     </SidebarProvider>
   );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <LanguageProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </LanguageProvider>
+  )
 }
