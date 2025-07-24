@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { dataExplorer } from '@/ai/flows/data-explorer-flow';
 import { quantitativeModel } from '@/ai/flows/quantitative-model-flow';
 import { portfolioManager } from '@/ai/flows/portfolio-manager-flow';
-import { fundamentalAnalysis } from '@/ai/flows/fundamental-analysis-flow';
+import { calculateValueBetManual } from '@/ai/flows/calculate-value-bet-manual-flow';
 import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
 import { calculateBatchValueBets } from '@/ai/flows/calculate-batch-value-bets-flow';
 
@@ -118,27 +118,54 @@ export async function handleQuantitativeAnalysis(
   }
 }
 
-const fundamentalSchema = z.object({
-  matchDescription: z.string().min(1, { message: "Match description is required." }),
-  teamAContext: z.string().min(1, { message: "Team A context is required." }),
-  teamBContext: z.string().min(1, { message: "Team B context is required." }),
-  oddsTeamA: z.coerce.number().gt(1, { message: "Odds must be > 1." }),
-  oddsDraw: z.coerce.number().gt(1, { message: "Odds must be > 1." }),
-  oddsTeamB: z.coerce.number().gt(1, { message: "Odds must be > 1." }),
+// Zod schema for manual analysis, using a discriminated union
+const FootballInputSchema = z.object({
+  sport: z.literal('futbol'),
+  equipo_a_nombre: z.string().min(1, { message: "Required" }),
+  equipo_b_nombre: z.string().min(1, { message: "Required" }),
+  cuota_equipo_a: z.coerce.number().gt(1),
+  cuota_empate: z.coerce.number().gt(1),
+  cuota_equipo_b: z.coerce.number().gt(1),
+  liga_goles_local_promedio: z.coerce.number().gt(0),
+  liga_goles_visitante_promedio: z.coerce.number().gt(0),
+  equipo_a_xgf: z.coerce.number(),
+  equipo_a_xga: z.coerce.number(),
+  equipo_b_xgf: z.coerce.number(),
+  equipo_b_xga: z.coerce.number(),
 });
+
+const TennisInputSchema = z.object({
+  sport: z.literal('tenis'),
+  jugador_a_nombre: z.string().min(1, { message: "Required" }),
+  jugador_b_nombre: z.string().min(1, { message: "Required" }),
+  cuota_jugador_a: z.coerce.number().gt(1),
+  cuota_jugador_b: z.coerce.number().gt(1),
+  superficie: z.string().min(1, { message: "Required" }),
+  jugador_a_primer_servicio_pct: z.coerce.number().min(0).max(100),
+  jugador_a_puntos_ganados_1er_serv_pct: z.coerce.number().min(0).max(100),
+  jugador_a_puntos_ganados_2do_serv_pct: z.coerce.number().min(0).max(100),
+  jugador_b_primer_servicio_pct: z.coerce.number().min(0).max(100),
+  jugador_b_puntos_ganados_1er_serv_pct: z.coerce.number().min(0).max(100),
+  jugador_b_puntos_ganados_2do_serv_pct: z.coerce.number().min(0).max(100),
+});
+
+const fundamentalSchema = z.discriminatedUnion('sport', [
+  FootballInputSchema,
+  TennisInputSchema,
+]);
 
 
 export async function handleFundamentalAnalysis(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-    
-  const validatedFields = fundamentalSchema.safeParse(Object.fromEntries(formData.entries()));
-
+  const rawData = Object.fromEntries(formData.entries());
+  const validatedFields = fundamentalSchema.safeParse(rawData);
+  
   if (!validatedFields.success) {
     const fields: Record<string, string> = {};
-    for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
-        fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
+    for (const key in validatedFields.error.flatten().fieldErrors) {
+        fields[key] = validatedFields.error.flatten().fieldErrors[key as keyof typeof fields]?.[0] ?? "";
     }
     return {
       message: "Error: Please fix the issues below.",
@@ -148,18 +175,19 @@ export async function handleFundamentalAnalysis(
   }
   
    try {
-    const result = await fundamentalAnalysis(validatedFields.data);
-    const { matchDescription, oddsTeamA, oddsDraw, oddsTeamB } = validatedFields.data;
+    const result = await calculateValueBetManual(validatedFields.data);
 
+    // Transform the result to match the structure expected by ResultsDisplay
     const responseData = {
         analysis: result.analysis,
-        valueBets: [
-            { match: matchDescription, outcome: 'Team A Win', odds: oddsTeamA, estProbability: result.teamAProbability * 100, value: result.valueTeamA },
-            { match: matchDescription, outcome: 'Draw', odds: oddsDraw, estProbability: (result.drawProbability || 0) * 100, value: result.valueDraw || 0 },
-            { match: matchDescription, outcome: 'Team B Win', odds: oddsTeamB, estProbability: result.teamBProbability * 100, value: result.valueTeamB },
-        ],
-        // Fundamental analysis doesn't produce staking recommendations directly
-        recommendations: [],
+        valueBets: result.valueBets.map(bet => ({
+            match: validatedFields.data.sport === 'futbol' ? `${validatedFields.data.equipo_a_nombre} vs ${validatedFields.data.equipo_b_nombre}` : `${validatedFields.data.jugador_a_nombre} vs ${validatedFields.data.jugador_b_nombre}`,
+            outcome: bet.market,
+            odds: bet.odds,
+            estProbability: bet.probability * 100,
+            value: bet.expectedValue,
+        })),
+        recommendations: [], // This flow doesn't generate staking recommendations
     };
 
     return { message: "Analysis complete.", data: responseData };

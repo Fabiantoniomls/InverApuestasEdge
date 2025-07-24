@@ -6,22 +6,26 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { AnalyzeSingleMatchOutput } from "@/ai/schemas";
 
+interface ValueBet {
+    match?: string; // Optional for manual analysis where match is implicit
+    outcome: string;
+    odds: number;
+    estProbability: number;
+    value: number;
+}
+
+interface Recommendation {
+    match: string;
+    outcome: string;
+    value: number;
+    recommendedStake: number;
+}
+
 interface ResultsDisplayProps {
     result: {
-        analysis?: string; // For single fundamental analysis
-        valueBets: {
-            match: string;
-            outcome: string;
-            odds: number;
-            estProbability: number;
-            value: number;
-        }[];
-        recommendations?: {
-            match: string;
-            outcome: string;
-            value: number;
-            recommendedStake: number;
-        }[];
+        analysis?: string;
+        valueBets: ValueBet[];
+        recommendations?: Recommendation[];
         isBatch?: boolean;
         batchAnalysis?: AnalyzeSingleMatchOutput[];
     };
@@ -79,6 +83,10 @@ export function ResultsDisplay({ result }: ResultsDisplayProps) {
         )
     }
 
+    // Determine if any value bets were found to show the table
+    const hasValueBets = result.valueBets && result.valueBets.length > 0;
+    const hasRecommendations = result.recommendations && result.recommendations.length > 0;
+
     return (
         <div className="mt-8 space-y-6">
             <Separator />
@@ -94,32 +102,32 @@ export function ResultsDisplay({ result }: ResultsDisplayProps) {
                 </Card>
             )}
 
-            {result.valueBets.length > 0 && (
+            {hasValueBets && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">Value Bets Table</CardTitle>
-                        <CardDescription>Intermediate calculations identifying potential value.</CardDescription>
+                        <CardTitle className="font-headline">Value Opportunities</CardTitle>
+                        <CardDescription>Markets where the estimated probability suggests positive expected value.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Match</TableHead>
-                                    <TableHead>Outcome</TableHead>
+                                    {result.valueBets[0].match && <TableHead>Match</TableHead>}
+                                    <TableHead>Outcome / Market</TableHead>
                                     <TableHead className="text-right">Odds</TableHead>
-                                    <TableHead className="text-right">Est. Probability (%)</TableHead>
-                                    <TableHead className="text-right">Calculated Value</TableHead>
+                                    <TableHead className="text-right">Est. Probability</TableHead>
+                                    <TableHead className="text-right">Expected Value</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {result.valueBets.map((bet, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell className="font-medium">{bet.match}</TableCell>
+                                    <TableRow key={index} className="font-medium">
+                                        {bet.match && <TableCell>{bet.match}</TableCell>}
                                         <TableCell>{bet.outcome}</TableCell>
                                         <TableCell className="text-right">{bet.odds.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right">{bet.estProbability.toFixed(1)}%</TableCell>
-                                        <TableCell className={`text-right font-bold ${bet.value > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            {bet.value.toFixed(2)}
+                                        <TableCell className="text-right">{(bet.estProbability).toFixed(1)}%</TableCell>
+                                        <TableCell className={`text-right font-bold text-green-600`}>
+                                            {bet.value > 0 ? '+' : ''}{bet.value.toFixed(3)}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -128,8 +136,17 @@ export function ResultsDisplay({ result }: ResultsDisplayProps) {
                     </CardContent>
                 </Card>
             )}
+            
+            {!hasValueBets && result.analysis && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">No Value Bets Found</CardTitle>
+                         <CardDescription>Based on the analysis, no betting opportunities with positive expected value were identified in the main markets.</CardDescription>
+                    </CardHeader>
+                </Card>
+            )}
 
-            {result.recommendations && result.recommendations.length > 0 && (
+            {hasRecommendations && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline">Betting Recommendations</CardTitle>
@@ -146,7 +163,7 @@ export function ResultsDisplay({ result }: ResultsDisplayProps) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {result.recommendations.map((rec, index) => (
+                                {result.recommendations!.map((rec, index) => (
                                     <TableRow key={index} className="bg-primary/10">
                                         <TableCell className="font-medium">{rec.match}</TableCell>
                                         <TableCell>{rec.outcome}</TableCell>
