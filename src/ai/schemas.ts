@@ -13,3 +13,9 @@ export const AnalyzeSingleMatchOutputSchema = z.object({
     recommendation: z.string().optional().describe("The recommended bet (e.g., 'Team A to win') if a value bet is found")
 });
 export type AnalyzeSingleMatchOutput = z.infer<typeof AnalyzeSingleMatchOutputSchema>;
+
+
+export const ExtractMatchesOutputSchema = z.object({
+    matches: z.array(z.string()).describe('An array of individual match strings.'),
+});
+export type ExtractMatchesOutput = z.infer<typeof ExtractMatchesOutputSchema>;
