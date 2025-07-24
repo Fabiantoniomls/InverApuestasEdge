@@ -37,18 +37,47 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
+const translations = {
+  en: {
+    dashboard: 'Dashboard',
+    analyze: 'Analyze',
+    ledger: 'Ledger',
+    profile: 'Profile',
+    myAccount: 'My Account',
+    settings: 'Settings',
+    logout: 'Log out',
+    changeLanguage: 'Change language',
+    english: 'English',
+    spanish: 'Español',
+  },
+  es: {
+    dashboard: 'Panel',
+    analyze: 'Analizar',
+    ledger: 'Registro',
+    profile: 'Perfil',
+    myAccount: 'Mi Cuenta',
+    settings: 'Ajustes',
+    logout: 'Cerrar Sesión',
+    changeLanguage: 'Cambiar idioma',
+    english: 'Inglés',
+    spanish: 'Español',
+  },
+};
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [language, setLanguage] = React.useState<'en' | 'es'>('en');
+  const t = translations[language];
 
   const menuItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/analyze', label: 'Analyze', icon: Calculator },
-    { href: '/dashboard/ledger', label: 'Ledger', icon: Book },
-    { href: '/dashboard/profile', label: 'Profile', icon: User },
+    { href: '/dashboard', label: t.dashboard, icon: LayoutDashboard },
+    { href: '/dashboard/analyze', label: t.analyze, icon: Calculator },
+    { href: '/dashboard/ledger', label: t.ledger, icon: Book },
+    { href: '/dashboard/profile', label: t.profile, icon: User },
   ];
 
   return (
@@ -95,17 +124,17 @@ export default function DashboardLayout({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" align="start" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t.myAccount}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/profile">Profile</Link>
+                      <Link href="/dashboard/profile">{t.profile}</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem>{t.settings}</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                        <Link href="/">
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
+                        <span>{t.logout}</span>
                        </Link>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -124,12 +153,12 @@ export default function DashboardLayout({
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Globe className="h-5 w-5" />
-                  <span className="sr-only">Change language</span>
+                  <span className="sr-only">{t.changeLanguage}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>English</DropdownMenuItem>
-                <DropdownMenuItem>Español</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setLanguage('en')}>{t.english}</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setLanguage('es')}>{t.spanish}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
