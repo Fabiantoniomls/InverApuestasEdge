@@ -14,7 +14,7 @@ import { ExtractMatchesOutput, ExtractMatchesOutputSchema } from '../schemas';
 const ExtractMatchesInputSchema = z.object({
   matchesText: z.string().describe('A block of text containing multiple match details.'),
 });
-export type ExtractMatchesInput = z.f<typeof ExtractMatchesInputSchema>;
+export type ExtractMatchesInput = z.infer<typeof ExtractMatchesInputSchema>;
 
 
 export async function extractMatches(input: ExtractMatchesInput): Promise<ExtractMatchesOutput> {
