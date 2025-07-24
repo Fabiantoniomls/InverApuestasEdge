@@ -6,6 +6,7 @@ import { quantitativeModel } from '@/ai/flows/quantitative-model-flow';
 import { portfolioManager } from '@/ai/flows/portfolio-manager-flow';
 import { fundamentalAnalysis } from '@/ai/flows/fundamental-analysis-flow';
 import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
+import { calculateBatchValueBets } from '@/ai/flows/calculate-batch-value-bets-flow';
 
 
 export type ActionState = {
@@ -219,6 +220,68 @@ export async function handleSingleMatchAnalysis(
     return {
       message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
       issues: [e.message || 'Unknown error'],
+    };
+  }
+}
+
+
+const batchSchema = z.object({
+  matchesText: z.string().min(1, { message: "Match list is required." }),
+  sportKey: z.string().optional(),
+});
+
+export async function handleCalculateBatchValueBets(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const validatedFields = batchSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!validatedFields.success) {
+    const fields: Record<string, string> = {};
+    for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
+        fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
+    }
+    return {
+      message: "Error: Please fix the issues below.",
+      issues: validatedFields.error.flatten().formErrors,
+      fields,
+    };
+  }
+
+  try {
+    const { analyzedMatches } = await calculateBatchValueBets(validatedFields.data);
+
+    // Transform the raw analysis into the structure ResultsDisplay expects
+    const valueBets = analyzedMatches.map(match => ({
+        match: `${match.teamA} vs ${match.teamB}`,
+        outcome: match.recommendation || 'N/A',
+        odds: match.odds.teamA, // This is a simplification, might need adjustment
+        estProbability: 0, // Not provided by this flow
+        value: 0, // Not provided by this flow
+    }));
+    
+    const recommendations = analyzedMatches
+      .filter(match => match.valueBetFound && match.recommendation)
+      .map(match => ({
+          match: `${match.teamA} vs ${match.teamB}`,
+          outcome: match.recommendation!,
+          value: 0, // Not provided
+          recommendedStake: 0 // Not provided
+      }));
+
+    const responseData = {
+      isBatch: true,
+      batchAnalysis: analyzedMatches,
+      valueBets: [], // Let's use a dedicated structure for batch results
+      recommendations: [],
+    };
+
+
+    return { message: `${analyzedMatches.length} matches analyzed.`, data: responseData };
+  } catch (e: any) {
+    return {
+      message: e.message,
+      issues: [e.message],
     };
   }
 }

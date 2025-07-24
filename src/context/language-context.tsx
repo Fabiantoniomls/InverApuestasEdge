@@ -18,6 +18,7 @@ const translations = {
     quantitativeAnalysis: 'Quantitative Analysis',
     fundamentalAnalysis: 'Fundamental Analysis',
     singleMatchAnalysis: 'Single Match',
+    batchAnalysis: 'Batch Analysis',
     quantitativeFootballModeling: 'Quantitative Football Modeling',
     quantitativeDescription: 'Use the Poisson-xG hybrid model to find value bets in football markets.',
     fundamentalMatchAnalysis: 'Fundamental Match Analysis',
@@ -26,6 +27,8 @@ const translations = {
     stakingStrategyDescription: 'Context for selecting a staking plan for your analysis.',
     singleMatchAnalysisTitle: 'Quick Single Match Analysis',
     singleMatchAnalysisDescription: 'Paste in match details for a quick analysis and value bet recommendation.',
+    batchAnalysisTitle: 'Batch Value Bet Finder',
+    batchAnalysisDescription: 'Paste a list of matches to analyze them all in bulk and find value bets.',
   },
   es: {
     dashboard: 'Panel',
@@ -41,6 +44,7 @@ const translations = {
     quantitativeAnalysis: 'Análisis Cuantitativo',
     fundamentalAnalysis: 'Análisis Fundamental',
     singleMatchAnalysis: 'Partido Individual',
+    batchAnalysis: 'Análisis por Lotes',
     quantitativeFootballModeling: 'Modelado Cuantitativo de Fútbol',
     quantitativeDescription: 'Use el modelo híbrido Poisson-xG para encontrar apuestas de valor en los mercados de fútbol.',
     fundamentalMatchAnalysis: 'Análisis Fundamental de Partidos',
@@ -49,6 +53,8 @@ const translations = {
     stakingStrategyDescription: 'Contexto para seleccionar un plan de apuestas para su análisis.',
     singleMatchAnalysisTitle: 'Análisis Rápido de Partido Individual',
     singleMatchAnalysisDescription: 'Pega los detalles del partido para un análisis rápido y una recomendación de apuesta de valor.',
+    batchAnalysisTitle: 'Buscador de Apuestas de Valor por Lotes',
+    batchAnalysisDescription: 'Pega una lista de partidos para analizarlos todos en bloque y encontrar apuestas de valor.',
   },
 };
 

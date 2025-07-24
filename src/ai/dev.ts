@@ -8,3 +8,4 @@ import '@/ai/flows/data-explorer-flow.ts';
 import '@/ai/flows/analyze-single-match-flow.ts';
 import '@/ai/flows/extract-matches-flow.ts';
 import '@/ai/flows/calculate-batch-value-bets-flow.ts';
+import '@/ai/flows/calculate-value-bet-from-text-flow.ts';
