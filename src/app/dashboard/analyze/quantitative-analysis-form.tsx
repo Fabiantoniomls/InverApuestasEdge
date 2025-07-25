@@ -1,13 +1,13 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
 import { handleQuantitativeAnalysis, type ActionState } from './actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -25,7 +25,7 @@ function SubmitButton() {
 
 export function QuantitativeAnalysisForm() {
   const initialState: ActionState = {};
-  const [state, formAction] = useFormState(handleQuantitativeAnalysis, initialState);
+  const [state, formAction] = useActionState(handleQuantitativeAnalysis, initialState);
   const { toast } = useToast();
 
   useEffect(() => {

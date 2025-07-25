@@ -1,11 +1,11 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
 import { handleSingleMatchAnalysis, type ActionState } from './actions';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -23,7 +23,7 @@ function SubmitButton() {
 
 export function SingleMatchAnalysisForm() {
   const initialState: ActionState = {};
-  const [state, formAction] = useFormState(handleSingleMatchAnalysis, initialState);
+  const [state, formAction] = useActionState(handleSingleMatchAnalysis, initialState);
   const { toast } = useToast();
 
   useEffect(() => {

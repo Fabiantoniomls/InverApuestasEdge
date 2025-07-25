@@ -1,11 +1,11 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
 import { handleCalculateBatchValueBets, type ActionState } from './actions';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -25,7 +25,7 @@ function SubmitButton() {
 
 export function BatchValueBetsForm() {
   const initialState: ActionState = {};
-  const [state, formAction] = useFormState(handleCalculateBatchValueBets, initialState);
+  const [state, formAction] = useActionState(handleCalculateBatchValueBets, initialState);
   const { toast } = useToast();
 
   useEffect(() => {

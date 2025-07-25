@@ -1,11 +1,11 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useState } from 'react';
 import { handleFundamentalAnalysis, type ActionState } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -24,7 +24,7 @@ function SubmitButton() {
 
 export function FundamentalAnalysisForm() {
   const initialState: ActionState = {};
-  const [state, formAction] = useFormState(handleFundamentalAnalysis, initialState);
+  const [state, formAction] = useActionState(handleFundamentalAnalysis, initialState);
   const { toast } = useToast();
   const [sport, setSport] = useState('futbol');
 
