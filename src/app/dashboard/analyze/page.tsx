@@ -17,7 +17,7 @@ export default function AnalyzePage() {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
             <Tabs defaultValue="quantitative">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList>
                 <TabsTrigger value="quantitative">{t.quantitativeAnalysis}</TabsTrigger>
                 <TabsTrigger value="fundamental">{t.fundamentalAnalysis}</TabsTrigger>
                 <TabsTrigger value="single">{t.singleMatchAnalysis}</TabsTrigger>
