@@ -10,3 +10,4 @@ import '@/ai/flows/extract-matches-flow.ts';
 import '@/ai/flows/calculate-batch-value-bets-flow.ts';
 import '@/ai/flows/calculate-value-bet-from-text-flow.ts';
 import '@/ai/flows/calculate-value-bet-manual-flow.ts';
+import '@/ai/flows/qualitative-insight-flow.ts';
