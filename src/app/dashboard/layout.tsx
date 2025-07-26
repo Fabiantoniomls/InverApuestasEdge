@@ -15,9 +15,8 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useLanguage, LanguageProvider } from '@/context/language-context';
+import { LanguageProvider, useLanguage } from '@/context/language-context';
 
 const navLinks = [
     { href: '/dashboard', label: 'Inicio', icon: Home },
@@ -25,62 +24,48 @@ const navLinks = [
     { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: Receipt },
     { href: '/dashboard/community', label: 'Comunidad', icon: Users2 },
     { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
-]
+];
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const {t} = useLanguage();
 
   return (
-    <div className="relative flex min-h-screen w-full bg-gray-100">
-        <aside className="w-64 bg-white shadow-md flex flex-col justify-between">
+    <div className="flex h-screen bg-gray-50 text-gray-800">
+        <aside className="w-64 bg-white p-6 flex flex-col justify-between h-screen sticky top-0 shadow-md">
             <div>
-                <div className="p-6 flex items-center space-x-3">
-                    <div className="bg-blue-500 p-2 rounded-lg">
-                        <Scaling className="text-white" />
-                    </div>
-                    <h1 className="text-xl font-bold text-blue-600">BetValuator</h1>
+                <div className="text-2xl font-bold text-blue-600 mb-10">
+                    BetValuator
                 </div>
-                <nav className="mt-6">
+                <nav className="space-y-4">
                      {navLinks.map(link => {
                         const Icon = link.icon;
                         const isActive = pathname === link.href;
                         return (
-                            <Link
-                                key={link.label}
-                                href={link.href}
-                                className={cn(
-                                    "flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100",
-                                    isActive && "text-blue-600 bg-blue-50 rounded-lg"
-                                )}
-                            >
-                                <Icon className="h-5 w-5" />
-                                <span className={cn("ml-4", isActive && "font-semibold")}>{link.label}</span>
+                             <Link key={link.label} href={link.href} className={cn("flex items-center p-2 rounded-lg", isActive ? "text-blue-600 bg-blue-50 font-semibold" : "text-gray-500 hover:text-gray-900")}>
+                                <Icon className="mr-3" />
+                                {link.label}
                             </Link>
                         )
                     })}
                 </nav>
             </div>
-            <div className="p-6">
-                <Button variant="outline" className="w-full justify-start gap-3 mb-4">
-                    <HelpCircle className="h-5 w-5" />
-                    <span className="text-sm font-medium">Ayuda y Soporte</span>
-                </Button>
-                 <Link href="/dashboard/profile">
-                    <div className="flex items-center">
-                        <Avatar className="size-10">
-                            <AvatarImage src="https://placehold.co/40x40.png" alt="User" data-ai-hint="user avatar" />
-                            <AvatarFallback>SR</AvatarFallback>
-                        </Avatar>
-                        <span className="ml-3 font-semibold text-gray-600">Cerrar Sesión</span>
-                    </div>
+            <div className="space-y-4">
+                 <Link href="#" className="flex items-center text-gray-500 hover:text-gray-900">
+                    <HelpCircle className="mr-3" />
+                    Ayuda y Soporte
+                </Link>
+                 <Link href="/dashboard/profile" className="flex items-center text-gray-500 hover:text-gray-900">
+                    <Avatar className="w-8 h-8 mr-3">
+                        <AvatarImage src="https://placehold.co/32x32.png" alt="User" data-ai-hint="user avatar" />
+                        <AvatarFallback>N</AvatarFallback>
+                    </Avatar>
+                    Cerrar Sesión
                 </Link>
             </div>
         </aside>
-        <main className="flex-1 p-8 overflow-y-auto">
-            <div className="max-w-7xl mx-auto">
-                {children}
-            </div>
+        <main className="flex-1 overflow-y-auto">
+            {children}
         </main>
     </div>
   );

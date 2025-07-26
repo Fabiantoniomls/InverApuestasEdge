@@ -1,54 +1,71 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 
 const strategies = [
     {
         plan: "Fixed Stake",
-        how: "Bet a fixed amount (€X) each time.",
-        risk: "Low",
-        useCase: "Beginners, testing new models, low-risk profiles.",
+        description: "Bet a fixed amount (€/£) each time. Ideal for beginners, it provides predictability and control over your bankroll.",
+        risk: "Low Risk",
+        riskColor: "green"
     },
     {
         plan: "Percentage Stake",
-        how: "Bet a fixed % of the current bankroll.",
-        risk: "Moderate",
-        useCase: "Long-term growth, balancing risk/reward, proven models.",
+        description: "Bet a fixed percentage of your current bankroll. Your stake size adjusts with your bankroll's fluctuations.",
+        risk: "Moderate Risk",
+        riskColor: "yellow"
     },
     {
         plan: "Fractional Kelly",
-        how: "Bet a % based on the size of the value.",
-        risk: "High",
-        useCase: "Advanced users, maximizing growth with a quantified, high-confidence edge.",
+        description: "Bet a percentage of your bankroll based on the calculated value of the bet. Aims to maximize long-term growth.",
+        risk: "High Risk",
+        riskColor: "red"
     },
 ]
 
+const riskColors = {
+    green: {
+        border: "border-green-500",
+        bg: "bg-green-50",
+        title: "text-green-800",
+        badgeBg: "bg-green-100",
+        description: "text-green-700"
+    },
+    yellow: {
+        border: "border-yellow-500",
+        bg: "bg-yellow-50",
+        title: "text-yellow-800",
+        badgeBg: "bg-yellow-100",
+        description: "text-yellow-700"
+    },
+    red: {
+        border: "border-red-500",
+        bg: "bg-red-50",
+        title: "text-red-800",
+        badgeBg: "bg-red-100",
+        description: "text-red-700"
+    }
+};
+
 export function StakingStrategyTable() {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline">Staking Strategy Reference</CardTitle>
-                <CardDescription>Context for selecting a staking plan for your analysis.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Staking Plan</TableHead>
-                            <TableHead>How It Works</TableHead>
-                            <TableHead>Risk Level</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {strategies.map((strategy) => (
-                             <TableRow key={strategy.plan}>
-                                <TableCell className="font-semibold">{strategy.plan}</TableCell>
-                                <TableCell>{strategy.how}</TableCell>
-                                <TableCell>{strategy.risk}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+        <div className="bg-white p-8 rounded-2xl shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Staking Strategy Reference</h2>
+            <p className="text-gray-500 mb-6">Context for selecting a staking plan for your analysis.</p>
+            <div className="space-y-4">
+                {strategies.map((strategy) => {
+                    const colors = riskColors[strategy.riskColor as keyof typeof riskColors];
+                    return (
+                        <div key={strategy.plan} className={`border-l-4 ${colors.border} ${colors.bg} p-4 rounded-r-lg`}>
+                            <div className="flex justify-between items-center mb-1">
+                                <h3 className={`font-bold ${colors.title}`}>{strategy.plan}</h3>
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colors.badgeBg} ${colors.title}`}>
+                                    {strategy.risk}
+                                </span>
+                            </div>
+                            <p className={`text-sm ${colors.description}`}>{strategy.description}</p>
+                        </div>
+                    )
+                })}
+            </div>
+        </div>
     );
 }
