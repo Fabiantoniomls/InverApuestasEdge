@@ -97,7 +97,7 @@ export default function SavedAnalysisPage({ params }: { params: { id: string } }
                             <CardTitle className="font-bold text-xl">Resultado del Análisis</CardTitle>
                              <Button variant="primary">
                                 <Share2 className="mr-2" />
-                                <span>Compartir</span>
+                                <span>Compartir en la Comunidad</span>
                             </Button>
                         </CardHeader>
                         <CardContent>
@@ -258,3 +258,5 @@ export default function SavedAnalysisPage({ params }: { params: { id: string } }
         </>
     );
 }
+
+    

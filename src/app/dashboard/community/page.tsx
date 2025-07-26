@@ -2,29 +2,41 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowUpRight, BarChart2, MessageSquare, Search, ThumbsUp, TrendingUp, Trophy, UserPlus } from "lucide-react";
+import { ArrowUpRight, BarChart2, Copy, MessageSquare, Search, ThumbsUp, TrendingUp, Trophy, UserPlus, FilePlus2 } from "lucide-react";
 import Image from "next/image";
 
 const activityFeed = [
     {
         user: { name: "QuantumLeap", avatar: "https://placehold.co/40x40.png", hint: "user avatar" },
         action: "compartió un nuevo análisis",
-        title: "Valor Oculto en la Bundesliga: Augsburg vs. Hoffenheim",
         time: "hace 15 minutos",
         likes: 12,
-        comments: 3
+        comments: 3,
+        analysis: {
+            title: "Valor Oculto en la Bundesliga: Augsburg vs. Hoffenheim",
+            market: "Gana Augsburg",
+            odds: 2.50,
+            probability: 45, // in %
+            value: 12.5, // in %
+        }
     },
     {
         user: { name: "ValueSeeker", avatar: "https://placehold.co/40x40.png", hint: "user avatar" },
-        action: "inició una nueva discusión",
-        title: "¿Es el Criterio de Kelly demasiado agresivo para el fútbol?",
+        action: "compartió un nuevo análisis",
         time: "hace 1 hora",
         likes: 5,
-        comments: 8
+        comments: 8,
+        analysis: {
+            title: "ATP Masters: Oportunidad en el Alcaraz vs. Zverev",
+            market: "Alcaraz 2-0",
+            odds: 1.80,
+            probability: 60, // in %
+            value: 8.0, // in %
+        }
     }
 ]
 
@@ -114,27 +126,46 @@ export default function CommunityPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Última Actividad</CardTitle>
+                            <CardDescription>Análisis compartidos y discusiones de la comunidad.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             {activityFeed.map((item, index) => (
-                                <div key={index} className="flex items-start gap-4 p-4 rounded-lg bg-secondary/50">
-                                    <Avatar>
-                                        <AvatarImage src={item.user.avatar} alt={item.user.name} data-ai-hint={item.user.hint} />
-                                        <AvatarFallback>{item.user.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                        <p className="text-sm">
-                                            <span className="font-semibold text-primary">{item.user.name}</span> {item.action}
-                                        </p>
-                                        <h3 className="font-semibold text-foreground hover:underline cursor-pointer">{item.title}</h3>
-                                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
-                                            <span>{item.time}</span>
-                                            <div className="flex items-center gap-1"><ThumbsUp className="size-3"/> {item.likes}</div>
-                                            <div className="flex items-center gap-1"><MessageSquare className="size-3"/> {item.comments}</div>
+                                <Card key={index} className="p-4 bg-secondary/30">
+                                    <div className="flex items-start gap-4">
+                                        <Avatar>
+                                            <AvatarImage src={item.user.avatar} alt={item.user.name} data-ai-hint={item.user.hint} />
+                                            <AvatarFallback>{item.user.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1">
+                                            <p className="text-sm text-muted-foreground">
+                                                <span className="font-semibold text-primary">{item.user.name}</span> {item.action}
+                                                <span className="mx-1">·</span>
+                                                <span>{item.time}</span>
+                                            </p>
+                                            <h3 className="font-bold text-lg text-foreground mt-2">{item.analysis.title}</h3>
+                                            
+                                            <div className="border-y my-3 py-2 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                                <div className="font-medium"><span className="text-muted-foreground">Mercado: </span>{item.analysis.market}</div>
+                                                <div className="font-medium"><span className="text-muted-foreground">Cuota: </span>{item.analysis.odds.toFixed(2)}</div>
+                                                <div className="font-medium"><span className="text-muted-foreground">Prob. Modelo: </span>{item.analysis.probability}%</div>
+                                                <div className="font-bold text-green-600 border border-green-500/50 rounded-full"><span className="text-muted-foreground">Valor: </span>+{item.analysis.value.toFixed(1)}%</div>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                                                <Button variant="ghost" size="sm" className="gap-1">
+                                                    <ThumbsUp className="size-4"/> {item.likes} Análisis Sólido
+                                                </Button>
+                                                <Button variant="ghost" size="sm" className="gap-1">
+                                                     <MessageSquare className="size-4"/> {item.comments} Comentarios
+                                                </Button>
+                                                <div className="flex-grow"></div>
+                                                <Button variant="outline" size="sm" className="gap-1.5">
+                                                     <FilePlus2 className="size-4"/> Copiar a Mis Análisis
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="icon"><ArrowUpRight className="size-4"/></Button>
-                                </div>
+                                </Card>
                             ))}
                         </CardContent>
                     </Card>
@@ -208,3 +239,5 @@ export default function CommunityPage() {
         </div>
     );
 }
+
+    
