@@ -17,6 +17,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LanguageProvider } from '@/context/language-context';
 
 const navLinks = [
     { href: '/dashboard', label: 'Inicio', icon: Home },
@@ -81,6 +82,8 @@ export default function Layout({
   children: React.ReactNode;
 }) {
   return (
-      <DashboardLayout>{children}</DashboardLayout>
+      <LanguageProvider>
+        <DashboardLayout>{children}</DashboardLayout>
+      </LanguageProvider>
   )
 }
