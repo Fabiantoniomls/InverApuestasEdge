@@ -5,23 +5,13 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Bell,
   Home,
-  LineChart,
-  Package,
-  Package2,
   Settings,
-  Users,
-  Wallet,
-  Scaling,
-  LogOut,
-  Ticket,
   Users2,
   HelpCircle,
   BarChart,
   ReceiptLong,
-  Analytics,
-  Insights,
+  Scaling,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -31,7 +21,7 @@ import { useLanguage, LanguageProvider } from '@/context/language-context';
 
 const navLinks = [
     { href: '/dashboard', label: 'Inicio', icon: Home },
-    { href: '/dashboard/analyze', label: 'Mis Análisis', icon: Analytics },
+    { href: '/dashboard/analyze', label: 'Mis Análisis', icon: BarChart },
     { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: ReceiptLong },
     { href: '/dashboard/community', label: 'Comunidad', icon: Users2 },
     { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
@@ -47,7 +37,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <div>
                 <div className="p-6 flex items-center space-x-3">
                     <div className="bg-blue-500 p-2 rounded-lg">
-                        <Insights className="text-white" />
+                        <Scaling className="text-white" />
                     </div>
                     <h1 className="text-xl font-bold text-blue-600">BetValuator</h1>
                 </div>
