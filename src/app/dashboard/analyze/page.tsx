@@ -14,15 +14,17 @@ export default function AnalyzePage() {
   const { t } = useLanguage();
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-            <Tabs defaultValue="quantitative">
-              <TabsList>
-                <TabsTrigger value="quantitative">{t.quantitativeAnalysis}</TabsTrigger>
-                <TabsTrigger value="fundamental">{t.fundamentalAnalysis}</TabsTrigger>
-                <TabsTrigger value="single">{t.singleMatchAnalysis}</TabsTrigger>
-                <TabsTrigger value="batch">{t.batchAnalysis}</TabsTrigger>
-              </TabsList>
+            <Tabs defaultValue="quantitative" className="w-full">
+               <div className="flex justify-center mb-4">
+                 <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+                    <TabsTrigger value="quantitative">{t.quantitativeAnalysis}</TabsTrigger>
+                    <TabsTrigger value="fundamental">{t.fundamentalAnalysis}</TabsTrigger>
+                    <TabsTrigger value="single">{t.singleMatchAnalysis}</TabsTrigger>
+                    <TabsTrigger value="batch">{t.batchAnalysis}</TabsTrigger>
+                  </TabsList>
+               </div>
               <TabsContent value="quantitative">
                 <Card>
                   <CardHeader>
