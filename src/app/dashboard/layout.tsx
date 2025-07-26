@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import {
   Home,
   Settings,
-  Users2,
+  Users,
   HelpCircle,
   BarChart,
   Receipt,
@@ -24,6 +24,7 @@ const navLinks = [
     { href: '/dashboard', label: 'Inicio', icon: Home },
     { href: '/dashboard/analyze', label: 'Mis Análisis', icon: BarChart },
     { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: Receipt },
+    { href: '/dashboard/community', label: 'Comunidad', icon: Users },
     { href: '/dashboard/simulator', label: 'Simulador', icon: Beaker },
     { href: '/dashboard/profile', label: 'Mi Perfil', icon: User },
     { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
@@ -45,7 +46,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <nav className="space-y-4">
                      {navLinks.map(link => {
                         const Icon = link.icon;
-                        const isActive = pathname === link.href;
+                        const isActive = pathname.startsWith(link.href) && (link.href !== '/dashboard' || pathname === '/dashboard');
                         return (
                              <Link key={link.label} href={link.href} className={cn("flex items-center p-2 rounded-lg text-gray-500", isActive ? "text-blue-600 bg-blue-50 font-semibold" : "hover:text-gray-900")}>
                                 <Icon className="mr-3" />
@@ -70,7 +71,9 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
         </aside>
         <main className="flex-1 overflow-y-auto p-8">
+          <LanguageProvider>
             {children}
+          </LanguageProvider>
         </main>
     </div>
   );
@@ -83,8 +86,6 @@ export default function Layout({
   children: React.ReactNode;
 }) {
   return (
-      <LanguageProvider>
-        <DashboardLayout>{children}</DashboardLayout>
-      </LanguageProvider>
+      <DashboardLayout>{children}</DashboardLayout>
   )
 }
