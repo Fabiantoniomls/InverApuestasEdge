@@ -17,18 +17,23 @@ const DataExplorerInputSchema = z.object({
 export type DataExplorerInput = z.infer<typeof DataExplorerInputSchema>;
 
 const DataExplorerOutputSchema = z.object({
-  home: z.object({
-    goalsFor: z.number().describe('Goals scored in home matches.'),
-    goalsAgainst: z.number().describe('Goals conceded in home matches.'),
-    xGFor: z.number().describe('Expected goals scored in home matches.'),
-    xGAgainst: z.number().describe('Expected goals conceded in home matches.'),
-  }).describe('Home match statistics'),
-  away: z.object({
-    goalsFor: z.number().describe('Goals scored in away matches.'),
-    goalsAgainst: z.number().describe('Goals conceded in away matches.'),
-    xGFor: z.number().describe('Expected goals scored in away matches.'),
-    xGAgainst: z.number().describe('Expected goals conceded in away matches.'),
-  }).describe('Away match statistics'),
+  teamName: z.string(),
+  stats: z.object({
+    home: z.object({
+      gamesPlayed: z.number().int(),
+      goalsFor: z.number().int(),
+      goalsAgainst: z.number().int(),
+      expectedGoalsFor: z.number(),
+      expectedGoalsAgainst: z.number(),
+    }),
+    away: z.object({
+      gamesPlayed: z.number().int(),
+      goalsFor: z.number().int(),
+      goalsAgainst: z.number().int(),
+      expectedGoalsFor: z.number(),
+      expectedGoalsAgainst: z.number(),
+    }),
+  }),
 });
 export type DataExplorerOutput = z.infer<typeof DataExplorerOutputSchema>;
 
@@ -40,18 +45,12 @@ const prompt = ai.definePrompt({
   name: 'dataExplorerPrompt',
   input: {schema: DataExplorerInputSchema},
   output: {schema: DataExplorerOutputSchema},
-  prompt: `You are a sports data analyst. Extract the following statistics for the team {{teamName}} from the data source at {{dataSourceUrl}}:
+  prompt: `Eres un asistente de extracción de datos deportivos altamente preciso. Tu tarea es analizar el contenido HTML de la URL proporcionada y extraer las estadísticas clave para el equipo especificado. Ignora cualquier elemento de navegación, anuncios o texto irrelevante. Enfócate únicamente en las tablas de estadísticas.
 
-  - Goals For (home matches)
-  - Goals Against (home matches)
-  - xG For (home matches)
-  - xG Against (home matches)
-  - Goals For (away matches)
-  - Goals Against (away matches)
-  - xG For (away matches)
-  - xG Against (away matches)
+URL: {{{dataSourceUrl}}}
+Equipo: {{{teamName}}}
 
-  Return the data in JSON format.
+Extrae las siguientes métricas y devuélvelas en un formato JSON estricto. No incluyas ninguna explicación, solo el objeto JSON.
 `,
 });
 
