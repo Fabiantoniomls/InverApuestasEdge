@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowUpRight, BarChart2, Copy, MessageSquare, Search, ThumbsUp, TrendingUp, Trophy, UserPlus, FilePlus2 } from "lucide-react";
+import { ArrowUpRight, BarChart2, Copy, MessageSquare, Search, ThumbsUp, TrendingUp, Trophy, UserPlus, FilePlus2, Star, LineChart, Banknote } from "lucide-react";
 import Image from "next/image";
 
 const activityFeed = [
@@ -41,10 +41,36 @@ const activityFeed = [
 ]
 
 const forums = [
-    { title: "Estrategias de Staking: Kelly vs. Apuestas Fijas", author: "RiskManager", replies: 42, lastReply: "hace 5 minutos" },
-    { title: "Modelos xG: ¿Qué fuentes de datos son más fiables?", author: "DataGeek", replies: 112, lastReply: "hace 22 minutos" },
-    { title: "Psicología del Trading: Cómo evitar el sesgo de confirmación", author: "MindfulBets", replies: 78, lastReply: "hace 1 hora" },
-]
+    {
+      title: "Discusión de Modelos (Fútbol)",
+      description: "Debate sobre el modelo Híbrido Poisson-xG, lesiones, tácticas y más.",
+      threads: 42,
+      lastPost: "hace 5 min",
+      icon: LineChart,
+    },
+    {
+      title: "Discusión de Modelos (Tenis)",
+      description: "Habla sobre el sistema Elo, la importancia de las superficies y estadísticas.",
+      threads: 28,
+      lastPost: "hace 22 min",
+      icon: TrendingUp,
+    },
+    {
+      title: "Gestión de Capital (Staking)",
+      description: "Discute estrategias de Apuesta Fija, Porcentual y el Criterio de Kelly.",
+      threads: 112,
+      lastPost: "hace 1 hora",
+      icon: Banknote,
+    },
+     {
+      title: "Sugerencias para la Plataforma",
+      description: "Feedback directo para proponer mejoras y nuevas funcionalidades.",
+      threads: 78,
+      lastPost: "hace 3 horas",
+      icon: Star,
+    },
+];
+
 
 const leaderboards = {
     yield: [
@@ -172,34 +198,31 @@ export default function CommunityPage() {
                 </TabsContent>
 
                 <TabsContent value="forums" className="mt-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Foros de Estrategia</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Tema</TableHead>
-                                        <TableHead>Autor</TableHead>
-                                        <TableHead>Respuestas</TableHead>
-                                        <TableHead>Última Actividad</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {forums.map((forum, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell className="font-semibold text-primary hover:underline cursor-pointer">{forum.title}</TableCell>
-                                            <TableCell>{forum.author}</TableCell>
-                                            <TableCell>{forum.replies}</TableCell>
-                                            <TableCell>{forum.lastReply}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {forums.map((forum, index) => {
+                            const Icon = forum.icon;
+                            return (
+                                <Card key={index} className="flex flex-col justify-between hover:shadow-lg transition-shadow">
+                                    <CardHeader>
+                                        <div className="flex items-start justify-between">
+                                            <Icon className="w-8 h-8 text-primary mb-4" />
+                                            <Button variant="link" className="text-primary">
+                                                Ir al Foro <ArrowUpRight className="w-4 h-4 ml-1" />
+                                            </Button>
+                                        </div>
+                                        <CardTitle>{forum.title}</CardTitle>
+                                        <CardDescription>{forum.description}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex justify-between text-sm text-muted-foreground">
+                                        <span>{forum.threads} hilos</span>
+                                        <span>Último post: {forum.lastPost}</span>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
                 </TabsContent>
+
 
                 <TabsContent value="leaderboards" className="mt-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -239,5 +262,3 @@ export default function CommunityPage() {
         </div>
     );
 }
-
-    
