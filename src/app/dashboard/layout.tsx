@@ -10,7 +10,7 @@ import {
   Users2,
   HelpCircle,
   BarChart,
-  ReceiptLong,
+  Receipt,
   Scaling,
 } from 'lucide-react';
 
@@ -22,7 +22,7 @@ import { useLanguage, LanguageProvider } from '@/context/language-context';
 const navLinks = [
     { href: '/dashboard', label: 'Inicio', icon: Home },
     { href: '/dashboard/analyze', label: 'Mis Análisis', icon: BarChart },
-    { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: ReceiptLong },
+    { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: Receipt },
     { href: '/dashboard/community', label: 'Comunidad', icon: Users2 },
     { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
 ]
