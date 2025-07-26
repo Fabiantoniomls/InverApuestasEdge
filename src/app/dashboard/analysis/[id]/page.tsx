@@ -5,9 +5,8 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Edit, Trash2, Share2, Copy, Image as ImageIcon, Save, Calendar, Clock, BarChart2 } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Share2, Copy, Image as ImageIcon, Save, Calendar, Clock } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 
 // Mock data - in a real app, you would fetch this based on the `id` param
 const analysisData = {
@@ -238,3 +237,5 @@ export default function SavedAnalysisPage({ params }: { params: { id: string } }
         </div>
     );
 }
+
+    
