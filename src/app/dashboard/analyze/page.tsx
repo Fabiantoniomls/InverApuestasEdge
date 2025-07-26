@@ -1,7 +1,9 @@
 
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { QuantitativeAnalysisForm } from "./quantitative-analysis-form"
 import { FundamentalAnalysisForm } from "./fundamental-analysis-form"
@@ -9,75 +11,76 @@ import { StakingStrategyTable } from "./staking-strategy-table"
 import { useLanguage } from "@/context/language-context";
 import { SingleMatchAnalysisForm } from "./single-match-analysis-form";
 import { BatchValueBetsForm } from "./batch-value-bets-form";
+import { ChevronDown } from "lucide-react";
+
+type AnalysisType = 'quantitative' | 'fundamental' | 'single' | 'batch';
 
 export default function AnalyzePage() {
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<AnalysisType>('quantitative');
+
+  const analysisOptions: { key: AnalysisType; title: string; description: string; form: JSX.Element; }[] = [
+    { 
+      key: 'quantitative', 
+      title: t.quantitativeFootballModeling, 
+      description: t.quantitativeDescription,
+      form: <QuantitativeAnalysisForm />
+    },
+    { 
+      key: 'fundamental', 
+      title: t.fundamentalMatchAnalysis, 
+      description: t.fundamentalDescription,
+      form: <FundamentalAnalysisForm />
+    },
+    { 
+      key: 'single', 
+      title: t.singleMatchAnalysisTitle, 
+      description: t.singleMatchAnalysisDescription,
+      form: <SingleMatchAnalysisForm />
+    },
+     { 
+      key: 'batch', 
+      title: t.batchAnalysisTitle, 
+      description: t.batchAnalysisDescription,
+      form: <BatchValueBetsForm />
+    },
+  ];
+
+  const activeAnalysis = analysisOptions.find(opt => opt.key === activeTab) || analysisOptions[0];
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
         <div className="w-full lg:w-2/3">
-            <Tabs defaultValue="quantitative">
-               <div className="mb-4">
-                 <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-                    <TabsTrigger value="quantitative">{t.quantitativeAnalysis}</TabsTrigger>
-                    <TabsTrigger value="fundamental">{t.fundamentalAnalysis}</TabsTrigger>
-                    <TabsTrigger value="single">{t.singleMatchAnalysis}</TabsTrigger>
-                    <TabsTrigger value="batch">{t.batchAnalysis}</TabsTrigger>
-                  </TabsList>
-               </div>
-              <TabsContent value="quantitative">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-headline">{t.quantitativeFootballModeling}</CardTitle>
-                    <CardDescription>
-                      {t.quantitativeDescription}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <QuantitativeAnalysisForm />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="fundamental">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-headline">{t.fundamentalMatchAnalysis}</CardTitle>
-                    <CardDescription>
-                      {t.fundamentalDescription}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <FundamentalAnalysisForm />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-               <TabsContent value="single">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-headline">{t.singleMatchAnalysisTitle}</CardTitle>
-                    <CardDescription>
-                      {t.singleMatchAnalysisDescription}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <SingleMatchAnalysisForm />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="batch">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-headline">{t.batchAnalysisTitle}</CardTitle>
-                    <CardDescription>
-                      {t.batchAnalysisDescription}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <BatchValueBetsForm />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+             <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-start mb-2">
+                        <div>
+                            <CardTitle className="font-headline">{activeAnalysis.title}</CardTitle>
+                            <CardDescription className="mt-1">
+                            {activeAnalysis.description}
+                            </CardDescription>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    Change Mode
+                                    <ChevronDown className="ml-2 h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {analysisOptions.map(option => (
+                                     <DropdownMenuItem key={option.key} onClick={() => setActiveTab(option.key)}>
+                                        {option.title}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {activeAnalysis.form}
+                </CardContent>
+            </Card>
         </div>
         <div className="w-full lg:w-1/3">
             <StakingStrategyTable />
