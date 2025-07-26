@@ -1,105 +1,76 @@
-
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Home,
-  Search,
-  PlusSquare,
-  Bookmark,
-  User,
-  LogOut,
-  Languages,
+  Bell,
+  Scaling
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { LanguageProvider, useLanguage } from '@/context/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useLanguage, LanguageProvider } from '@/context/language-context';
 
-const menuItems = [
-    { href: '/dashboard', labelKey: 'dashboard', icon: Home },
-    { href: '/dashboard/analyze', labelKey: 'analyze', icon: PlusSquare },
-    { href: '/dashboard/ledger', labelKey: 'ledger', icon: Bookmark },
-    { href: '/dashboard/profile', labelKey: 'profile', icon: User },
+const navLinks = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/dashboard/analyze', label: 'Mis Análisis' },
+    { href: '#', label: 'Comunidad' },
+    { href: '#', label: 'Aprender' },
 ]
 
-function LanguageSwitcher() {
-    const { setLanguage, t } = useLanguage();
+function Header() {
+    const pathname = usePathname();
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={t.changeLanguage}>
-                    <Languages className="h-5 w-5" />
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 bg-white px-10 py-3 sticky top-0 z-50">
+            <div className="flex items-center gap-4 text-primary">
+                <Scaling className="size-6 text-primary" />
+                <h2 className="text-foreground text-xl font-bold leading-tight tracking-tighter"> BetValuator Edge </h2>
+            </div>
+            <nav className="hidden md:flex flex-1 justify-center gap-8">
+                {navLinks.map(link => (
+                    <Link 
+                        key={link.href} 
+                        href={link.href} 
+                        className={cn(
+                            "text-sm font-medium leading-normal transition-colors",
+                            pathname.startsWith(link.href) && link.href !== '#' ? "text-primary" : "text-muted-foreground hover:text-primary"
+                        )}
+                    >
+                        {link.label}
+                    </Link>
+                ))}
+            </nav>
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" className="rounded-full bg-secondary text-muted-foreground hover:bg-gray-200 hover:text-foreground">
+                    <Bell className="text-xl" />
                 </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <DropdownMenuItem onSelect={() => setLanguage('en')}>{t.english}</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setLanguage('es')}>{t.spanish}</DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+                <Avatar className="size-10 border-2 border-primary">
+                    <AvatarImage src="https://placehold.co/40x40" alt="User"/>
+                    <AvatarFallback>SR</AvatarFallback>
+                </Avatar>
+            </div>
+        </header>
     )
 }
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const { t } = useLanguage();
-
   return (
-      <div className="flex min-h-screen">
-        <aside className="w-64 shrink-0 border-r border-gray-200 bg-white p-4 flex flex-col justify-between">
-            <div className="flex flex-col gap-8">
-                <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                        <AvatarImage src="https://placehold.co/48x48" alt="@analyst" />
-                        <AvatarFallback>SR</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                        <h1 className="text-foreground text-base font-bold leading-normal">Sofia R.</h1>
-                        <p className="text-muted-foreground text-sm font-normal leading-normal">@sofia_r</p>
-                    </div>
+    <div className="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+        <div className="layout-container flex h-full grow flex-col">
+            <Header />
+            <main className="px-10 md:px-20 lg:px-40 flex flex-1 justify-center py-10">
+                <div className="layout-content-container flex flex-col w-full max-w-5xl gap-8">
+                    {children}
                 </div>
-                <nav className="flex flex-col gap-2">
-                    {menuItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.labelKey}
-                                href={item.href}
-                                className={cn(
-                                    "flex items-center gap-3 px-4 py-2.5 rounded-full transition-colors text-sm font-medium",
-                                    isActive
-                                    ? "bg-primary text-primary-foreground font-semibold"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                                )}
-                            >
-                                <item.icon className="h-5 w-5" />
-                                <span>{t[item.labelKey as keyof typeof t]}</span>
-                            </Link>
-                        )
-                    })}
-                </nav>
-            </div>
-             <Link href="/" className="w-full">
-                <Button variant="primary" className="w-full font-bold gap-2">
-                    <LogOut className="h-5 w-5"/>
-                    {t.logout}
-                </Button>
-            </Link>
-        </aside>
-        <div className="flex-1 bg-gray-50">
-          <header className="flex justify-end p-4">
-            <LanguageSwitcher />
-          </header>
-          <main className="p-4 md:p-8 pt-0">{children}</main>
+            </main>
         </div>
-      </div>
+    </div>
   );
 }
+
 
 export default function DashboardLayout({
   children,

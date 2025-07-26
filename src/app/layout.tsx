@@ -20,7 +20,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900&display=swap" rel="stylesheet" />
         <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
       </head>
-      <body className="antialiased">
+      <body className="antialiased bg-gray-50">
         {children}
         <Toaster />
       </body>
