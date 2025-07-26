@@ -11,23 +11,43 @@ import {
   Bookmark,
   User,
   LogOut,
+  Languages,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { LanguageProvider } from '@/context/language-context';
+import { LanguageProvider, useLanguage } from '@/context/language-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const menuItems = [
-    { href: '/dashboard', label: 'Inicio', icon: Home },
-    { href: '/dashboard/explore', label: 'Explorar', icon: Search },
-    { href: '/dashboard/analyze', label: 'Crear', icon: PlusSquare },
-    { href: '/dashboard/ledger', label: 'Mis análisis', icon: Bookmark },
-    { href: '/dashboard/profile', label: 'Perfil', icon: User },
+    { href: '/dashboard', labelKey: 'dashboard', icon: Home },
+    { href: '/dashboard/analyze', labelKey: 'analyze', icon: PlusSquare },
+    { href: '/dashboard/ledger', labelKey: 'ledger', icon: Bookmark },
+    { href: '/dashboard/profile', labelKey: 'profile', icon: User },
 ]
+
+function LanguageSwitcher() {
+    const { setLanguage, t } = useLanguage();
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label={t.changeLanguage}>
+                    <Languages className="h-5 w-5" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem onSelect={() => setLanguage('en')}>{t.english}</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setLanguage('es')}>{t.spanish}</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
+
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
       <div className="flex min-h-screen">
@@ -48,7 +68,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         const isActive = pathname === item.href;
                         return (
                             <Link
-                                key={item.label}
+                                key={item.labelKey}
                                 href={item.href}
                                 className={cn(
                                     "flex items-center gap-3 px-4 py-2.5 rounded-full transition-colors text-sm font-medium",
@@ -58,7 +78,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                                 )}
                             >
                                 <item.icon className="h-5 w-5" />
-                                <span>{item.label}</span>
+                                <span>{t[item.labelKey as keyof typeof t]}</span>
                             </Link>
                         )
                     })}
@@ -67,12 +87,15 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
              <Link href="/" className="w-full">
                 <Button variant="primary" className="w-full font-bold gap-2">
                     <LogOut className="h-5 w-5"/>
-                    Cerrar sesión
+                    {t.logout}
                 </Button>
             </Link>
         </aside>
         <div className="flex-1 bg-gray-50">
-          <main className="p-4 md:p-8">{children}</main>
+          <header className="flex justify-end p-4">
+            <LanguageSwitcher />
+          </header>
+          <main className="p-4 md:p-8 pt-0">{children}</main>
         </div>
       </div>
   );
@@ -86,6 +109,6 @@ export default function DashboardLayout({
   return (
     <LanguageProvider>
       <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </Language-Provider>
+    </LanguageProvider>
   )
 }
