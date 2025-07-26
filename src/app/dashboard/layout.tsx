@@ -26,7 +26,6 @@ const navLinks = [
     { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: Receipt },
     { href: '/dashboard/simulator', label: 'Simulador', icon: Beaker },
     { href: '/dashboard/profile', label: 'Mi Perfil', icon: User },
-    { href: '/dashboard/community', label: 'Comunidad', icon: Users2 },
     { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
 ];
 
