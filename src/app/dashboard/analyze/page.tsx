@@ -14,10 +14,10 @@ export default function AnalyzePage() {
   const { t } = useLanguage();
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-            <Tabs defaultValue="quantitative" className="w-full">
-               <div className="flex justify-center mb-4">
+    <div className="flex flex-col lg:flex-row gap-8">
+        <div className="w-full lg:w-2/3">
+            <Tabs defaultValue="quantitative">
+               <div className="mb-4">
                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
                     <TabsTrigger value="quantitative">{t.quantitativeAnalysis}</TabsTrigger>
                     <TabsTrigger value="fundamental">{t.fundamentalAnalysis}</TabsTrigger>
@@ -79,7 +79,7 @@ export default function AnalyzePage() {
               </TabsContent>
             </Tabs>
         </div>
-        <div className="lg:col-span-1">
+        <div className="w-full lg:w-1/3">
             <StakingStrategyTable />
         </div>
     </div>
