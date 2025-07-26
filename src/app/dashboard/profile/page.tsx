@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { LineChart, BarChart, Calendar as CalendarIcon, ArrowDown, ArrowUp, Trophy, HelpCircle, TrendingUp, TrendingDown, Repeat } from "lucide-react"
-import { Line, ResponsiveContainer, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { Calendar as CalendarIcon, ArrowDown, ArrowUp, Trophy, HelpCircle, TrendingUp, TrendingDown, Repeat } from "lucide-react"
+import { LineChart, BarChart, Line, ResponsiveContainer, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 const kpiData = {
     totalPL: "+€1,280.50",
@@ -211,4 +211,3 @@ export default function ProfilePage() {
         </div>
     )
 }
-
