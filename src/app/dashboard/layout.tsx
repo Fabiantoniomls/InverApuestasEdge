@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -31,7 +32,7 @@ function Header() {
             <nav className="hidden md:flex flex-1 justify-center gap-8">
                 {navLinks.map(link => (
                     <Link 
-                        key={link.href} 
+                        key={link.label} 
                         href={link.href} 
                         className={cn(
                             "text-sm font-medium leading-normal transition-colors",
