@@ -1,9 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ChevronDown, Edit, Eye, Trash2, Plus, Star } from "lucide-react";
+import { Search, Plus, Edit, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
-
+import Image from "next/image";
 
 const savedAnalyses = [
     {
@@ -67,8 +68,8 @@ export default function DashboardPage() {
             <header className="mb-8">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-primary-text text-4xl font-bold leading-tight">Mis análisis</h1>
-                        <p className="text-secondary-text mt-1">Gestiona tus análisis de partidos guardados.</p>
+                        <h1 className="text-foreground text-4xl font-bold leading-tight">Mis análisis</h1>
+                        <p className="text-muted-foreground mt-1">Gestiona tus análisis de partidos guardados.</p>
                     </div>
                     <Link href="/dashboard/analyze">
                         <Button className="font-bold">
@@ -118,11 +119,11 @@ export default function DashboardPage() {
             <div className="space-y-4">
                 {savedAnalyses.map((analysis) => (
                     <div key={analysis.id} className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 group">
-                        <img src={analysis.image} alt={analysis.title} data-ai-hint={analysis.hint} className="rounded-xl size-16 object-cover" />
+                        <Image src={analysis.image} alt={analysis.title} data-ai-hint={analysis.hint} className="rounded-xl object-cover" width={64} height={64} />
 
                         <div className="flex-1">
-                            <h3 className="text-primary-text text-lg font-semibold leading-normal">{analysis.title}</h3>
-                            <p className="text-secondary-text text-sm">{analysis.date}</p>
+                            <h3 className="text-foreground text-lg font-semibold leading-normal">{analysis.title}</h3>
+                            <p className="text-muted-foreground text-sm">{analysis.date}</p>
                             <div className="mt-2 flex items-center gap-2 flex-wrap">
                                 {analysis.tags.map(tag => (
                                     <span key={tag.name} className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full ${tagColors[tag.color]}`}>
@@ -133,13 +134,15 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <Link href={`/dashboard/analysis/${analysis.id}`}>
+                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground">
+                                    <Eye className="h-5 w-5" />
+                                </Button>
+                            </Link>
                             <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground">
                                 <Edit className="h-5 w-5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground">
-                                <Eye className="h-5 w-5" />
-                            </Button>
-                             <Button variant="ghost" size="icon" className="rounded-full hover:bg-red-100 text-red-500 hover:text-red-700">
+                            <Button variant="ghost" size="icon" className="rounded-full hover:bg-red-100 text-red-500 hover:text-red-700">
                                 <Trash2 className="h-5 w-5" />
                             </Button>
                         </div>
