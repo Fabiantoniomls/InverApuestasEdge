@@ -15,7 +15,7 @@ const savedAnalyses = [
             { name: "Fútbol", color: "blue" },
             { name: "Apuesta Segura", color: "green" },
         ],
-        image: "https://placehold.co/64x64/E0E7FF/4D5D9A?text=RM",
+        image: "https://placehold.co/64x64.png",
         hint: "football soccer"
     },
     {
@@ -26,7 +26,7 @@ const savedAnalyses = [
             { name: "Fútbol", color: "blue" },
             { name: "Riesgo Medio", color: "orange" },
         ],
-        image: "https://placehold.co/64x64/FFE4E6/A23A42?text=MU",
+        image: "https://placehold.co/64x64.png",
         hint: "football match"
     },
     {
@@ -37,7 +37,7 @@ const savedAnalyses = [
             { name: "Fútbol", color: "blue" },
             { name: "Riesgo Alto", color: "red" },
         ],
-        image: "https://placehold.co/64x64/D1FAE5/065F46?text=BM",
+        image: "https://placehold.co/64x64.png",
         hint: "stadium football"
     },
     {
@@ -48,7 +48,7 @@ const savedAnalyses = [
             { name: "Tenis", color: "purple" },
             { name: "Apuesta Segura", color: "green" },
         ],
-        image: "https://placehold.co/64x64/F3E8FF/6B21A8?text=AS",
+        image: "https://placehold.co/64x64.png",
         hint: "tennis court"
     },
 ];
