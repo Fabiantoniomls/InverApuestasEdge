@@ -13,6 +13,7 @@ import {
   Receipt,
   Scaling,
   Beaker,
+  User,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ const navLinks = [
     { href: '/dashboard/analyze', label: 'Mis Análisis', icon: BarChart },
     { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: Receipt },
     { href: '/dashboard/simulator', label: 'Simulador', icon: Beaker },
+    { href: '/dashboard/profile', label: 'Mi Perfil', icon: User },
     { href: '/dashboard/community', label: 'Comunidad', icon: Users2 },
     { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
 ];
@@ -68,7 +70,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </Link>
             </div>
         </aside>
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-8">
             {children}
         </main>
     </div>
