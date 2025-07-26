@@ -2,7 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Edit, Eye, Trash2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Search, Plus, Edit, Eye, Trash2, Library, CheckCircle2, TrendingUp, AlertCircle, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -15,8 +16,15 @@ const savedAnalyses = [
             { name: "Fútbol", color: "blue" },
             { name: "Apuesta Segura", color: "green" },
         ],
-        image: "https://placehold.co/64x64.png",
-        hint: "football soccer"
+        homeTeamLogoUrl: "https://placehold.co/40x40.png",
+        awayTeamLogoUrl: "https://placehold.co/40x40.png",
+        homeHint: "real madrid logo",
+        awayHint: "barcelona logo",
+        analysisData: { ev: 12.5, odds: 2.10, stake: 3, probability: 51 },
+        matchResult: "3-1",
+        profitAndLoss: 33.00,
+        betOutcome: "WON",
+        isBetPlaced: true,
     },
     {
         id: 2,
@@ -26,8 +34,15 @@ const savedAnalyses = [
             { name: "Fútbol", color: "blue" },
             { name: "Riesgo Medio", color: "orange" },
         ],
-        image: "https://placehold.co/64x64.png",
-        hint: "football match"
+        homeTeamLogoUrl: "https://placehold.co/40x40.png",
+        awayTeamLogoUrl: "https://placehold.co/40x40.png",
+        homeHint: "manchester united logo",
+        awayHint: "liverpool logo",
+        analysisData: { ev: 25.0, odds: 3.50, stake: 1.5, probability: 35 },
+        matchResult: "2-2",
+        profitAndLoss: -25.00,
+        betOutcome: "LOST",
+        isBetPlaced: true,
     },
     {
         id: 3,
@@ -37,8 +52,15 @@ const savedAnalyses = [
             { name: "Fútbol", color: "blue" },
             { name: "Riesgo Alto", color: "red" },
         ],
-        image: "https://placehold.co/64x64.png",
-        hint: "stadium football"
+        homeTeamLogoUrl: "https://placehold.co/40x40.png",
+        awayTeamLogoUrl: "https://placehold.co/40x40.png",
+        homeHint: "bayern munich logo",
+        awayHint: "dortmund logo",
+        analysisData: { ev: 8.2, odds: 1.90, stake: 4, probability: 57 },
+        matchResult: "N/A",
+        profitAndLoss: 0,
+        betOutcome: "PENDING",
+        isBetPlaced: false,
     },
     {
         id: 4,
@@ -48,28 +70,48 @@ const savedAnalyses = [
             { name: "Tenis", color: "purple" },
             { name: "Apuesta Segura", color: "green" },
         ],
-        image: "https://placehold.co/64x64.png",
-        hint: "tennis court"
+        homeTeamLogoUrl: "https://placehold.co/40x40.png",
+        awayTeamLogoUrl: "https://placehold.co/40x40.png",
+        homeHint: "alcaraz photo",
+        awayHint: "sinner photo",
+        analysisData: { ev: 5.0, odds: 1.50, stake: 5, probability: 70 },
+        matchResult: "3-0",
+        profitAndLoss: 55.30,
+        betOutcome: "WON",
+        isBetPlaced: true,
     },
 ];
 
-const tagColors: { [key: string]: string } = {
-    blue: "bg-blue-100 text-blue-800",
-    green: "bg-green-100 text-green-800",
-    orange: "bg-orange-100 text-orange-800",
-    red: "bg-red-100 text-red-800",
-    purple: "bg-purple-100 text-purple-800",
+const tagColors: { [key: string]: { base: string, outcome?: string } } = {
+    blue: { base: "bg-blue-100 text-blue-800" },
+    green: { base: "bg-green-100 text-green-800", outcome: "bg-green-100 text-green-800" },
+    orange: { base: "bg-orange-100 text-orange-800", outcome: "bg-red-100 text-red-800" },
+    red: { base: "bg-red-100 text-red-800", outcome: "bg-red-100 text-red-800" },
+    purple: { base: "bg-purple-100 text-purple-800" },
 };
 
+const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) => (
+    <Card className="p-4">
+        <div className="flex items-center gap-4">
+            <div className="bg-primary/10 p-3 rounded-lg">
+                <Icon className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+                <p className="text-sm text-muted-foreground">{title}</p>
+                <p className="text-2xl font-bold text-foreground">{value}</p>
+            </div>
+        </div>
+    </Card>
+);
 
 export default function DashboardPage() {
     return (
-        <>
+        <div className="p-8">
             <header className="mb-8">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-foreground text-4xl font-bold leading-tight">Mis análisis</h1>
-                        <p className="text-muted-foreground mt-1">Gestiona tus análisis de partidos guardados.</p>
+                        <p className="text-muted-foreground mt-1">Tu bitácora de rendimiento analítico.</p>
                     </div>
                     <Link href="/dashboard/analyze">
                         <Button className="font-bold">
@@ -79,6 +121,13 @@ export default function DashboardPage() {
                     </Link>
                 </div>
             </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <MetricCard title="Análisis Totales" value="58" icon={Library} />
+                <MetricCard title="Tasa de Acierto" value="62%" icon={CheckCircle2} />
+                <MetricCard title="P/L Total" value="+ $1,280.50" icon={TrendingUp} />
+                <MetricCard title="ROI Promedio" value="+8.5%" icon={AlertCircle} />
+            </div>
 
             <div className="bg-white p-4 rounded-2xl shadow-sm mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
@@ -107,9 +156,12 @@ export default function DashboardPage() {
                                 <SelectValue placeholder="Ordenar por" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="fecha">Fecha del análisis</SelectItem>
-                                <SelectItem value="categoria">Categoría/Etiqueta</SelectItem>
-                                <SelectItem value="confianza">Nivel de confianza</SelectItem>
+                                <SelectItem value="date_desc">Fecha (reciente)</SelectItem>
+                                <SelectItem value="date_asc">Fecha (antiguo)</SelectItem>
+                                <SelectItem value="ev_desc">Mayor Valor Esperado (EV)</SelectItem>
+                                <SelectItem value="roi_desc">Mayor ROI (%)</SelectItem>
+                                <SelectItem value="pnl_win_desc">Mayor Ganancia (€)</SelectItem>
+                                <SelectItem value="pnl_loss_desc">Mayor Pérdida (€)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -117,38 +169,72 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4">
-                {savedAnalyses.map((analysis) => (
-                    <div key={analysis.id} className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 group">
-                        <Image src={analysis.image} alt={analysis.title} data-ai-hint={analysis.hint} className="rounded-xl object-cover" width={64} height={64} />
+                {savedAnalyses.map((analysis) => {
+                    const pnlColor = analysis.profitAndLoss > 0 ? "text-green-600" : analysis.profitAndLoss < 0 ? "text-red-600" : "text-muted-foreground";
 
-                        <div className="flex-1">
-                            <h3 className="text-foreground text-lg font-semibold leading-normal">{analysis.title}</h3>
-                            <p className="text-muted-foreground text-sm">{analysis.date}</p>
-                            <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                {analysis.tags.map(tag => (
-                                    <span key={tag.name} className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full ${tagColors[tag.color]}`}>
-                                        {tag.name}
-                                    </span>
-                                ))}
+                    return (
+                        <div key={analysis.id} className="bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 group">
+                            <div className="flex items-start gap-4">
+                                <div className="flex -space-x-4">
+                                    <Image src={analysis.homeTeamLogoUrl} alt="Home team logo" data-ai-hint={analysis.homeHint} className="rounded-full object-cover border-2 border-white" width={40} height={40} />
+                                    <Image src={analysis.awayTeamLogoUrl} alt="Away team logo" data-ai-hint={analysis.awayHint} className="rounded-full object-cover border-2 border-white" width={40} height={40} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-foreground text-lg font-semibold leading-normal">{analysis.title}</h3>
+                                            <p className="text-muted-foreground text-sm">{analysis.date}</p>
+                                        </div>
+                                        {analysis.isBetPlaced && (
+                                            <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-1 rounded-full font-medium">
+                                                <BadgeCheck className="size-3" />
+                                                <span>Apuesta Realizada</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="border-y my-3 py-2 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                        <div className="font-medium"><span className="text-muted-foreground">EV: </span>{analysis.analysisData.ev.toFixed(1)}%</div>
+                                        <div className="font-medium"><span className="text-muted-foreground">Cuota: </span>{analysis.analysisData.odds.toFixed(2)}</div>
+                                        <div className="font-medium"><span className="text-muted-foreground">Stake: </span>{analysis.analysisData.stake.toFixed(1)}%</div>
+                                        <div className="font-medium"><span className="text-muted-foreground">Prob: </span>{analysis.analysisData.probability}%</div>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            {analysis.tags.map(tag => {
+                                                const colorClass = tagColors[tag.color]?.base || 'bg-gray-100 text-gray-800';
+                                                const outcomeColorClass = (analysis.betOutcome === 'WON' && tagColors[tag.color]?.outcome) || colorClass;
+                                                const finalClass = analysis.isBetPlaced && analysis.betOutcome !== 'PENDING' ? outcomeColorClass : colorClass;
+                                                return (
+                                                    <span key={tag.name} className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full ${finalClass}`}>
+                                                        {tag.name}
+                                                    </span>
+                                                )
+                                            })}
+                                        </div>
+                                         <div className="text-right">
+                                            <p className="text-xs text-muted-foreground">Resultado: {analysis.matchResult}</p>
+                                            <p className={`text-sm font-bold ${pnlColor}`}>P/L: {analysis.profitAndLoss >= 0 ? '+' : ''}${analysis.profitAndLoss.toFixed(2)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                     <Link href={`/dashboard/analysis/${analysis.id}`}>
+                                        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-secondary text-muted-foreground hover:text-foreground">
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
+                                    <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-secondary text-muted-foreground hover:text-foreground">
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-red-100 text-red-500 hover:text-red-700">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <Link href={`/dashboard/analysis/${analysis.id}`}>
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground">
-                                    <Eye className="h-5 w-5" />
-                                </Button>
-                            </Link>
-                            <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground">
-                                <Edit className="h-5 w-5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="rounded-full hover:bg-red-100 text-red-500 hover:text-red-700">
-                                <Trash2 className="h-5 w-5" />
-                            </Button>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
-        </>
+        </div>
     );
 }
