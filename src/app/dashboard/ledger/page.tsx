@@ -14,47 +14,47 @@ const allBets = [
 
 export default function LedgerPage() {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline">Betting Ledger</CardTitle>
-                <CardDescription>A complete history of all your wagers.</CardDescription>
-            </CardHeader>
-            <CardContent>
+        <>
+            <header className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-900">Betting Ledger</h2>
+                <p className="text-gray-500 mt-1">A complete history of all your wagers.</p>
+            </header>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-gray-50">
                         <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Sport</TableHead>
-                            <TableHead>Match</TableHead>
-                            <TableHead>Selection</TableHead>
-                            <TableHead className="text-right">Odds</TableHead>
-                            <TableHead className="text-right">Stake (€)</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">P/L (€)</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sport</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Match</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selection</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Odds</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stake (€)</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</TableHead>
+                            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P/L (€)</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="divide-y divide-gray-200">
                         {allBets.map((bet) => (
                             <TableRow key={bet.id}>
-                                <TableCell>{bet.timestamp}</TableCell>
-                                <TableCell>{bet.sport}</TableCell>
-                                <TableCell className="font-medium">{bet.match}</TableCell>
-                                <TableCell>{bet.selection}</TableCell>
-                                <TableCell className="text-right">{bet.odds.toFixed(2)}</TableCell>
-                                <TableCell className="text-right">{bet.stake.toFixed(2)}</TableCell>
-                                <TableCell>
-                                    <Badge variant={bet.status === 'Won' ? 'default' : 'destructive'} className={bet.status === 'Won' ? 'bg-green-500/20 text-green-700' : ''}>
+                                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bet.timestamp}</TableCell>
+                                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{bet.sport}</TableCell>
+                                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{bet.match}</TableCell>
+                                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{bet.selection}</TableCell>
+                                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bet.odds.toFixed(2)}</TableCell>
+                                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bet.stake.toFixed(2)}</TableCell>
+                                <TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+                                    <Badge variant={bet.status === 'Won' ? 'default' : 'destructive'} className={bet.status === 'Won' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                                         {bet.status}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className={`text-right font-medium ${bet.pnl > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <TableCell className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${bet.pnl > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {bet.pnl > 0 ? '+' : ''}{bet.pnl.toFixed(2)}
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-            </CardContent>
-        </Card>
+            </div>
+        </>
     );
 }
