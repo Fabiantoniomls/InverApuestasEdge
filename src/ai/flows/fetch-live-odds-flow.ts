@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow to fetch live sports odds from The Odds API.
@@ -30,7 +31,7 @@ const BookmakerSchema = z.object({
             name: z.string(),
             price: z.number(),
         })),
-    })),
+    })).optional(), // Made markets optional to handle variations
 });
 
 const MatchOddsSchema = z.object({
@@ -83,9 +84,10 @@ const fetchLiveOddsFlow = ai.defineFlow(
       const validatedData = z.array(MatchOddsSchema).safeParse(data);
 
       if (!validatedData.success) {
-        console.error("Zod validation error (non-fatal):", validatedData.error.issues);
-        // If validation fails (e.g., empty array or unexpected format), return an empty list
-        // instead of throwing an error. The frontend will handle the "no matches found" case.
+        // Log the validation error for debugging but don't crash.
+        // This can happen if the API response structure changes unexpectedly.
+        console.warn("Zod validation warning (non-fatal):", validatedData.error.issues);
+        // Return an empty list to prevent the app from crashing.
         return { matches: [] };
       }
 
