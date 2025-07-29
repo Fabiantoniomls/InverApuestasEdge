@@ -11,7 +11,7 @@ export async function fetchMatches(params: URLSearchParams): Promise<GetMatchesR
     const leaguesParam = params.get('leagues');
 
     const filters = {
-        leagues: leaguesParam ? leaguesParam.split(',') : undefined,
+        leagues: leaguesParam && leaguesParam.length > 0 ? leaguesParam.split(',') : undefined,
         startDate: params.get('startDate') || undefined,
         endDate: params.get('endDate') || undefined,
         minValue: params.get('minValue') ? parseFloat(params.get('minValue')!) : undefined,
@@ -24,8 +24,13 @@ export async function fetchMatches(params: URLSearchParams): Promise<GetMatchesR
         limit,
     };
 
-    // Remove undefined filters to prevent Zod validation errors
-    Object.keys(filters).forEach(key => (filters as any)[key] === undefined && delete (filters as any)[key]);
+    // Remove undefined/null filters to prevent Zod validation errors
+    Object.keys(filters).forEach(key => {
+        const filterKey = key as keyof typeof filters;
+        if (filters[filterKey] === undefined || filters[filterKey] === null) {
+            delete (filters as any)[filterKey];
+        }
+    });
     
     return getMatches(filters);
 }
