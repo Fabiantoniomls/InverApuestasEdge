@@ -1,4 +1,5 @@
 
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -53,4 +54,18 @@ export interface GetMatchesResponse {
   totalMatches: number;
   totalPages: number;
   currentPage: number;
+}
+
+export interface GetMatchesInput {
+    leagues?: string[];
+    startDate?: string;
+    endDate?: string;
+    minValue?: number;
+    minOdds?: number;
+    maxOdds?: number;
+    markets?: string[];
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
 }
