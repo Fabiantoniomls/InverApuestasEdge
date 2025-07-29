@@ -1,173 +1,193 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Download, MoreVertical } from "lucide-react";
-import Image from "next/image";
 
-const simulations = [
-    { name: "Simulación Agresiva Kelly", bankroll: "€3,452", roi: "15.2%", ruinRate: "25%", bankrollColor: "text-green-600", roiColor: "text-green-600", ruinRateColor: "text-red-500" },
-    { name: "Estrategia Conservadora", bankroll: "€1,550", roi: "5.5%", ruinRate: "2%", bankrollColor: "text-green-600", roiColor: "text-green-600", ruinRateColor: "text-green-600" },
-    { name: "Apuestas de Porcentaje Fijo", bankroll: "€1,985", roi: "9.8%", ruinRate: "10%", bankrollColor: "text-green-600", roiColor: "text-green-600", ruinRateColor: "text-yellow-600" },
-    { name: "Test de Cuotas Bajas", bankroll: "€950", roi: "-0.5%", ruinRate: "55%", bankrollColor: "text-red-500", roiColor: "text-red-500", ruinRateColor: "text-red-500" },
+'use client'
+
+import * as React from 'react';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+import { handleRunSimulation } from '../analyze/actions';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarIcon, Bot } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+
+const initialState = {
+    message: '',
+};
+
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending} className="w-full">
+            {pending ? 'Ejecutando Simulación...' : 'Ejecutar Backtest'}
+        </Button>
+    );
+}
+
+const sportOptions = [
+    { value: "soccer_spain_la_liga", label: "La Liga (España)" },
+    { value: "soccer_epl", label: "Premier League (Inglaterra)" },
+    { value: "soccer_italy_serie_a", label: "Serie A (Italia)" },
+    { value: "soccer_germany_bundesliga", label: "Bundesliga (Alemania)" },
+    { value: "soccer_france_ligue_one", label: "Ligue 1 (Francia)" },
+    { value: "soccer_uefa_champs_league", label: "UEFA Champions League" },
 ];
 
 
 export default function SimulatorPage() {
+    const [state, formAction] = useActionState(handleRunSimulation, initialState);
+    const [date, setDate] = React.useState<Date | undefined>(new Date());
+    
+    // Helper to find the best odds for each outcome (Home, Away, Draw)
+    const getBestOdds = (match: any) => {
+        const odds: { home: number | null, away: number | null, draw: number | null } = { home: null, away: null, draw: null };
+        
+        match.bookmakers.forEach((bookmaker: any) => {
+            const h2hMarket = bookmaker.markets.find((m:any) => m.key === 'h2h');
+            if (h2hMarket) {
+                const homeOutcome = h2hMarket.outcomes.find((o:any) => o.name === match.home_team);
+                const awayOutcome = h2hMarket.outcomes.find((o:any) => o.name === match.away_team);
+                const drawOutcome = h2hMarket.outcomes.find((o:any) => o.name === 'Draw');
+
+                if (homeOutcome && (!odds.home || homeOutcome.price > odds.home)) {
+                    odds.home = homeOutcome.price;
+                }
+                if (awayOutcome && (!odds.away || awayOutcome.price > odds.away)) {
+                    odds.away = awayOutcome.price;
+                }
+                if (drawOutcome && (!odds.draw || drawOutcome.price > odds.draw)) {
+                    odds.draw = drawOutcome.price;
+                }
+            }
+        });
+        return odds;
+    };
+
     return (
-        <main className="flex-1 p-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard de Simulaciones</h1>
-                <p className="text-gray-500">Visualiza y compara tus simulaciones de un vistazo.</p>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-gray-800">Resumen de Simulaciones</h2>
-                        <div className="flex items-center space-x-2">
-                            <Button variant="link" className="text-sm font-semibold text-blue-600">
-                                Ver todo <ArrowRight className="text-base ml-1" />
-                            </Button>
-                            <Button variant="outline" className="text-sm font-semibold text-blue-600 border-blue-600 hover:bg-blue-50 hover:text-blue-700">
-                                <Download className="text-base mr-1" />
-                                Exportar
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="rounded-l-lg">Nombre</TableHead>
-                                    <TableHead>Bankroll Final (Mediana)</TableHead>
-                                    <TableHead>ROI (Mediana)</TableHead>
-                                    <TableHead>Tasa de Ruina</TableHead>
-                                    <TableHead className="rounded-r-lg"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {simulations.map((sim) => (
-                                    <TableRow key={sim.name} className="hover:bg-gray-50">
-                                        <TableCell className="font-medium text-gray-900">{sim.name}</TableCell>
-                                        <TableCell className={`${sim.bankrollColor} font-semibold`}>{sim.bankroll}</TableCell>
-                                        <TableCell className={sim.roiColor}>{sim.roi}</TableCell>
-                                        <TableCell className={sim.ruinRateColor}>{sim.ruinRate}</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon">
-                                                <MoreVertical className="text-base" />
-                                            </Button>
-                                        </TableCell>
+        <div className="grid flex-1 items-start gap-8 lg:grid-cols-3 xl:grid-cols-3">
+            <div className="grid auto-rows-max items-start gap-8 lg:col-span-2">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Resultados de la Simulación</CardTitle>
+                        <CardDescription>
+                           Resultados del backtest para la fecha y liga seleccionada. La tabla muestra los partidos y las mejores cuotas encontradas en esa fecha.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                       {state.message && (
+                            <Alert variant={state.issues ? "destructive" : "default"} className="mb-4">
+                                <Bot className="h-4 w-4" />
+                                <AlertTitle>{state.issues ? 'Error en la Simulación' : 'Simulación Completada'}</AlertTitle>
+                                <AlertDescription>
+                                    {state.message}
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
+                        {state.data?.isSimulation && state.data.data.length > 0 && (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Hora</TableHead>
+                                        <TableHead>Partido</TableHead>
+                                        <TableHead className="text-center">Cuota Local</TableHead>
+                                        <TableHead className="text-center">Cuota Empate</TableHead>
+                                        <TableHead className="text-center">Cuota Visitante</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
-
-                <div className="space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xl font-bold text-gray-800">Métricas Clave</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                                <div>
-                                    <p className="text-sm text-blue-800">Simulación más rentable</p>
-                                    <p className="text-lg font-bold text-blue-900">Simulación Agresiva Kelly</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-lg font-bold text-green-600">+€2,452</p>
-                                    <p className="text-sm text-blue-800">Beneficio Mediano</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
-                                <div>
-                                    <p className="text-sm text-red-800">Mayor Tasa de Ruina</p>
-                                    <p className="text-lg font-bold text-red-900">Test de Cuotas Bajas</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-lg font-bold text-red-600">55%</p>
-                                    <p className="text-sm text-red-800">Probabilidad</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-xl font-bold text-gray-800">¿Te resulta útil este panel?</CardTitle>
-                            <p className="text-sm text-gray-600 pt-2">Tus comentarios nos ayudan a mejorar la experiencia de simulación para todos.</p>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm text-gray-500">Poco útil</span>
-                                <span className="text-sm text-gray-500">Muy útil</span>
-                            </div>
-                            <div className="flex justify-between items-center space-x-2 mb-4">
-                                {[1, 2, 3, 4, 5].map(num => (
-                                     <Button key={num} variant={num === 3 ? "default" : "outline"} size="icon" className={num === 3 ? "border-blue-500 bg-blue-50 text-blue-600" : ""}>
-                                        {num}
-                                    </Button>
-                                ))}
-                            </div>
-                            <Textarea placeholder="¿Tienes alguna sugerencia específica?" rows={3} />
-                            <Button className="w-full mt-4 bg-blue-600 text-white font-semibold hover:bg-blue-700">Enviar comentarios</Button>
-                        </CardContent>
-                    </Card>
-                </div>
+                                </TableHeader>
+                                <TableBody>
+                                    {state.data.data.map((match: any) => {
+                                        const bestOdds = getBestOdds(match);
+                                        return (
+                                            <TableRow key={match.id}>
+                                                <TableCell>{format(new Date(match.commence_time), "HH:mm", { locale: es })}h</TableCell>
+                                                <TableCell className="font-medium">{match.home_team} vs {match.away_team}</TableCell>
+                                                <TableCell className="text-center font-mono">{bestOdds.home?.toFixed(2) ?? 'N/A'}</TableCell>
+                                                <TableCell className="text-center font-mono">{bestOdds.draw?.toFixed(2) ?? 'N/A'}</TableCell>
+                                                <TableCell className="text-center font-mono">{bestOdds.away?.toFixed(2) ?? 'N/A'}</TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        )}
+                        
+                        {state.data?.isSimulation && state.data.data.length === 0 && (
+                             <p className="text-center text-muted-foreground py-8">No se encontraron datos de partidos para la fecha y liga seleccionada.</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
-
-            <Card className="mt-8">
-                <CardHeader>
-                     <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-gray-800">Comparación Visual de Bankroll</h2>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-sm font-medium text-gray-600">Comparar:</span>
-                             <Select defaultValue="fixed">
-                                <SelectTrigger className="w-[240px]">
-                                    <SelectValue placeholder="Seleccionar simulación" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="aggressive">Simulación Agresiva Kelly</SelectItem>
-                                    <SelectItem value="conservative">Estrategia Conservadora</SelectItem>
-                                    <SelectItem value="fixed">Apuestas de Porcentaje Fijo</SelectItem>
-                                    <SelectItem value="low-odds">Test de Cuotas Bajas</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <span className="text-sm font-medium text-gray-600">con</span>
-                             <Select defaultValue="conservative">
-                                <SelectTrigger className="w-[240px]">
-                                    <SelectValue placeholder="Seleccionar simulación" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="aggressive">Simulación Agresiva Kelly</SelectItem>
-                                    <SelectItem value="conservative">Estrategia Conservadora</SelectItem>
-                                    <SelectItem value="fixed">Apuestas de Porcentaje Fijo</SelectItem>
-                                    <SelectItem value="low-odds">Test de Cuotas Bajas</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div>
-                        <Image alt="Comparison chart of two simulations" className="w-full h-auto rounded-lg" width={1200} height={400} src="https://placehold.co/1200x400.png" data-ai-hint="comparison chart" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-6 mt-6 text-center">
-                        <div>
-                            <h3 className="font-semibold text-gray-700">Apuestas de Porcentaje Fijo</h3>
-                            <p className="text-2xl font-bold text-green-600 mt-1">€1,985</p>
-                            <p className="text-sm text-gray-500">Bankroll Final Mediano</p>
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-gray-700">Estrategia Conservadora</h3>
-                            <p className="text-2xl font-bold text-green-600 mt-1">€1,550</p>
-                            <p className="text-sm text-gray-500">Bankroll Final Mediano</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </main>
+            <div className="grid auto-rows-max items-start gap-8 lg:col-span-1">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Configurar Simulación</CardTitle>
+                        <CardDescription>
+                            Elige una fecha histórica y una liga para realizar un backtest de tu estrategia.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form action={formAction} className="space-y-6">
+                            <div>
+                                <label htmlFor="sport" className="text-sm font-medium">Liga</label>
+                                 <Select name="sport" defaultValue="soccer_spain_la_liga" required>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona una liga..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectLabel>Fútbol</SelectLabel>
+                                            {sportOptions.map(option => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                               </Select>
+                                {state.fields?.sport && <p className="text-red-500 text-sm mt-1">{state.fields.sport}</p>}
+                            </div>
+                            <div>
+                                 <label htmlFor="date" className="text-sm font-medium">Fecha del Backtest</label>
+                                 <input type="hidden" name="date" value={date?.toISOString() ?? ''} />
+                                 <Popover>
+                                    <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !date && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {date ? format(date, "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                                    </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={setDate}
+                                        initialFocus
+                                        disabled={(day) => day > new Date() || day < new Date("2020-06-06")}
+                                    />
+                                    </PopoverContent>
+                                </Popover>
+                                {state.fields?.date && <p className="text-red-500 text-sm mt-1">{state.fields.date}</p>}
+                            </div>
+                            <SubmitButton />
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
     );
 }

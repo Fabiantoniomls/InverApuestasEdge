@@ -10,6 +10,7 @@ import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
 import { calculateBatchValueBets } from '@/ai/flows/calculate-batch-value-bets-flow';
 import { calculateValueBetFromImage } from '@/ai/flows/calculate-value-bet-from-image-flow';
 import { fetchLiveOdds } from '@/ai/flows/fetch-live-odds-flow';
+import { fetchHistoricalOdds } from '@/ai/flows/fetch-historical-odds-flow';
 
 
 export type ActionState = {
@@ -387,6 +388,45 @@ export async function handleFetchLiveOdds(
   } catch (e: any) {
     return {
       message: `Error al obtener las cuotas: ${e.message || 'Error desconocido'}.`,
+      issues: [e.message || 'Error desconocido'],
+    };
+  }
+}
+
+const simulationSchema = z.object({
+  sport: z.string().min(1, { message: 'El deporte es obligatorio.' }),
+  date: z.string().min(1, { message: 'La fecha es obligatoria.' }),
+});
+
+export async function handleRunSimulation(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const validatedFields = simulationSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!validatedFields.success) {
+    const fields: Record<string, string> = {};
+    for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
+        fields[key] = validatedFields.error.flatten().fieldErrors[key as keyof typeof fields]?.[0] ?? "";
+    }
+    return {
+      message: "Error de validación.",
+      issues: validatedFields.error.flatten().formErrors,
+      fields,
+    };
+  }
+
+  try {
+    const results = await fetchHistoricalOdds({
+      ...validatedFields.data,
+      regions: 'eu',
+      markets: 'h2h',
+    });
+    
+    return { message: `Simulación completada. Se encontraron ${results.data.length} partidos.`, data: { ...results, isSimulation: true } };
+  } catch (e: any) {
+    return {
+      message: `Error al ejecutar la simulación: ${e.message || 'Error desconocido'}.`,
       issues: [e.message || 'Error desconocido'],
     };
   }
