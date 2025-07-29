@@ -13,10 +13,11 @@ import { QuantitativeAnalysisForm } from './quantitative-analysis-form';
 import { FundamentalAnalysisForm } from './fundamental-analysis-form';
 import { SingleMatchAnalysisForm } from './single-match-analysis-form';
 import { BatchValueBetsForm } from './batch-value-bets-form';
+import { ImageAnalysisForm } from './image-analysis-form';
 import { StakingStrategyReference } from './staking-strategy-reference';
 
 
-type AnalysisMode = 'quantitative' | 'fundamental' | 'single' | 'batch';
+type AnalysisMode = 'quantitative' | 'fundamental' | 'single' | 'batch' | 'image';
 
 export default function AnalyzePage() {
   const [mode, setMode] = React.useState<AnalysisMode>('quantitative');
@@ -32,6 +33,8 @@ export default function AnalyzePage() {
         return <SingleMatchAnalysisForm />;
       case 'batch':
         return <BatchValueBetsForm />;
+      case 'image':
+        return <ImageAnalysisForm />;
       default:
         return <QuantitativeAnalysisForm />;
     }
@@ -53,6 +56,10 @@ export default function AnalyzePage() {
     batch: {
         title: t.batchAnalysisTitle,
         description: t.batchAnalysisDescription,
+    },
+    image: {
+        title: "Análisis desde Imagen",
+        description: "Sube una captura de pantalla de las cuotas y la IA las extraerá por ti.",
     }
   };
 
@@ -71,6 +78,7 @@ export default function AnalyzePage() {
                         <SelectItem value="fundamental">{t.fundamentalAnalysis}</SelectItem>
                         <SelectItem value="single">{t.singleMatchAnalysis}</SelectItem>
                         <SelectItem value="batch">{t.batchAnalysis}</SelectItem>
+                        <SelectItem value="image">Análisis desde Imagen</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

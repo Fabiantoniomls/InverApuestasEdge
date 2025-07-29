@@ -8,6 +8,7 @@ import { portfolioManager } from '@/ai/flows/portfolio-manager-flow';
 import { calculateValueBetManual } from '@/ai/flows/calculate-value-bet-manual-flow';
 import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
 import { calculateBatchValueBets } from '@/ai/flows/calculate-batch-value-bets-flow';
+import { calculateValueBetFromImage } from '@/ai/flows/calculate-value-bet-from-image-flow';
 
 
 export type ActionState = {
@@ -298,6 +299,53 @@ export async function handleCalculateBatchValueBets(
     return {
         message: message,
         issues: [message]
+    };
+  }
+}
+
+const imageSchema = z.object({
+    image: z.instanceof(File).refine(file => file.size > 0, 'Se requiere una imagen.'),
+});
+
+function toDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function handleImageAnalysis(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const validatedFields = imageSchema.safeParse({ image: formData.get('image') });
+
+  if (!validatedFields.success) {
+    return {
+      message: 'Error de validación.',
+      issues: validatedFields.error.flatten().formErrors,
+      fields: { image: validatedFields.error.flatten().fieldErrors.image?.[0] ?? '' }
+    };
+  }
+
+  try {
+    const imageDataUri = await toDataURL(validatedFields.data.image);
+    const { analyzedMatches } = await calculateValueBetFromImage({ imageDataUri });
+
+    const responseData = {
+      isBatch: true, // Treat as batch for display purposes
+      batchAnalysis: analyzedMatches,
+      valueBets: [], 
+      recommendations: [],
+    };
+
+    return { message: `${analyzedMatches.length} partidos extraídos de la imagen.`, data: responseData };
+  } catch (e: any) {
+    return {
+      message: `Ha ocurrido un error inesperado: ${e.message || 'Error desconocido'}.`,
+      issues: [e.message || 'Error desconocido'],
     };
   }
 }
