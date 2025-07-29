@@ -51,11 +51,15 @@ Este es el núcleo de la inteligencia de la aplicación. Cada archivo representa
 - **`fetch-live-odds-flow.ts`**:
   - **Función:** `fetchLiveOdds`
   - **Propósito:** Se conecta a una API de terceros (The Odds API) para obtener cuotas de apuestas en tiempo real de múltiples casas de apuestas para un deporte específico.
-  - **Relación:** Es llamado por la acción `handleFetchLiveOdds` para alimentar la pestaña de "Cuotas en Vivo".
+  - **Relación:** Es llamado por la acción `handleFetchLiveOdds` y también por `get-matches-flow` para alimentar la pestaña de "Cuotas en Vivo" y el Explorador de Partidos.
 
-### 3.2. Server Actions (`src/app/dashboard/analyze/actions.ts`)
+- **`get-matches-flow.ts`**:
+  - **Función:** `getMatches`
+  - **Propósito:** Orquesta la obtención de partidos para el "Explorador de Partidos". Realiza llamadas en paralelo a `fetchLiveOdds` para múltiples ligas, combina los resultados y aplica lógica de filtrado, ordenación y paginación del lado del servidor.
 
-Este archivo actúa como el puente entre el cliente y los flujos de Genkit del backend. Contiene las `Server Actions` que son llamadas por los formularios en la página de análisis.
+### 3.2. Server Actions (`src/app/dashboard/analyze/actions.ts` y `src/app/dashboard/partidos/actions.ts`)
+
+Estos archivos actúan como el puente entre el cliente y los flujos de Genkit del backend. Contienen las `Server Actions` que son llamadas por los formularios y componentes.
 
 - **`handleQuantitativeAnalysis`**: Orquesta el flujo de análisis cuantitativo completo:
   1.  Valida la entrada del formulario con Zod.
@@ -69,38 +73,49 @@ Este archivo actúa como el puente entre el cliente y los flujos de Genkit del b
   2.  Llama a `calculateValueBetManual`.
   3.  Formatea la salida para que el componente `ResultsDisplay` la pueda renderizar.
 
-- **`handleCalculateBatchValueBets`**: Maneja el formulario de análisis por lotes, llamando al flujo correspondiente.
+- **`fetchMatches` (`partidos/actions.ts`):** Esta acción es llamada por la página del Explorador de Partidos, pasando los filtros de la URL. Invoca al flujo `getMatches` para obtener la lista de partidos a mostrar.
 
-- **`handleFetchLiveOdds`**: Maneja el formulario de consulta de cuotas en vivo. Llama al flujo `fetchLiveOdds` y devuelve los datos al cliente.
 
 ### 3.3. Componentes de la Interfaz de Usuario (`src/app/dashboard/analyze/`)
 
 La página principal de análisis (`page.tsx`) utiliza un menú desplegable para cambiar entre diferentes modos de análisis. Cada modo tiene su propio componente de formulario:
 
-- **`quantitative-analysis-form.tsx`**: Formulario para el análisis cuantitativo. Llama a `handleQuantitativeAnalysis`.
-- **`fundamental-analysis-form.tsx`**: Formulario para el análisis fundamental/manual. Llama a `handleFundamentalAnalysis`.
-- **`batch-value-bets-form.tsx`**: Formulario para el análisis por lotes. Llama a `handleCalculateBatchValueBets`.
-- **`single-match-analysis-form.tsx`**: Formulario para el análisis rápido de un solo partido.
-- **`live-odds-form.tsx`**: Formulario para consultar cuotas en vivo. Llama a `handleFetchLiveOdds`.
+- **`quantitative-analysis-form.tsx`**: Formulario para el análisis cuantitativo.
+- **`fundamental-analysis-form.tsx`**: Formulario para el análisis fundamental/manual.
+- **`batch-value-bets-form.tsx`**: Formulario para el análisis por lotes.
+- **`image-analysis-form.tsx`**: Formulario para el análisis desde una imagen.
+- **`live-odds-form.tsx`**: Formulario para consultar cuotas en vivo.
 
-Todos los formularios utilizan el hook `useActionState` de React para manejar el estado del formulario (pendiente, error, datos de respuesta) de forma asíncrona.
-
-- **`results-display.tsx`**: Un componente crucial y reutilizable que recibe los datos de cualquiera de las `Server Actions` y los muestra en un formato unificado, incluyendo tablas de "Value Opportunities", recomendaciones de apuestas y análisis cualitativo.
+- **`results-display.tsx`**: Un componente crucial y reutilizable que recibe los datos de cualquiera de las `Server Actions` de análisis y los muestra en un formato unificado.
 - **`live-odds-results.tsx`**: Un componente especializado para mostrar los datos de cuotas en vivo en un formato de tabla claro y comparable.
 
 ### 3.4. Layout y Navegación (`src/app/dashboard/`)
 
 - **`layout.tsx`**: Define la estructura visual principal para todas las páginas del dashboard, incluyendo la barra de navegación lateral persistente y el área de contenido principal. El estado activo del enlace se gestiona comparando el `pathname` actual con el `href` del enlace.
-- **`page.tsx`**: La página de inicio del dashboard, que muestra una lista de análisis guardados (actualmente con datos de prueba).
+- **`page.tsx`**: La página de inicio del dashboard, que muestra una lista de análisis guardados.
 - **`ledger/page.tsx`**: La página "Mis Apuestas", que muestra un historial de apuestas realizadas.
 - **`settings/page.tsx`**: La página de configuración, que permite al usuario ajustar sus preferencias.
 
-## 4. Flujo de Usuario Típico (Análisis Cuantitativo)
 
-1.  **Navegación:** El usuario accede a `/dashboard/analyze`.
-2.  **Entrada de Datos:** En el `QuantitativeAnalysisForm`, el usuario introduce los nombres de los equipos, las URLs de sus estadísticas (de FBref), los promedios de la liga y las cuotas del mercado.
-3.  **Acción del Servidor:** Al enviar el formulario, se invoca la `Server Action` `handleQuantitativeAnalysis`.
-4.  **Raspado de Datos:** La acción llama al flujo `dataExplorer` de Genkit para obtener las estadísticas de ambos equipos.
-5.  **Modelado Predictivo:** Los datos extraídos se pasan al flujo `quantitativeModel`, que devuelve las probabilidades calculadas (ej. 55% victoria local).
-6.  **Cálculo de Apuesta:** La acción combina estas probabilidades con las cuotas del mercado y el capital del usuario, y las pasa a la función `portfolioManager` para determinar el tamaño de la apuesta recomendada.
-7.  **Visualización de Resultados:** La `Server Action` devuelve un objeto de estado con los resultados. El hook `useActionState` en el cliente recibe este estado y pasa los datos al componente `ResultsDisplay`, que renderiza las tablas de valor y las recomendaciones de forma clara y legible para el usuario.
+### 3.5. Explorador de Partidos (`src/app/dashboard/partidos/`)
+
+Esta es una de las funcionalidades clave de la aplicación. Permite a los usuarios descubrir y filtrar partidos futuros con cuotas en tiempo real para identificar oportunidades de análisis.
+
+- **`page.tsx`**: El componente principal de la página, construido como un **Server Component**. Es responsable de recibir los parámetros de filtro desde la URL (`searchParams`). Utiliza `Suspense` de React para mostrar un estado de carga (`loading.tsx`) mientras se obtienen los datos. Llama a la `Server Action` `fetchMatches` para obtener la lista de partidos.
+
+- **`layout.tsx`**: Define el diseño de la página, colocando la `FilterSidebar` a la izquierda y el contenido principal (la tabla de partidos) a la derecha.
+
+- **`_components/filter-sidebar.tsx`**: Es un **Client Component** que permite al usuario construir una consulta compleja. Incluye filtros por liga, rango de fechas, umbral de valor y cuotas. Cuando el usuario aplica los filtros, este componente actualiza los parámetros de la URL, lo que provoca que el Server Component `page.tsx` se vuelva a renderizar con los nuevos filtros.
+
+- **`_components/data-table.tsx`**: Un **Client Component** reutilizable que muestra los partidos en una tabla interactiva. Se encarga de la paginación del lado del cliente y de gestionar la interacción con la tabla.
+
+- **`_components/columns.tsx`**: Define la estructura y el renderizado de las columnas para la `MatchDataTable`, incluyendo cómo mostrar los equipos, las cuotas y las acciones.
+
+- **Flujo de Datos del Explorador:**
+  1. El usuario interactúa con los filtros en `FilterSidebar`.
+  2. Al hacer clic en "Aplicar Filtros", se actualizan los `searchParams` en la URL.
+  3. El Server Component `PartidosPage` detecta el cambio en `searchParams` y se vuelve a ejecutar.
+  4. `PartidosPage` llama a la `Server Action` `fetchMatches` (en `partidos/actions.ts`), pasando los nuevos `searchParams`.
+  5. La `Server Action` invoca al flujo de Genkit `getMatches`.
+  6. El flujo `getMatches` realiza llamadas en paralelo a la API de `fetchLiveOdds` para las ligas seleccionadas, combina los resultados, aplica filtros adicionales y devuelve la lista de partidos paginada.
+  7. Los datos se devuelven a `PartidosPage` y se renderizan en la `MatchDataTable`.
