@@ -48,6 +48,11 @@ Este es el núcleo de la inteligencia de la aplicación. Cada archivo representa
   - **Propósito:** Orquesta un análisis masivo. Primero, usa `extract-matches-flow` para separar el texto en partidos individuales. Luego, invoca `analyze-single-match-flow` para cada partido en paralelo. También simula una verificación de cuotas de uso contra un perfil de usuario en Firestore.
   - **Relación:** Es la lógica para la pestaña "Batch Value Bet Finder".
 
+- **`fetch-live-odds-flow.ts`**:
+  - **Función:** `fetchLiveOdds`
+  - **Propósito:** Se conecta a una API de terceros (The Odds API) para obtener cuotas de apuestas en tiempo real de múltiples casas de apuestas para un deporte específico.
+  - **Relación:** Es llamado por la acción `handleFetchLiveOdds` para alimentar la pestaña de "Cuotas en Vivo".
+
 ### 3.2. Server Actions (`src/app/dashboard/analyze/actions.ts`)
 
 Este archivo actúa como el puente entre el cliente y los flujos de Genkit del backend. Contiene las `Server Actions` que son llamadas por los formularios en la página de análisis.
@@ -66,6 +71,8 @@ Este archivo actúa como el puente entre el cliente y los flujos de Genkit del b
 
 - **`handleCalculateBatchValueBets`**: Maneja el formulario de análisis por lotes, llamando al flujo correspondiente.
 
+- **`handleFetchLiveOdds`**: Maneja el formulario de consulta de cuotas en vivo. Llama al flujo `fetchLiveOdds` y devuelve los datos al cliente.
+
 ### 3.3. Componentes de la Interfaz de Usuario (`src/app/dashboard/analyze/`)
 
 La página principal de análisis (`page.tsx`) utiliza un menú desplegable para cambiar entre diferentes modos de análisis. Cada modo tiene su propio componente de formulario:
@@ -74,10 +81,12 @@ La página principal de análisis (`page.tsx`) utiliza un menú desplegable para
 - **`fundamental-analysis-form.tsx`**: Formulario para el análisis fundamental/manual. Llama a `handleFundamentalAnalysis`.
 - **`batch-value-bets-form.tsx`**: Formulario para el análisis por lotes. Llama a `handleCalculateBatchValueBets`.
 - **`single-match-analysis-form.tsx`**: Formulario para el análisis rápido de un solo partido.
+- **`live-odds-form.tsx`**: Formulario para consultar cuotas en vivo. Llama a `handleFetchLiveOdds`.
 
 Todos los formularios utilizan el hook `useActionState` de React para manejar el estado del formulario (pendiente, error, datos de respuesta) de forma asíncrona.
 
 - **`results-display.tsx`**: Un componente crucial y reutilizable que recibe los datos de cualquiera de las `Server Actions` y los muestra en un formato unificado, incluyendo tablas de "Value Opportunities", recomendaciones de apuestas y análisis cualitativo.
+- **`live-odds-results.tsx`**: Un componente especializado para mostrar los datos de cuotas en vivo en un formato de tabla claro y comparable.
 
 ### 3.4. Layout y Navegación (`src/app/dashboard/`)
 

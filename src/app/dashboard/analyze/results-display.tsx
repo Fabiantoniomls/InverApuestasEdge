@@ -38,11 +38,12 @@ interface ResultsDisplayProps {
         recommendations?: Recommendation[];
         batchAnalysis?: BatchAnalysisResult[];
         isBatch?: boolean;
+        isLiveOdds?: boolean; // To prevent rendering in this component
     };
 }
 
 export function ResultsDisplay({ data }: ResultsDisplayProps) {
-    if (!data) return null;
+    if (!data || data.isLiveOdds) return null;
 
     const { analysis, valueBets, recommendations, batchAnalysis, isBatch } = data;
 

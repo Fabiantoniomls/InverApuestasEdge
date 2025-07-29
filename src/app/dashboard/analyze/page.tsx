@@ -15,9 +15,10 @@ import { SingleMatchAnalysisForm } from './single-match-analysis-form';
 import { BatchValueBetsForm } from './batch-value-bets-form';
 import { ImageAnalysisForm } from './image-analysis-form';
 import { StakingStrategyReference } from './staking-strategy-reference';
+import { LiveOddsForm } from './live-odds-form';
 
 
-type AnalysisMode = 'quantitative' | 'fundamental' | 'single' | 'batch' | 'image';
+type AnalysisMode = 'quantitative' | 'fundamental' | 'single' | 'batch' | 'image' | 'live-odds';
 
 export default function AnalyzePage() {
   const [mode, setMode] = React.useState<AnalysisMode>('quantitative');
@@ -35,6 +36,8 @@ export default function AnalyzePage() {
         return <BatchValueBetsForm />;
       case 'image':
         return <ImageAnalysisForm />;
+      case 'live-odds':
+        return <LiveOddsForm />;
       default:
         return <QuantitativeAnalysisForm />;
     }
@@ -60,6 +63,10 @@ export default function AnalyzePage() {
     image: {
         title: "Análisis desde Imagen",
         description: "Sube una captura de pantalla de las cuotas y la IA las extraerá por ti.",
+    },
+    'live-odds': {
+        title: "Cuotas de Apuestas en Vivo",
+        description: "Consulta las cuotas en tiempo real de múltiples casas de apuestas para encontrar el mejor precio.",
     }
   };
 
@@ -79,6 +86,7 @@ export default function AnalyzePage() {
                         <SelectItem value="single">{t.singleMatchAnalysis}</SelectItem>
                         <SelectItem value="batch">{t.batchAnalysis}</SelectItem>
                         <SelectItem value="image">Análisis desde Imagen</SelectItem>
+                        <SelectItem value="live-odds">Cuotas en Vivo</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

@@ -9,6 +9,7 @@ import { calculateValueBetManual } from '@/ai/flows/calculate-value-bet-manual-f
 import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
 import { calculateBatchValueBets } from '@/ai/flows/calculate-batch-value-bets-flow';
 import { calculateValueBetFromImage } from '@/ai/flows/calculate-value-bet-from-image-flow';
+import { fetchLiveOdds } from '@/ai/flows/fetch-live-odds-flow';
 
 
 export type ActionState = {
@@ -42,7 +43,7 @@ export async function handleQuantitativeAnalysis(
   if (!validatedFields.success) {
     const fields: Record<string, string> = {};
     for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
-        fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
+        fields[key] = validatedFields.error.flatten().fieldErrors[key as keyof typeof fields]?.[0] ?? "";
     }
     return {
       message: "Error: Por favor, corrige los problemas a continuación.",
@@ -214,7 +215,7 @@ export async function handleSingleMatchAnalysis(
   if (!validatedFields.success) {
     const fields: Record<string, string> = {};
     for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
-        fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
+        fields[key] = validatedFields.error.flatten().fieldErrors[key as keyof typeof fields]?.[0] ?? "";
     }
     return {
       message: "Error: Por favor, corrige los problemas a continuación.",
@@ -269,7 +270,7 @@ export async function handleCalculateBatchValueBets(
   if (!validatedFields.success) {
     const fields: Record<string, string> = {};
     for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
-        fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
+        fields[key] = validatedFields.error.flatten().fieldErrors[key as keyof typeof fields]?.[0] ?? "";
     }
     return {
       message: "Error: Por favor, corrige los problemas a continuación.",
@@ -345,6 +346,47 @@ export async function handleImageAnalysis(
   } catch (e: any) {
     return {
       message: `Ha ocurrido un error inesperado: ${e.message || 'Error desconocido'}.`,
+      issues: [e.message || 'Error desconocido'],
+    };
+  }
+}
+
+
+const liveOddsSchema = z.object({
+  sport: z.string().min(1, { message: 'El deporte es obligatorio.' }),
+  regions: z.string().min(1, { message: 'La región es obligatoria.' }),
+  markets: z.string().min(1, { message: 'El mercado es obligatorio.' }),
+});
+
+export async function handleFetchLiveOdds(
+  prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const validatedFields = liveOddsSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!validatedFields.success) {
+    const fields: Record<string, string> = {};
+    for (const key of Object.keys(validatedFields.error.flatten().fieldErrors)) {
+        fields[key] = validatedFields.error.flatten().fieldErrors[key as keyof typeof fields]?.[0] ?? "";
+    }
+    return {
+      message: "Error: Por favor, corrige los problemas a continuación.",
+      issues: validatedFields.error.flatten().formErrors,
+      fields,
+    };
+  }
+
+  try {
+    const { matches } = await fetchLiveOdds(validatedFields.data);
+
+    if (matches.length === 0) {
+      return { message: "No se encontraron partidos en vivo para los criterios seleccionados." };
+    }
+
+    return { message: `Se encontraron ${matches.length} partidos.`, data: { matches, isLiveOdds: true } };
+  } catch (e: any) {
+    return {
+      message: `Error al obtener las cuotas: ${e.message || 'Error desconocido'}.`,
       issues: [e.message || 'Error desconocido'],
     };
   }
