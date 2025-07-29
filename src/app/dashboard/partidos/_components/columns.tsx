@@ -66,11 +66,11 @@ export const columns: ColumnDef<Match>[] = [
       const match = row.original
       return (
         <div className="flex items-center gap-2">
-            <Image src={match.homeTeam.logoUrl} alt={match.homeTeam.name} width={24} height={24} className="h-6 w-6" />
+            <Image src={match.homeTeam.logoUrl} alt={match.homeTeam.name} width={24} height={24} className="h-6 w-6" data-ai-hint="team logo" />
             <span className="font-medium">{match.homeTeam.name}</span>
             <span className="text-muted-foreground">vs</span>
             <span className="font-medium">{match.awayTeam.name}</span>
-            <Image src={match.awayTeam.logoUrl} alt={match.awayTeam.name} width={24} height={24} className="h-6 w-6" />
+            <Image src={match.awayTeam.logoUrl} alt={match.awayTeam.name} width={24} height={24} className="h-6 w-6" data-ai-hint="team logo" />
         </div>
       )
     },
@@ -81,7 +81,7 @@ export const columns: ColumnDef<Match>[] = [
         const league = row.original.league;
         return (
              <div className="flex items-center gap-2">
-                {league.logoUrl && <Image src={league.logoUrl} alt={league.name} width={20} height={20} className="h-5 w-5" />}
+                {league.logoUrl && <Image src={league.logoUrl} alt={league.name} width={20} height={20} className="h-5 w-5" data-ai-hint="league logo" />}
                 <span className="text-sm">{league.name}</span>
             </div>
         )
