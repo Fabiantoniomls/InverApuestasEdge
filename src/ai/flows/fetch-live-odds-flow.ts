@@ -10,6 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { format } from 'date-fns';
 
 // --- Input Schema ---
 const FetchLiveOddsInputSchema = z.object({
@@ -36,6 +37,7 @@ const BookmakerSchema = z.object({
         outcomes: z.array(z.object({
             name: z.string(),
             price: z.number(),
+            point: z.number().optional(),
         })),
     })).optional(),
 });
@@ -81,18 +83,20 @@ const fetchLiveOddsFlow = ai.defineFlow(
         regions: regions || 'eu',
         markets: markets || 'h2h',
     });
-
+    
     if (dateFormat) queryParams.append('dateFormat', dateFormat);
     if (oddsFormat) queryParams.append('oddsFormat', oddsFormat);
     if (eventIds) queryParams.append('eventIds', eventIds);
     if (bookmakers) queryParams.append('bookmakers', bookmakers);
-    if (beginTimeFrom) queryParams.append('commence_time.gte', beginTimeFrom);
-    if (beginTimeTo) queryParams.append('commence_time.lte', beginTimeTo);
+
+    // Format dates before sending
+    if (beginTimeFrom) queryParams.append('commenceTimeFrom', format(new Date(beginTimeFrom), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
+    if (beginTimeTo) queryParams.append('commenceTimeTo', format(new Date(beginTimeTo), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
     const apiUrl = `https://api.the-odds-api.com/v4/sports/${sport}/odds/?${queryParams.toString()}`;
 
     try {
-      const response = await fetch(apiUrl);
+      const response = await fetch(apiUrl, { cache: 'no-store' });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -105,6 +109,8 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
       if (!validatedData.success) {
         console.warn("Zod validation warning (non-fatal):", validatedData.error.issues);
+        // If validation fails (e.g., empty array or unexpected format), return an empty list
+        // instead of throwing an error. The frontend will handle the "no matches found" case.
         return { matches: [] };
       }
 
