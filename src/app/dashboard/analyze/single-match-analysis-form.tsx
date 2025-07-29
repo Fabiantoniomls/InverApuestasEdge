@@ -2,7 +2,8 @@
 'use client'
 
 import * as React from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { handleSingleMatchAnalysis } from './actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -26,7 +27,7 @@ function SubmitButton() {
 }
 
 export function SingleMatchAnalysisForm() {
-    const [state, formAction] = useFormState(handleSingleMatchAnalysis, initialState);
+    const [state, formAction] = useActionState(handleSingleMatchAnalysis, initialState);
 
     return (
         <form action={formAction} className="space-y-6">

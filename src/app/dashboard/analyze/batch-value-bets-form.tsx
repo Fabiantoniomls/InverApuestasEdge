@@ -2,7 +2,8 @@
 'use client'
 
 import * as React from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { handleCalculateBatchValueBets } from './actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -27,7 +28,7 @@ function SubmitButton() {
 }
 
 export function BatchValueBetsForm() {
-    const [state, formAction] = useFormState(handleCalculateBatchValueBets, initialState);
+    const [state, formAction] = useActionState(handleCalculateBatchValueBets, initialState);
 
     return (
         <form action={formAction} className="space-y-6">
