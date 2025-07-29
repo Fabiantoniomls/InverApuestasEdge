@@ -87,7 +87,7 @@ export function FilterSidebar() {
       <h2 className="text-xl font-bold">Filtros</h2>
 
       <div className="space-y-4">
-        <Label htmlFor="search-team">Búsqueda por Equipo o Liga</Label>
+        <Label htmlFor="search-team">Buscar Equipo</Label>
         <Input id="search-team" placeholder="Ej: Real Madrid..." />
       </div>
 
@@ -202,4 +202,3 @@ export function FilterSidebar() {
     </aside>
   );
 }
-
