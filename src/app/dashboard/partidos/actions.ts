@@ -24,7 +24,7 @@ export async function fetchMatches(params: URLSearchParams): Promise<GetMatchesR
         limit,
     };
 
-    // Remove undefined filters
+    // Remove undefined filters to prevent Zod validation errors
     Object.keys(filters).forEach(key => (filters as any)[key] === undefined && delete (filters as any)[key]);
     
     return getMatches(filters);
