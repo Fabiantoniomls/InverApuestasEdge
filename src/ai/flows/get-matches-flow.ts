@@ -49,7 +49,7 @@ const getMatchesFlow = ai.defineFlow(
     let filteredMatches = [...allMatches];
 
     // Filtering logic
-    if (filters.leagues && filters.leagues.length > 0) {
+    if (filters.leagues && filters.leagues.length > 0 && filters.leagues.join('') !== '') {
       filteredMatches = filteredMatches.filter(match => filters.leagues!.includes(match.league.id));
     }
     if (filters.startDate) {
@@ -81,16 +81,18 @@ const getMatchesFlow = ai.defineFlow(
 
     // Pagination logic
     const totalMatches = filteredMatches.length;
-    const totalPages = Math.ceil(totalMatches / filters.limit);
-    const startIndex = (filters.page - 1) * filters.limit;
-    const paginatedMatches = filteredMatches.slice(startIndex, startIndex + filters.limit);
+    const limit = filters.limit ?? 10;
+    const page = filters.page ?? 1;
+    const totalPages = Math.ceil(totalMatches / limit);
+    const startIndex = (page - 1) * limit;
+    const paginatedMatches = filteredMatches.slice(startIndex, startIndex + limit);
 
 
     return {
       data: paginatedMatches,
       totalMatches,
       totalPages,
-      currentPage: filters.page,
+      currentPage: page,
     };
   }
 );
