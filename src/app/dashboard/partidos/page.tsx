@@ -12,14 +12,7 @@ interface PartidosPageProps {
 }
 
 async function MatchesList({ searchParams }: PartidosPageProps) {
-    const params = new URLSearchParams();
-    Object.entries(searchParams).forEach(([key, value]) => {
-        if (value) {
-           params.set(key, Array.isArray(value) ? value.join(',') : value);
-        }
-    });
-
-    const { data, totalMatches, totalPages, currentPage } = await fetchMatches(params);
+    const { data, totalMatches, totalPages, currentPage } = await fetchMatches(searchParams);
 
     return (
         <MatchDataTable 

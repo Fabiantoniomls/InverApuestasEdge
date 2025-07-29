@@ -1,14 +1,15 @@
+
 'use server'
 
 import { getMatches } from "@/ai/flows/get-matches-flow";
 import { getLeaguesList as getLeagues } from "@/ai/flows/get-leagues-list-flow";
 import { GetMatchesResponse, League } from "@/lib/types";
 
-export async function fetchMatches(params: URLSearchParams): Promise<GetMatchesResponse> {
+export async function fetchMatches(searchParams: { [key: string]: string | string[] | undefined }): Promise<GetMatchesResponse> {
     const filters: { [key: string]: any } = {};
 
     // Iterate over searchParams and build a clean filter object
-    params.forEach((value, key) => {
+    Object.entries(searchParams).forEach(([key, value]) => {
         if (value === null || value === undefined || value === '') return;
 
         switch (key) {
@@ -17,11 +18,11 @@ export async function fetchMatches(params: URLSearchParams): Promise<GetMatchesR
             case 'minValue':
             case 'minOdds':
             case 'maxOdds':
-                filters[key] = parseFloat(value);
+                filters[key] = parseFloat(value as string);
                 break;
             case 'leagues':
             case 'markets':
-                const arr = value.split(',').filter(item => item.trim() !== '');
+                const arr = (value as string).split(',').filter(item => item.trim() !== '');
                 if (arr.length > 0) {
                     filters[key] = arr;
                 }
