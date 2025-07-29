@@ -7,16 +7,62 @@ import { useFormStatus } from 'react-dom';
 import { handleFetchLiveOdds } from './actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { LiveOddsResults } from './live-odds-results';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 const initialState = {
     message: '',
 };
+
+const sportOptions = [
+    {
+        label: "Fútbol",
+        options: [
+            { value: "soccer_spain_la_liga", label: "La Liga (España)" },
+            { value: "soccer_epl", label: "Premier League (Inglaterra)" },
+            { value: "soccer_italy_serie_a", label: "Serie A (Italia)" },
+            { value: "soccer_germany_bundesliga", label: "Bundesliga (Alemania)" },
+            { value: "soccer_france_ligue_one", label: "Ligue 1 (Francia)" },
+            { value: "soccer_uefa_champs_league", label: "UEFA Champions League" },
+            { value: "soccer_uefa_europa_league", label: "UEFA Europa League" },
+            { value: "soccer_usa_mls", label: "MLS (EE. UU.)" },
+            { value: "soccer_argentina_primera_division", label: "Primera División (Argentina)" },
+            { value: "soccer_brazil_campeonato", label: "Série A (Brasil)" },
+        ]
+    },
+    {
+        label: "Baloncesto",
+        options: [
+            { value: "basketball_nba", label: "NBA" },
+            { value: "basketball_euroleague", label: "Euroliga" },
+            { value: "basketball_ncaab", label: "NCAAB" },
+        ]
+    },
+    {
+        label: "Tenis",
+        options: [
+            { value: "tennis_atp_aus_open_singles", label: "ATP - Australian Open" },
+            { value: "tennis_atp_french_open", label: "ATP - Roland Garros" },
+            { value: "tennis_atp_wimbledon", label: "ATP - Wimbledon" },
+            { value: "tennis_atp_us_open", label: "ATP - US Open" },
+            { value: "tennis_wta_aus_open_singles", label: "WTA - Australian Open" },
+            { value: "tennis_wta_french_open", label: "WTA - Roland Garros" },
+            { value: "tennis_wta_wimbledon", label: "WTA - Wimbledon" },
+            { value: "tennis_wta_us_open", label: "WTA - US Open" },
+        ]
+    },
+    {
+        label: "Fútbol Americano",
+        options: [
+            { value: "americanfootball_nfl", label: "NFL" },
+            { value: "americanfootball_ncaaf", label: "NCAAF" },
+        ]
+    }
+];
+
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -41,7 +87,23 @@ export function LiveOddsForm() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                            <Label htmlFor="sport">Deporte</Label>
-                           <Input id="sport" name="sport" placeholder="Ej: soccer_epl" defaultValue="soccer_spain_la_liga" required />
+                           <Select name="sport" defaultValue="soccer_spain_la_liga" required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un deporte/liga..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {sportOptions.map(group => (
+                                        <SelectGroup key={group.label}>
+                                            <SelectLabel>{group.label}</SelectLabel>
+                                            {group.options.map(option => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    ))}
+                                </SelectContent>
+                           </Select>
                            {state.fields?.sport && <p className="text-red-500 text-sm">{state.fields.sport}</p>}
                         </div>
                         <div>
