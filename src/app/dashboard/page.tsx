@@ -212,10 +212,12 @@ export default function DashboardPage() {
                                                     )
                                                 })}
                                             </div>
-                                             <div className="text-right">
-                                                <p className="text-xs text-muted-foreground">Resultado: {analysis.matchResult}</p>
-                                                <p className={`text-sm font-bold ${pnlColor}`}>P/L: {analysis.profitAndLoss >= 0 ? '+' : ''}${analysis.profitAndLoss.toFixed(2)}</p>
-                                            </div>
+                                            {analysis.isBetPlaced && (
+                                                <div className="text-right">
+                                                    <p className="text-xs text-muted-foreground">Resultado: {analysis.matchResult}</p>
+                                                    <p className={`text-sm font-bold ${pnlColor}`}>P/L: {analysis.profitAndLoss >= 0 ? '+' : ''}${analysis.profitAndLoss.toFixed(2)}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -240,5 +242,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    
