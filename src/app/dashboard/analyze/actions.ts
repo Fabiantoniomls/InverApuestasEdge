@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -17,16 +18,16 @@ export type ActionState = {
 };
 
 const quantitativeSchema = z.object({
-    teamA: z.string().min(1, { message: "Team A name is required." }),
-    teamB: z.string().min(1, { message: "Team B name is required." }),
-    teamAUrl: z.string().url({ message: "Please enter a valid URL for Team A." }),
-    teamBUrl: z.string().url({ message: "Please enter a valid URL for Team B." }),
-    leagueHomeAvg: z.coerce.number().gt(0, { message: "Must be greater than 0." }),
-    leagueAwayAvg: z.coerce.number().gt(0, { message: "Must be greater than 0." }),
-    oddsHome: z.coerce.number().gt(1, { message: "Odds must be > 1." }),
-    oddsDraw: z.coerce.number().gt(1, { message: "Odds must be > 1." }),
-    oddsAway: z.coerce.number().gt(1, { message: "Odds must be > 1." }),
-    bankroll: z.coerce.number().min(0, { message: "Bankroll cannot be negative." }),
+    teamA: z.string().min(1, { message: "El nombre del Equipo A es obligatorio." }),
+    teamB: z.string().min(1, { message: "El nombre del Equipo B es obligatorio." }),
+    teamAUrl: z.string().url({ message: "Por favor, introduce una URL válida para el Equipo A." }),
+    teamBUrl: z.string().url({ message: "Por favor, introduce una URL válida para el Equipo B." }),
+    leagueHomeAvg: z.coerce.number().gt(0, { message: "Debe ser mayor que 0." }),
+    leagueAwayAvg: z.coerce.number().gt(0, { message: "Debe ser mayor que 0." }),
+    oddsHome: z.coerce.number().gt(1, { message: "Las cuotas deben ser > 1." }),
+    oddsDraw: z.coerce.number().gt(1, { message: "Las cuotas deben ser > 1." }),
+    oddsAway: z.coerce.number().gt(1, { message: "Las cuotas deben ser > 1." }),
+    bankroll: z.coerce.number().min(0, { message: "El bankroll no puede ser negativo." }),
     stakingStrategy: z.string(),
 });
 
@@ -43,7 +44,7 @@ export async function handleQuantitativeAnalysis(
         fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
     }
     return {
-      message: "Error: Please fix the issues below.",
+      message: "Error: Por favor, corrige los problemas a continuación.",
       issues: validatedFields.error.flatten().formErrors,
       fields,
     };
@@ -92,16 +93,16 @@ export async function handleQuantitativeAnalysis(
 
     const matchDescription = `${teamA} vs ${teamB}`;
     const valueBets = [
-      { match: matchDescription, outcome: 'Home Win', odds: oddsHome, modelProbability: modelProbabilities.homeWin, value: modelProbabilities.homeWin * oddsHome - 1 },
-      { match: matchDescription, outcome: 'Draw', odds: oddsDraw, modelProbability: modelProbabilities.draw, value: modelProbabilities.draw * oddsDraw - 1 },
-      { match: matchDescription, outcome: 'Away Win', odds: oddsAway, modelProbability: modelProbabilities.awayWin, value: modelProbabilities.awayWin * oddsAway - 1 },
+      { match: matchDescription, outcome: 'Victoria Local', odds: oddsHome, modelProbability: modelProbabilities.homeWin, value: modelProbabilities.homeWin * oddsHome - 1 },
+      { match: matchDescription, outcome: 'Empate', odds: oddsDraw, modelProbability: modelProbabilities.draw, value: modelProbabilities.draw * oddsDraw - 1 },
+      { match: matchDescription, outcome: 'Victoria Visitante', odds: oddsAway, modelProbability: modelProbabilities.awayWin, value: modelProbabilities.awayWin * oddsAway - 1 },
     ];
     
     // 3. Portfolio Manager Flow
     const recommendations = await portfolioManager({
         bankroll,
-        stakingStrategy,
-        potentialBets: valueBets,
+        stakingStrategy: stakingStrategy as any,
+        potentialBets: valueBets.filter(bet => bet.value > 0),
     });
     
     const responseData = {
@@ -109,11 +110,11 @@ export async function handleQuantitativeAnalysis(
         recommendations: recommendations.filter(rec => rec.recommendedStake > 0),
     };
 
-    return { message: "Analysis complete.", data: responseData };
+    return { message: "Análisis completado.", data: responseData };
   } catch (e: any) {
     return {
-      message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
-      issues: [e.message || 'Unknown error'],
+      message: `Ha ocurrido un error inesperado: ${e.message || 'Error desconocido'}.`,
+      issues: [e.message || 'Error desconocido'],
     };
   }
 }
@@ -121,8 +122,8 @@ export async function handleQuantitativeAnalysis(
 // Zod schema for manual analysis, using a discriminated union
 const FootballInputSchema = z.object({
   sport: z.literal('futbol'),
-  equipo_a_nombre: z.string().min(1, { message: "Required" }),
-  equipo_b_nombre: z.string().min(1, { message: "Required" }),
+  equipo_a_nombre: z.string().min(1, { message: "Obligatorio" }),
+  equipo_b_nombre: z.string().min(1, { message: "Obligatorio" }),
   cuota_equipo_a: z.coerce.number().gt(1),
   cuota_empate: z.coerce.number().gt(1),
   cuota_equipo_b: z.coerce.number().gt(1),
@@ -136,11 +137,11 @@ const FootballInputSchema = z.object({
 
 const TennisInputSchema = z.object({
   sport: z.literal('tenis'),
-  jugador_a_nombre: z.string().min(1, { message: "Required" }),
-  jugador_b_nombre: z.string().min(1, { message: "Required" }),
+  jugador_a_nombre: z.string().min(1, { message: "Obligatorio" }),
+  jugador_b_nombre: z.string().min(1, { message: "Obligatorio" }),
   cuota_jugador_a: z.coerce.number().gt(1),
   cuota_jugador_b: z.coerce.number().gt(1),
-  superficie: z.string().min(1, { message: "Required" }),
+  superficie: z.string().min(1, { message: "Obligatorio" }),
   jugador_a_primer_servicio_pct: z.coerce.number().min(0).max(100),
   jugador_a_puntos_ganados_1er_serv_pct: z.coerce.number().min(0).max(100),
   jugador_a_puntos_ganados_2do_serv_pct: z.coerce.number().min(0).max(100),
@@ -168,7 +169,7 @@ export async function handleFundamentalAnalysis(
         fields[key] = validatedFields.error.flatten().fieldErrors[key as keyof typeof fields]?.[0] ?? "";
     }
     return {
-      message: "Error: Please fix the issues below.",
+      message: "Error: Por favor, corrige los problemas a continuación.",
       issues: validatedFields.error.flatten().formErrors,
       fields,
     };
@@ -190,17 +191,17 @@ export async function handleFundamentalAnalysis(
         recommendations: [], // This flow doesn't generate staking recommendations
     };
 
-    return { message: "Analysis complete.", data: responseData };
+    return { message: "Análisis completado.", data: responseData };
   } catch (e: any) {
      return {
-      message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
-      issues: [e.message || 'Unknown error'],
+      message: `Ha ocurrido un error inesperado: ${e.message || 'Error desconocido'}.`,
+      issues: [e.message || 'Error desconocido'],
     };
   }
 }
 
 const singleMatchSchema = z.object({
-  match: z.string().min(1, { message: "Match details are required." }),
+  match: z.string().min(1, { message: "Los detalles del partido son obligatorios." }),
 });
 
 export async function handleSingleMatchAnalysis(
@@ -215,7 +216,7 @@ export async function handleSingleMatchAnalysis(
         fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
     }
     return {
-      message: "Error: Please fix the issues below.",
+      message: "Error: Por favor, corrige los problemas a continuación.",
       issues: validatedFields.error.flatten().formErrors,
       fields,
     };
@@ -228,9 +229,9 @@ export async function handleSingleMatchAnalysis(
     const responseData = {
         analysis: result.analysis,
         valueBets: [
-            { match: matchDescription, outcome: `${result.teamA} Win`, odds: result.odds.teamA, estProbability: 0, value: 0 },
-            { match: matchDescription, outcome: 'Draw', odds: result.odds.draw || 0, estProbability: 0, value: 0 },
-            { match: matchDescription, outcome: `${result.teamB} Win`, odds: result.odds.teamB, estProbability: 0, value: 0 },
+            { match: matchDescription, outcome: `Gana ${result.teamA}`, odds: result.odds.teamA, estProbability: 0, value: 0 },
+            { match: matchDescription, outcome: 'Empate', odds: result.odds.draw || 0, estProbability: 0, value: 0 },
+            { match: matchDescription, outcome: `Gana ${result.teamB}`, odds: result.odds.teamB, estProbability: 0, value: 0 },
         ],
         recommendations: result.valueBetFound && result.recommendation ? [{
             match: matchDescription,
@@ -243,18 +244,18 @@ export async function handleSingleMatchAnalysis(
      // Filter out draw if odds are 0
     responseData.valueBets = responseData.valueBets.filter(bet => bet.odds > 0);
 
-    return { message: "Analysis complete.", data: responseData };
+    return { message: "Análisis completado.", data: responseData };
   } catch (e: any) {
     return {
-      message: `An unexpected error occurred: ${e.message || 'Unknown error'}.`,
-      issues: [e.message || 'Unknown error'],
+      message: `Ha ocurrido un error inesperado: ${e.message || 'Error desconocido'}.`,
+      issues: [e.message || 'Error desconocido'],
     };
   }
 }
 
 
 const batchSchema = z.object({
-  matchesText: z.string().min(1, { message: "Match list is required." }),
+  matchesText: z.string().min(1, { message: "La lista de partidos es obligatoria." }),
   sportKey: z.string().optional(),
 });
 
@@ -270,7 +271,7 @@ export async function handleCalculateBatchValueBets(
         fields[key] = validatedFields.error.flatten().fieldErrors[key]?.[0] ?? "";
     }
     return {
-      message: "Error: Please fix the issues below.",
+      message: "Error: Por favor, corrige los problemas a continuación.",
       issues: validatedFields.error.flatten().formErrors,
       fields,
     };
@@ -280,36 +281,23 @@ export async function handleCalculateBatchValueBets(
     const { analyzedMatches } = await calculateBatchValueBets(validatedFields.data);
 
     // Transform the raw analysis into the structure ResultsDisplay expects
-    const valueBets = analyzedMatches.map(match => ({
-        match: `${match.teamA} vs ${match.teamB}`,
-        outcome: match.recommendation || 'N/A',
-        odds: match.odds.teamA, // This is a simplification, might need adjustment
-        estProbability: 0, // Not provided by this flow
-        value: 0, // Not provided by this flow
-    }));
-    
-    const recommendations = analyzedMatches
-      .filter(match => match.valueBetFound && match.recommendation)
-      .map(match => ({
-          match: `${match.teamA} vs ${match.teamB}`,
-          outcome: match.recommendation!,
-          value: 0, // Not provided
-          recommendedStake: 0 // Not provided
-      }));
-
     const responseData = {
       isBatch: true,
       batchAnalysis: analyzedMatches,
-      valueBets: [], // Let's use a dedicated structure for batch results
+      valueBets: [], 
       recommendations: [],
     };
 
 
-    return { message: `${analyzedMatches.length} matches analyzed.`, data: responseData };
+    return { message: `${analyzedMatches.length} partidos analizados.`, data: responseData };
   } catch (e: any) {
+    const message = e.message.includes('QUOTA_EXCEEDED') 
+        ? 'Has alcanzado tu límite de análisis. Actualiza a Premium para continuar.'
+        : `Ha ocurrido un error inesperado: ${e.message || 'Error desconocido'}.`;
+
     return {
-      message: e.message,
-      issues: [e.message],
+        message: message,
+        issues: [message]
     };
   }
 }

@@ -1,68 +1,88 @@
-
 'use client';
 
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { AnalysisSetupCard } from "./analysis-setup-card";
-import { ModelSelectionCard } from "./model-selection-card";
-import { ResultsCard } from "./results-card";
-import { RiskManagementCard } from "./risk-management-card";
+import * as React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useLanguage } from '@/context/language-context';
+import { QuantitativeAnalysisForm } from './quantitative-analysis-form';
+import { FundamentalAnalysisForm } from './fundamental-analysis-form';
+import { SingleMatchAnalysisForm } from './single-match-analysis-form';
+import { BatchValueBetsForm } from './batch-value-bets-form';
+import { StakingStrategyReference } from './staking-strategy-reference';
+
+
+type AnalysisMode = 'quantitative' | 'fundamental' | 'single' | 'batch';
 
 export default function AnalyzePage() {
-  
-  // Mock data for results display
-  const mockResults = {
-    probabilities: {
-      home: 45,
-      draw: 25,
-      away: 30,
-    },
-    valueBets: [
-      {
-        market: "Victoria Local",
-        ev: 20.5,
-        odds: 2.1,
-        probability: 45
-      },
-    ]
+  const [mode, setMode] = React.useState<AnalysisMode>('quantitative');
+  const { t } = useLanguage();
+
+  const renderForm = () => {
+    switch (mode) {
+      case 'quantitative':
+        return <QuantitativeAnalysisForm />;
+      case 'fundamental':
+        return <FundamentalAnalysisForm />;
+      case 'single':
+        return <SingleMatchAnalysisForm />;
+      case 'batch':
+        return <BatchValueBetsForm />;
+      default:
+        return <QuantitativeAnalysisForm />;
+    }
   };
-  
-  // Mock state for form, would be handled by a state manager or form library
-  const isAnalyzed = true; 
+
+  const analysisOptions = {
+    quantitative: {
+      title: t.quantitativeFootballModeling,
+      description: t.quantitativeDescription,
+    },
+    fundamental: {
+      title: t.fundamentalMatchAnalysis,
+      description: t.fundamentalDescription,
+    },
+    single: {
+        title: t.singleMatchAnalysisTitle,
+        description: t.singleMatchAnalysisDescription,
+    },
+    batch: {
+        title: t.batchAnalysisTitle,
+        description: t.batchAnalysisDescription,
+    }
+  };
+
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Centro de Análisis</h1>
-          <p className="text-muted-foreground">
-            Crea, analiza y ejecuta tus estrategias de inversión deportiva desde un único lugar.
-          </p>
+    <div className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            <div className="col-span-full">
+                <Select value={mode} onValueChange={(value) => setMode(value as AnalysisMode)}>
+                    <SelectTrigger className="w-full md:w-1/2 lg:w-1/3">
+                        <SelectValue placeholder="Select analysis mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="quantitative">{t.quantitativeAnalysis}</SelectItem>
+                        <SelectItem value="fundamental">{t.fundamentalAnalysis}</SelectItem>
+                        <SelectItem value="single">{t.singleMatchAnalysis}</SelectItem>
+                        <SelectItem value="batch">{t.batchAnalysis}</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            </div>
+            {renderForm()}
         </div>
-        <Button size="lg">
-          <PlusCircle className="mr-2" />
-          Crear Nuevo Análisis
-        </Button>
-      </div>
-
-      <form className="space-y-6">
-        <AnalysisSetupCard />
-        <ModelSelectionCard />
-        
-        {/* Conditional rendering based on whether analysis has been run */}
-        {isAnalyzed ? (
-          <>
-            <ResultsCard results={mockResults} />
-            <RiskManagementCard />
-          </>
-        ) : (
-          <div className="flex justify-end">
-              <Button type="submit" size="lg" className="bg-foreground hover:bg-foreground/90">
-                Ejecutar Análisis
-              </Button>
-          </div>
-        )}
-      </form>
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
+            <StakingStrategyReference 
+                title={analysisOptions[mode].title} 
+                description={analysisOptions[mode].description} 
+            />
+        </div>
     </div>
   );
 }
