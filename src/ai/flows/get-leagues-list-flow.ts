@@ -11,7 +11,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { leagues as mockLeagues } from './_data/mock-data';
+import { SOCCER_LEAGUES } from './_data/leagues';
 
 const GetLeaguesListOutputSchema = z.object({
     leagues: z.array(z.object({
@@ -37,7 +37,7 @@ const getLeaguesListFlow = ai.defineFlow(
   },
   async () => {
     // In a real-world scenario, you might fetch this from a database
-    // or The Odds API's /sports endpoint. For the prototype, we use mock data.
-    return { leagues: mockLeagues };
+    // or The Odds API's /sports endpoint. For the prototype, we use a static list.
+    return { leagues: SOCCER_LEAGUES.map(l => ({...l, sportId: l.sportKey })) };
   }
 );
