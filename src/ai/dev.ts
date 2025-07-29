@@ -13,3 +13,4 @@ import '@/ai/flows/calculate-value-bet-manual-flow.ts';
 import '@/ai/flows/qualitative-insight-flow.ts';
 import '@/ai/flows/multi-model-analysis-flow.ts';
 import '@/ai/flows/calculate-value-bet-from-image-flow.ts';
+import '@/ai/flows/fetch-live-odds-flow.ts';
