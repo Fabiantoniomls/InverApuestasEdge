@@ -47,7 +47,7 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
     let h2h_odds: { home?: number; draw?: number; away?: number; } = {};
     let totals_odds: { over?: number; under?: number; } = {};
 
-    apiMatch.bookmakers.forEach(bookmaker => {
+    apiMatch.bookmakers?.forEach(bookmaker => {
         bookmaker.markets?.forEach(market => {
             if (market.key === 'h2h') {
                 const home = market.outcomes.find(o => o.name === apiMatch.home_team)?.price;
@@ -86,14 +86,22 @@ const getMatchesFlow = ai.defineFlow(
   },
   async (filters) => {
     // 1. Fetch ALL upcoming matches from the API for the main soccer leagues
-    const allLeaguesKey = SOCCER_LEAGUES.map(l => l.id).join(',');
-    const apiResult = await fetchLiveOdds({
-        sport: allLeaguesKey, 
+    // The API only supports one sport key per request, so we make parallel calls.
+    const leaguesToFetch = filters.leagues && filters.leagues.length > 0 
+        ? SOCCER_LEAGUES.filter(l => filters.leagues!.includes(l.id))
+        : SOCCER_LEAGUES;
+
+    const apiPromises = leaguesToFetch.map(league => fetchLiveOdds({
+        sport: league.id,
         regions: 'eu',
         markets: 'h2h,totals',
-    });
+    }));
 
-    let allMatches = apiResult.matches
+    const results = await Promise.all(apiPromises);
+    
+    const allMatchesFromApi = results.flatMap(result => result.matches);
+
+    let allMatches = allMatchesFromApi
         .map(transformApiMatch)
         // Sort by date by default
         .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
@@ -101,10 +109,7 @@ const getMatchesFlow = ai.defineFlow(
     // 2. Apply filters on the server
     let filteredMatches = allMatches;
 
-    // Filtering logic
-    if (filters.leagues && filters.leagues.length > 0) {
-      filteredMatches = filteredMatches.filter(match => filters.leagues!.includes(match.league.id));
-    }
+    // Filtering logic (leagues filter is already applied before API call)
     if (filters.startDate) {
       filteredMatches = filteredMatches.filter(match => new Date(match.startTime) >= new Date(filters.startDate!));
     }
