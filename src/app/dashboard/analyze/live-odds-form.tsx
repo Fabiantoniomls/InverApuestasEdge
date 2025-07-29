@@ -81,15 +81,15 @@ export function LiveOddsForm() {
             <Card>
                 <CardHeader>
                     <CardTitle>Buscar Cuotas en Vivo</CardTitle>
-                    <CardDescription>Selecciona un deporte y una región para buscar los próximos partidos y sus cuotas en diferentes casas de apuestas.</CardDescription>
+                    <CardDescription>Selecciona una competición para buscar los próximos partidos y sus cuotas en diferentes casas de apuestas.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                           <Label htmlFor="sport">Deporte</Label>
+                        <div className="md:col-span-2">
+                           <Label htmlFor="sport">Liga / Torneo</Label>
                            <Select name="sport" defaultValue="soccer_spain_la_liga" required>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un deporte/liga..." />
+                                    <SelectValue placeholder="Selecciona una competición..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {sportOptions.map(group => (
@@ -107,22 +107,23 @@ export function LiveOddsForm() {
                            {state.fields?.sport && <p className="text-red-500 text-sm">{state.fields.sport}</p>}
                         </div>
                         <div>
-                           <Label htmlFor="regions">Región</Label>
+                           <Label htmlFor="regions">Región de Bookmakers</Label>
                             <Select name="regions" defaultValue="eu">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona región..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="eu">Europa</SelectItem>
-                                    <SelectItem value="us">EE. UU.</SelectItem>
+                                    <SelectItem value="us">EE. UU. (US)</SelectItem>
+                                    <SelectItem value="us2">EE. UU. (US2 / Sudamérica)</SelectItem>
                                     <SelectItem value="uk">Reino Unido</SelectItem>
                                     <SelectItem value="au">Australia</SelectItem>
                                 </SelectContent>
                             </Select>
                            {state.fields?.regions && <p className="text-red-500 text-sm">{state.fields.regions}</p>}
                         </div>
-                        <div>
-                           <Label htmlFor="markets">Mercado</Label>
+                        <div className="md:col-span-3">
+                           <Label htmlFor="markets">Mercado de Apuestas</Label>
                            <Select name="markets" defaultValue="h2h">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona mercado..." />
@@ -136,8 +137,8 @@ export function LiveOddsForm() {
                            {state.fields?.markets && <p className="text-red-500 text-sm">{state.fields.markets}</p>}
                         </div>
                     </div>
-                     <p className="text-xs text-muted-foreground mt-1">
-                        Consulta la documentación de <a href="https://the-odds-api.com/sports-odds-data/sports-apis.html" target="_blank" rel="noopener noreferrer" className="underline">The Odds API</a> para ver todas las claves de deportes disponibles.
+                     <p className="text-xs text-muted-foreground pt-2">
+                        Consulta la documentación de <a href="https://the-odds-api.com/sports-odds-data/sports-apis.html" target="_blank" rel="noopener noreferrer" className="underline">The Odds API</a> para ver todas las claves de deportes disponibles. El filtro de región se aplica a las casas de apuestas, no a la ubicación de la liga.
                     </p>
                 </CardContent>
             </Card>
