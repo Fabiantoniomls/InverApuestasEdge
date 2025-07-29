@@ -14,6 +14,7 @@ import {
   Scaling,
   Beaker,
   User,
+  Search,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ import { LanguageProvider } from '@/context/language-context';
 
 const navLinks = [
     { href: '/dashboard', label: 'Inicio', icon: Home },
+    { href: '/dashboard/partidos', label: 'Explorar Partidos', icon: Search },
     { href: '/dashboard/analyze', label: 'Mis Análisis', icon: BarChart },
     { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: Receipt },
     { href: '/dashboard/community', label: 'Comunidad', icon: Users },
