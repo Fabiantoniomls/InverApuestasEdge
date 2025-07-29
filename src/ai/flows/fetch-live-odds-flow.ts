@@ -16,6 +16,12 @@ const FetchLiveOddsInputSchema = z.object({
   sport: z.string().describe('The sport key to fetch odds for (e.g., soccer_spain_la_liga).'),
   regions: z.string().optional().default('eu').describe('The regions to fetch odds from (e.g., us, uk, eu, au).'),
   markets: z.string().optional().default('h2h').describe('The markets to fetch (e.g., h2h, spreads, totals).'),
+  dateFormat: z.enum(['iso', 'unix']).optional().describe('The format for timestamps.'),
+  oddsFormat: z.enum(['decimal', 'american']).optional().describe('The format for odds.'),
+  eventIds: z.string().optional().describe('Comma-separated list of event IDs to filter by.'),
+  bookmakers: z.string().optional().describe('Comma-separated list of bookmakers to filter by.'),
+  beginTimeFrom: z.string().optional().describe('ISO 8601 timestamp for the start of the date range.'),
+  beginTimeTo: z.string().optional().describe('ISO 8601 timestamp for the end of the date range.'),
 });
 export type FetchLiveOddsInput = z.infer<typeof FetchLiveOddsInputSchema>;
 
@@ -23,15 +29,15 @@ export type FetchLiveOddsInput = z.infer<typeof FetchLiveOddsInputSchema>;
 const BookmakerSchema = z.object({
     key: z.string(),
     title: z.string(),
-    last_update: z.number(),
+    last_update: z.union([z.string(), z.number()]).describe('The last update time for the bookmaker, can be a string or a number.'),
     markets: z.array(z.object({
         key: z.string(),
-        last_update: z.number(),
+        last_update: z.union([z.string(), z.number()]).describe('The last update time for the market, can be a string or a number.'),
         outcomes: z.array(z.object({
             name: z.string(),
             price: z.number(),
         })),
-    })).optional(), // Made markets optional to handle variations
+    })).optional(),
 });
 
 const MatchOddsSchema = z.object({
@@ -68,8 +74,22 @@ const fetchLiveOddsFlow = ai.defineFlow(
       throw new Error('THE_ODDS_API_KEY is not configured in environment variables.');
     }
 
-    const { sport, regions, markets } = input;
-    const apiUrl = `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${apiKey}&regions=${regions}&markets=${markets}`;
+    const { sport, regions, markets, dateFormat, oddsFormat, eventIds, bookmakers, beginTimeFrom, beginTimeTo } = input;
+    
+    const queryParams = new URLSearchParams({
+        apiKey,
+        regions: regions || 'eu',
+        markets: markets || 'h2h',
+    });
+
+    if (dateFormat) queryParams.append('dateFormat', dateFormat);
+    if (oddsFormat) queryParams.append('oddsFormat', oddsFormat);
+    if (eventIds) queryParams.append('eventIds', eventIds);
+    if (bookmakers) queryParams.append('bookmakers', bookmakers);
+    if (beginTimeFrom) queryParams.append('commence_time.gte', beginTimeFrom);
+    if (beginTimeTo) queryParams.append('commence_time.lte', beginTimeTo);
+
+    const apiUrl = `https://api.the-odds-api.com/v4/sports/${sport}/odds/?${queryParams.toString()}`;
 
     try {
       const response = await fetch(apiUrl);
@@ -84,10 +104,7 @@ const fetchLiveOddsFlow = ai.defineFlow(
       const validatedData = z.array(MatchOddsSchema).safeParse(data);
 
       if (!validatedData.success) {
-        // Log the validation error for debugging but don't crash.
-        // This can happen if the API response structure changes unexpectedly.
         console.warn("Zod validation warning (non-fatal):", validatedData.error.issues);
-        // Return an empty list to prevent the app from crashing.
         return { matches: [] };
       }
 
@@ -95,7 +112,7 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
     } catch (error) {
       console.error('Error in fetchLiveOddsFlow:', error);
-      throw error; // Re-throw the error to be handled by the caller
+      throw error;
     }
   }
 );
