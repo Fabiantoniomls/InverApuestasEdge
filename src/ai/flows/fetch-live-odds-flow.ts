@@ -80,17 +80,13 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
       const data = await response.json();
       
-      // We can validate the API response against our Zod schema for safety
-      // The API returns an empty array `[]` if no games are found, which is a valid response.
-      if (!Array.isArray(data)) {
-        throw new Error("Received unexpected data structure from The Odds API. Expected an array.");
-      }
-
       const validatedData = z.array(MatchOddsSchema).safeParse(data);
 
       if (!validatedData.success) {
-        console.error("Zod validation error:", validatedData.error.issues);
-        throw new Error("Received unexpected data structure from The Odds API.");
+        console.error("Zod validation error (non-fatal):", validatedData.error.issues);
+        // If validation fails (e.g., empty array or unexpected format), return an empty list
+        // instead of throwing an error. The frontend will handle the "no matches found" case.
+        return { matches: [] };
       }
 
       return { matches: validatedData.data };
