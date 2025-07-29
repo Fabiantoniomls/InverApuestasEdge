@@ -10,37 +10,37 @@ import { Scaling } from 'lucide-react';
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-2xl rounded-2xl">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-               <Scaling className="h-8 w-8 text-primary-foreground" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
+               <Scaling className="h-8 w-8" />
             </div>
             <CardTitle className="font-headline text-3xl font-bold text-foreground">BetValuator Edge</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Sign in to access your quantitative sports investment dashboard.
+              Accede a tu dashboard de inversión deportiva cuantitativa.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="name@example.com" defaultValue="analyst@betvaluator.edge" className="rounded-lg"/>
+                <Input id="email" type="email" placeholder="nombre@ejemplo.com" defaultValue="analyst@betvaluator.edge" className="rounded-lg"/>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Contraseña</Label>
                 <Input id="password" type="password" defaultValue="password" className="rounded-lg"/>
               </div>
             </div>
             <Link href="/dashboard" className="mt-6 block">
-              <Button className="w-full font-bold rounded-lg" variant="primary">Sign In</Button>
+              <Button className="w-full font-bold rounded-lg" variant="default">Iniciar Sesión</Button>
             </Link>
             <div className="mt-4 text-center text-sm">
               <p className="text-muted-foreground">
-                Don't have an account?{' '}
-                <Link href="#" className="font-medium text-foreground underline-offset-4 hover:underline">
-                  Sign up
+                ¿No tienes una cuenta?{' '}
+                <Link href="#" className="font-medium text-primary underline-offset-4 hover:underline">
+                  Regístrate
                 </Link>
               </p>
             </div>
@@ -50,3 +50,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

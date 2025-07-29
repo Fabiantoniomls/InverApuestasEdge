@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Search, Plus, Edit, Eye, Trash2, Library, CheckCircle2, TrendingUp, AlertCircle, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { UpcomingMatches } from "./upcoming-matches";
 
 const savedAnalyses = [
     {
@@ -106,11 +107,11 @@ const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string
 
 export default function DashboardPage() {
     return (
-        <div className="p-8">
-            <header className="mb-8">
-                <div className="flex justify-between items-center">
+        <div className="space-y-8">
+            <header>
+                <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-foreground text-4xl font-bold leading-tight">Mis análisis</h1>
+                        <h1 className="text-foreground text-3xl font-bold leading-tight tracking-tight">Mis análisis</h1>
                         <p className="text-muted-foreground mt-1">Tu bitácora de rendimiento analítico.</p>
                     </div>
                     <Link href="/dashboard/analyze">
@@ -122,24 +123,27 @@ export default function DashboardPage() {
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard title="Análisis Totales" value="58" icon={Library} />
                 <MetricCard title="Tasa de Acierto" value="62%" icon={CheckCircle2} />
                 <MetricCard title="P/L Total" value="+ $1,280.50" icon={TrendingUp} />
                 <MetricCard title="ROI Promedio" value="+8.5%" icon={AlertCircle} />
             </div>
+            
+            <UpcomingMatches />
 
-            <div className="bg-white p-4 rounded-2xl shadow-sm mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                    <div className="md:col-span-2 relative">
-                        <Input className="w-full pl-10 pr-4 py-2 border rounded-full text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Buscar por equipo, fecha..." type="text"/>
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400" />
+            <div>
+                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Historial de Análisis</h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <div className="relative w-full sm:w-auto">
+                            <Input className="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-full text-sm" placeholder="Buscar por equipo, fecha..." type="text"/>
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <Search className="h-5 w-5 text-gray-400" />
+                            </div>
                         </div>
-                    </div>
-                    <div>
                          <Select>
-                            <SelectTrigger className="w-full border rounded-full px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none">
+                            <SelectTrigger className="w-full sm:w-[180px] border rounded-full text-sm">
                                 <SelectValue placeholder="Filtrar por etiqueta" />
                             </SelectTrigger>
                             <SelectContent>
@@ -149,10 +153,8 @@ export default function DashboardPage() {
                                 <SelectItem value="apuesta-segura">Apuesta segura</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
-                     <div>
                          <Select>
-                            <SelectTrigger className="w-full border rounded-full px-4 py-2 text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none">
+                            <SelectTrigger className="w-full sm:w-[180px] border rounded-full text-sm">
                                 <SelectValue placeholder="Ordenar por" />
                             </SelectTrigger>
                             <SelectContent>
@@ -166,75 +168,77 @@ export default function DashboardPage() {
                         </Select>
                     </div>
                 </div>
-            </div>
 
-            <div className="space-y-4">
-                {savedAnalyses.map((analysis) => {
-                    const pnlColor = analysis.profitAndLoss > 0 ? "text-green-600" : analysis.profitAndLoss < 0 ? "text-red-600" : "text-muted-foreground";
+                <div className="space-y-4">
+                    {savedAnalyses.map((analysis) => {
+                        const pnlColor = analysis.profitAndLoss > 0 ? "text-green-600" : analysis.profitAndLoss < 0 ? "text-red-600" : "text-muted-foreground";
 
-                    return (
-                        <div key={analysis.id} className="bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 group">
-                            <div className="flex items-start gap-4">
-                                <div className="flex -space-x-4">
-                                    <Image src={analysis.homeTeamLogoUrl} alt="Home team logo" data-ai-hint={analysis.homeHint} className="rounded-full object-cover border-2 border-white" width={40} height={40} />
-                                    <Image src={analysis.awayTeamLogoUrl} alt="Away team logo" data-ai-hint={analysis.awayHint} className="rounded-full object-cover border-2 border-white" width={40} height={40} />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="text-foreground text-lg font-semibold leading-normal">{analysis.title}</h3>
-                                            <p className="text-muted-foreground text-sm">{analysis.date}</p>
-                                        </div>
-                                        {analysis.isBetPlaced && (
-                                            <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-1 rounded-full font-medium">
-                                                <BadgeCheck className="size-3" />
-                                                <span>Apuesta Realizada</span>
+                        return (
+                            <div key={analysis.id} className="bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 group">
+                                <div className="flex items-start gap-4">
+                                    <div className="flex -space-x-4">
+                                        <Image src={analysis.homeTeamLogoUrl} alt="Home team logo" data-ai-hint={analysis.homeHint} className="rounded-full object-cover border-2 border-white" width={40} height={40} />
+                                        <Image src={analysis.awayTeamLogoUrl} alt="Away team logo" data-ai-hint={analysis.awayHint} className="rounded-full object-cover border-2 border-white" width={40} height={40} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="text-foreground text-lg font-semibold leading-normal">{analysis.title}</h3>
+                                                <p className="text-muted-foreground text-sm">{analysis.date}</p>
                                             </div>
-                                        )}
-                                    </div>
-                                    <div className="border-y my-3 py-2 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                                        <div className="font-medium"><span className="text-muted-foreground">EV: </span>{analysis.analysisData.ev.toFixed(1)}%</div>
-                                        <div className="font-medium"><span className="text-muted-foreground">Cuota: </span>{analysis.analysisData.odds.toFixed(2)}</div>
-                                        <div className="font-medium"><span className="text-muted-foreground">Stake: </span>{analysis.analysisData.stake.toFixed(1)}%</div>
-                                        <div className="font-medium"><span className="text-muted-foreground">Prob: </span>{analysis.analysisData.probability}%</div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            {analysis.tags.map(tag => {
-                                                const colorClass = tagColors[tag.color]?.base || 'bg-gray-100 text-gray-800';
-                                                const outcomeColorClass = (analysis.betOutcome === 'WON' && tagColors[tag.color]?.outcome) || colorClass;
-                                                const finalClass = analysis.isBetPlaced && analysis.betOutcome !== 'PENDING' ? outcomeColorClass : colorClass;
-                                                return (
-                                                    <span key={tag.name} className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full ${finalClass}`}>
-                                                        {tag.name}
-                                                    </span>
-                                                )
-                                            })}
+                                            {analysis.isBetPlaced && (
+                                                <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-1 rounded-full font-medium">
+                                                    <BadgeCheck className="size-3" />
+                                                    <span>Apuesta Realizada</span>
+                                                </div>
+                                            )}
                                         </div>
-                                         <div className="text-right">
-                                            <p className="text-xs text-muted-foreground">Resultado: {analysis.matchResult}</p>
-                                            <p className={`text-sm font-bold ${pnlColor}`}>P/L: {analysis.profitAndLoss >= 0 ? '+' : ''}${analysis.profitAndLoss.toFixed(2)}</p>
+                                        <div className="border-y my-3 py-2 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                                            <div className="font-medium"><span className="text-muted-foreground">EV: </span>{analysis.analysisData.ev.toFixed(1)}%</div>
+                                            <div className="font-medium"><span className="text-muted-foreground">Cuota: </span>{analysis.analysisData.odds.toFixed(2)}</div>
+                                            <div className="font-medium"><span className="text-muted-foreground">Stake: </span>{analysis.analysisData.stake.toFixed(1)}%</div>
+                                            <div className="font-medium"><span className="text-muted-foreground">Prob: </span>{analysis.analysisData.probability}%</div>
+                                        </div>
+                                        <div className="flex justify-between items-end">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {analysis.tags.map(tag => {
+                                                    const colorClass = tagColors[tag.color]?.base || 'bg-gray-100 text-gray-800';
+                                                    const outcomeColorClass = (analysis.betOutcome === 'WON' && tagColors[tag.color]?.outcome) || colorClass;
+                                                    const finalClass = analysis.isBetPlaced && analysis.betOutcome !== 'PENDING' ? outcomeColorClass : colorClass;
+                                                    return (
+                                                        <span key={tag.name} className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full ${finalClass}`}>
+                                                            {tag.name}
+                                                        </span>
+                                                    )
+                                                })}
+                                            </div>
+                                             <div className="text-right">
+                                                <p className="text-xs text-muted-foreground">Resultado: {analysis.matchResult}</p>
+                                                <p className={`text-sm font-bold ${pnlColor}`}>P/L: {analysis.profitAndLoss >= 0 ? '+' : ''}${analysis.profitAndLoss.toFixed(2)}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                     <Link href={`/dashboard/analysis/${analysis.id}`}>
+                                    <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                         <Link href={`/dashboard/analysis/${analysis.id}`}>
+                                            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-secondary text-muted-foreground hover:text-foreground">
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
                                         <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-secondary text-muted-foreground hover:text-foreground">
-                                            <Eye className="h-4 w-4" />
+                                            <Edit className="h-4 w-4" />
                                         </Button>
-                                    </Link>
-                                    <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-secondary text-muted-foreground hover:text-foreground">
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-red-100 text-red-500 hover:text-red-700">
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 hover:bg-red-100 text-red-500 hover:text-red-700">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
 }
+
+    
