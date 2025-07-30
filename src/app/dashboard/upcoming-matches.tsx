@@ -15,7 +15,6 @@ export async function UpcomingMatches() {
         const { matches } = await fetchLiveOdds({ sport: 'soccer_spain_la_liga', regions: 'eu', markets: 'h2h' });
         upcomingMatches = matches.slice(0, 4); // Limit to 4 matches
     } catch (error: any) {
-        console.error("Failed to fetch upcoming matches:", error);
         fetchError = error.message;
     }
 
