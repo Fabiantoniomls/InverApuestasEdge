@@ -42,7 +42,7 @@ export function MatchCard({ match }: { match: Match }) {
     if(mainOdds?.[1]) params.set('oddsHome', String(mainOdds[1]));
     if(mainOdds?.['X']) params.set('oddsDraw', String(mainOdds['X']));
     if(mainOdds?.[2]) params.set('oddsAway', String(mainOdds[2]));
-    params.set('tab', 'quantitative');
+    params.set('mode', 'quantitative');
 
     return (
         <Card className="hover:shadow-lg transition-shadow">

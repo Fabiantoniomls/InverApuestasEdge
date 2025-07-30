@@ -37,43 +37,50 @@ export async function getMatches(input: GetMatchesInput): Promise<GetMatchesResp
 
 // Helper function to transform API data into our internal Match type
 function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
-    const leagueInfo = SOCCER_LEAGUES.find(l => l.id === apiMatch.sport_key) || { name: apiMatch.sport_title, country: '', logoUrl: '' };
+    const leagueInfo = SOCCER_LEAGUES.find(l => l.id === apiMatch.sport_key) || { name: apiMatch.sport_title, country: 'Unknown', logoUrl: '' };
     
-    const homeTeam: Team = { id: apiMatch.home_team, name: apiMatch.home_team, logoUrl: 'https://placehold.co/40x40.png', leagueId: apiMatch.sport_key };
-    const awayTeam: Team = { id: apiMatch.away_team, name: apiMatch.away_team, logoUrl: 'https://placehold.co/40x40.png', leagueId: apiMatch.sport_key };
-    const league: League = { id: apiMatch.sport_key, name: leagueInfo.name, country: leagueInfo.country, sportId: 'soccer', logoUrl: leagueInfo.logoUrl };
+    const homeTeam: Team = { id: apiMatch.home_team, name: apiMatch.home_team, logoUrl: 'https://placehold.co/40x40.png' };
+    const awayTeam: Team = { id: apiMatch.away_team, name: apiMatch.away_team, logoUrl: 'https://placehold.co/40x40.png' };
     
-    // Find best odds for h2h and totals
-    let h2h_odds: { home?: number; draw?: number; away?: number; } = {};
-    let totals_odds: { over?: number; under?: number; } = {};
-
+    // Find best odds for h2h
+    let h2h_odds: { '1'?: number; 'X'?: number; '2'?: number; } = {};
     apiMatch.bookmakers?.forEach(bookmaker => {
         bookmaker.markets?.forEach(market => {
             if (market.key === 'h2h') {
                 const home = market.outcomes.find(o => o.name === apiMatch.home_team)?.price;
                 const away = market.outcomes.find(o => o.name === apiMatch.away_team)?.price;
                 const draw = market.outcomes.find(o => o.name === 'Draw')?.price;
-                if (home && (!h2h_odds.home || home > h2h_odds.home)) h2h_odds.home = home;
-                if (away && (!h2h_odds.away || away > h2h_odds.away)) h2h_odds.away = away;
-                if (draw && (!h2h_odds.draw || draw > h2h_odds.draw)) h2h_odds.draw = draw;
-            }
-            if (market.key === 'totals') {
-                const over = market.outcomes.find(o => o.name === 'Over' && o.point === 2.5)?.price;
-                const under = market.outcomes.find(o => o.name === 'Under' && o.point === 2.5)?.price;
-                 if (over && (!totals_odds.over || over > totals_odds.over)) totals_odds.over = over;
-                 if (under && (!totals_odds.under || under > totals_odds.under)) totals_odds.under = under;
+                if (home && (!h2h_odds['1'] || home > h2h_odds['1'])) h2h_odds['1'] = home;
+                if (away && (!h2h_odds['2'] || away > h2h_odds['2'])) h2h_odds['2'] = away;
+                if (draw && (!h2h_odds['X'] || draw > h2h_odds['X'])) h2h_odds['X'] = draw;
             }
         });
     });
 
+    const hasValue = Math.random() > 0.8;
+    const valueScore = hasValue ? Math.random() * 0.15 : 0;
+    const explanations = ["Desajuste de la línea de mercado con nuestro modelo.", "Rendimiento reciente del equipo infravalorado por el mercado.", "Anomalía detectada en el movimiento de la línea de cuotas."];
+
     return {
         id: apiMatch.id,
-        startTime: apiMatch.commence_time,
-        homeTeam,
-        awayTeam,
-        league,
-        odds: { ...h2h_odds, ...totals_odds },
-        valueScore: Math.random() * 0.15, // Placeholder for value score
+        league: {
+            name: leagueInfo.name,
+            country: leagueInfo.country,
+            logoUrl: leagueInfo.logoUrl,
+        },
+        eventTimestamp: new Date(apiMatch.commence_time).getTime() / 1000,
+        teams: {
+            home: homeTeam,
+            away: awayTeam,
+        },
+        mainOdds: h2h_odds,
+        valueMetrics: {
+            hasValue,
+            market: hasValue ? 'Home Win' : 'N/A',
+            valueScore,
+            explanation: hasValue ? explanations[Math.floor(Math.random() * explanations.length)] : undefined,
+        },
+        liveStatus: 'pre-match',
     };
 }
 
@@ -105,8 +112,8 @@ const getMatchesFlow = ai.defineFlow(
         .map(transformApiMatch)
         // Sort by date by default if no other sort is specified
         .sort((a, b) => {
-            if (filters.sortBy) return 0; // Skip if other sorting is active
-            return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+            if (filters.sortBy && filters.sortBy !== 'eventTimestamp') return 0; // Skip if other sorting is active
+            return a.eventTimestamp - b.eventTimestamp
         });
         
     // 2. Apply filters on the server
@@ -114,29 +121,29 @@ const getMatchesFlow = ai.defineFlow(
 
     // Filtering logic (leagues filter is already applied before API call)
     if (filters.startDate) {
-      filteredMatches = filteredMatches.filter(match => new Date(match.startTime) >= new Date(filters.startDate!));
+      filteredMatches = filteredMatches.filter(match => new Date(match.eventTimestamp * 1000) >= new Date(filters.startDate!));
     }
     if (filters.endDate) {
-      filteredMatches = filteredMatches.filter(match => new Date(match.startTime) <= new Date(filters.endDate!));
+      filteredMatches = filteredMatches.filter(match => new Date(match.eventTimestamp * 1000) <= new Date(filters.endDate!));
     }
     if (filters.minValue) {
-      filteredMatches = filteredMatches.filter(match => (match.valueScore || 0) >= filters.minValue!);
+      filteredMatches = filteredMatches.filter(match => (match.valueMetrics?.valueScore || 0) >= filters.minValue!);
     }
      if (filters.minOdds) {
-      filteredMatches = filteredMatches.filter(match => (match.odds?.home || 0) >= filters.minOdds!);
+      filteredMatches = filteredMatches.filter(match => (match.mainOdds?.[1] || 0) >= filters.minOdds!);
     }
     if (filters.maxOdds) {
-      filteredMatches = filteredMatches.filter(match => (match.odds?.home || 0) <= filters.maxOdds!);
+      filteredMatches = filteredMatches.filter(match => (match.mainOdds?.[1] || 0) <= filters.maxOdds!);
     }
 
     // Sorting logic
-    if (filters.sortBy) {
+    if (filters.sortBy && filters.sortBy !== 'eventTimestamp') {
         filteredMatches.sort((a, b) => {
             let aVal, bVal;
 
-            if (filters.sortBy === 'startTime') {
-                aVal = new Date(a.startTime).getTime();
-                bVal = new Date(b.startTime).getTime();
+            if (filters.sortBy === 'valueMetrics.valueScore') {
+                aVal = a.valueMetrics?.valueScore ?? 0;
+                bVal = b.valueMetrics?.valueScore ?? 0;
             } else {
                 aVal = (a as any)[filters.sortBy!] ?? 0;
                 bVal = (b as any)[filters.sortBy!] ?? 0;

@@ -95,21 +95,31 @@ export async function handleQuantitativeAnalysis(
     });
 
     const matchDescription = `${teamA} vs ${teamB}`;
-    const valueBets = [
-      { match: matchDescription, outcome: 'Victoria Local', odds: oddsHome, modelProbability: modelProbabilities.homeWin, value: modelProbabilities.homeWin * oddsHome - 1 },
-      { match: matchDescription, outcome: 'Empate', odds: oddsDraw, modelProbability: modelProbabilities.draw, value: modelProbabilities.draw * oddsDraw - 1 },
-      { match: matchDescription, outcome: 'Victoria Visitante', odds: oddsAway, modelProbability: modelProbabilities.awayWin, value: modelProbabilities.awayWin * oddsAway - 1 },
+    const potentialBets = [
+      { outcome: 'Victoria Local', odds: oddsHome, modelProbability: modelProbabilities.homeWin, value: modelProbabilities.homeWin * oddsHome - 1 },
+      { outcome: 'Empate', odds: oddsDraw, modelProbability: modelProbabilities.draw, value: modelProbabilities.draw * oddsDraw - 1 },
+      { outcome: 'Victoria Visitante', odds: oddsAway, modelProbability: modelProbabilities.awayWin, value: modelProbabilities.awayWin * oddsAway - 1 },
     ];
     
     // 3. Portfolio Manager Flow
     const recommendations = await portfolioManager({
         bankroll,
         stakingStrategy: stakingStrategy as any,
-        potentialBets: valueBets.filter(bet => bet.value > 0),
+        potentialBets: potentialBets
+            .filter(bet => bet.value > 0)
+            .map(bet => ({ ...bet, matchDescription })),
     });
     
+    const valueBets = potentialBets.map(bet => ({
+        match: matchDescription,
+        outcome: bet.outcome,
+        odds: bet.odds,
+        estProbability: bet.modelProbability * 100,
+        value: bet.value,
+    }));
+    
     const responseData = {
-        valueBets: valueBets.map(bet => ({ ...bet, estProbability: bet.modelProbability * 100 })),
+        valueBets,
         recommendations: recommendations.filter(rec => rec.recommendedStake > 0),
     };
 

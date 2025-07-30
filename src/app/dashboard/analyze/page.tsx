@@ -16,13 +16,22 @@ import { BatchValueBetsForm } from './batch-value-bets-form';
 import { ImageAnalysisForm } from './image-analysis-form';
 import { StakingStrategyReference } from './staking-strategy-reference';
 import { LiveOddsForm } from './live-odds-form';
+import { useSearchParams } from 'next/navigation';
 
 
 type AnalysisMode = 'quantitative' | 'fundamental' | 'single' | 'batch' | 'image' | 'live-odds';
 
 export default function AnalyzePage() {
-  const [mode, setMode] = React.useState<AnalysisMode>('quantitative');
+  const searchParams = useSearchParams();
+  const modeParam = searchParams.get('mode') as AnalysisMode | null;
+  const [mode, setMode] = React.useState<AnalysisMode>(modeParam || 'quantitative');
   const { t } = useLanguage();
+
+  React.useEffect(() => {
+    if (modeParam && modeParam !== mode) {
+      setMode(modeParam);
+    }
+  }, [modeParam, mode]);
 
   const renderForm = () => {
     switch (mode) {

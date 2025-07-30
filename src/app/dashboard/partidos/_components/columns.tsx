@@ -62,7 +62,7 @@ const ActionCell = ({ row }: { row: any }) => {
     return (
         <div className="text-right">
             <Button asChild variant="default" size="sm">
-              <Link href={`/dashboard/analyze?${params.toString()}`}>
+              <Link href={`/dashboard/analyze?mode=quantitative&${params.toString()}`}>
                 <BarChart2 className="mr-2 h-4 w-4" />
                 Analizar
               </Link>
@@ -127,7 +127,9 @@ export const columns: ColumnDef<Match>[] = [
       )
     },
     cell: ({ row }) => {
-        const date = new Date(row.original.eventTimestamp * 1000);
+        const timestamp = row.original.eventTimestamp;
+        if (!timestamp) return null;
+        const date = new Date(timestamp * 1000);
         return (
             <div className="text-left">
                 <div>{format(date, "d MMM yyyy", { locale: es })}</div>
