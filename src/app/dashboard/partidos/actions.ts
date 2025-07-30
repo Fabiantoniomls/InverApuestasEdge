@@ -32,8 +32,9 @@ export async function getMatchesByLeague(): Promise<Record<string, Match[]>> {
 
 export async function getMatchesByValue(): Promise<Match[]> {
     const matchesSnapshot = await db.collection('matches')
+        .where('valueMetrics.hasValue', '==', true)
         .orderBy('valueMetrics.valueScore', 'desc')
-        .limit(20)
+        .limit(8)
         .get();
         
     const matches: Match[] = [];
@@ -47,5 +48,5 @@ export async function getMatchesByValue(): Promise<Match[]> {
 
 export async function getLeaguesList(): Promise<League[]> {
   const { leagues } = await getLeagues();
-  return leagues;
+  return leagues.map(l => ({...l, id: l.id.replace(/_/g, ' ')}))
 }

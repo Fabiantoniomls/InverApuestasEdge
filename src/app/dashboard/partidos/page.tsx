@@ -5,6 +5,11 @@ import { CompetitionsView } from './_components/competitions-view';
 import { FeaturedView } from './_components/featured-view';
 import { MatchCardSkeleton } from './_components/match-card-skeleton';
 import Loading from './loading';
+import { MatchDataTable } from './_components/data-table';
+import { fetchMatches } from './actions';
+import { columns } from './_components/columns';
+import type { GetMatchesInput } from '@/lib/types';
+
 
 export const dynamic = 'force-dynamic'
 
@@ -18,8 +23,26 @@ const FeaturedViewSkeleton = () => (
     </div>
 );
 
+async function MatchList({ filters }: { filters: GetMatchesInput }) {
+    const { data, totalMatches, totalPages, currentPage } = await fetchMatches(filters);
+    return <MatchDataTable columns={columns} data={data} totalMatches={totalMatches} totalPages={totalPages} currentPage={currentPage} />;
+}
+
 export default function PartidosPage({ searchParams }: PartidosPageProps) {
-  const tab = (searchParams.tab as string) || 'destacados';
+  const tab = typeof searchParams.tab === 'string' ? searchParams.tab : 'todos';
+
+  const filters: GetMatchesInput = {
+    page: searchParams.page ? parseInt(searchParams.page as string) : 1,
+    limit: 10,
+    leagues: typeof searchParams.leagues === 'string' ? searchParams.leagues.split(',') : [],
+    startDate: typeof searchParams.startDate === 'string' ? searchParams.startDate : undefined,
+    endDate: typeof searchParams.endDate === 'string' ? searchParams.endDate : undefined,
+    minValue: searchParams.minValue ? parseFloat(searchParams.minValue as string) : undefined,
+    minOdds: searchParams.minOdds ? parseFloat(searchParams.minOdds as string) : undefined,
+    maxOdds: searchParams.maxOdds ? parseFloat(searchParams.maxOdds as string) : undefined,
+    sortBy: typeof searchParams.sortBy === 'string' ? searchParams.sortBy : 'eventTimestamp',
+    sortOrder: typeof searchParams.sortOrder === 'string' && ['asc', 'desc'].includes(searchParams.sortOrder) ? (searchParams.sortOrder as 'asc' | 'desc') : 'asc',
+  };
 
   return (
     <div>
@@ -29,8 +52,9 @@ export default function PartidosPage({ searchParams }: PartidosPageProps) {
         </header>
 
          <Tabs defaultValue={tab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="destacados">Destacados</TabsTrigger>
+                <TabsTrigger value="todos">Todos</TabsTrigger>
                 <TabsTrigger value="competencias">Competencias</TabsTrigger>
                 <TabsTrigger value="tendencias">Tendencias</TabsTrigger>
             </TabsList>
@@ -38,6 +62,11 @@ export default function PartidosPage({ searchParams }: PartidosPageProps) {
                  <Suspense fallback={<FeaturedViewSkeleton />}>
                     <FeaturedView />
                  </Suspense>
+            </TabsContent>
+            <TabsContent value="todos" className="mt-6">
+                <Suspense fallback={<Loading />} key={JSON.stringify(filters)}>
+                    <MatchList filters={filters} />
+                </Suspense>
             </TabsContent>
             <TabsContent value="competencias" className="mt-6">
                  <Suspense fallback={<Loading />}>

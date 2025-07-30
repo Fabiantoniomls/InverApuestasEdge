@@ -25,7 +25,9 @@ export function FilterSidebar() {
   const searchParams = useSearchParams();
 
   const [leagues, setLeagues] = useState<League[]>([]);
-  const [selectedLeagues, setSelectedLeagues] = useState<Set<string>>(new Set(searchParams.get('leagues')?.split(',')));
+  const [selectedLeagues, setSelectedLeagues] = useState<Set<string>>(() => 
+    new Set(searchParams.get('leagues')?.split(',') || [])
+  );
   
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: searchParams.get('startDate') ? new Date(searchParams.get('startDate')!) : new Date(),
@@ -45,30 +47,36 @@ export function FilterSidebar() {
     }
     fetchLeagues();
   }, []);
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set(name, value)
-      return params.toString()
-    },
-    [searchParams]
-  )
   
   const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('leagues', Array.from(selectedLeagues).join(','));
-    if (date?.from) params.set('startDate', format(date.from, 'yyyy-MM-dd'));
-    if (date?.to) params.set('endDate', format(date.to, 'yyyy-MM-dd'));
-    params.set('minValue', String(value[0]));
+    
+    if (selectedLeagues.size > 0) {
+        params.set('leagues', Array.from(selectedLeagues).join(','));
+    } else {
+        params.delete('leagues');
+    }
+
+    if (date?.from) params.set('startDate', format(date.from, 'yyyy-MM-dd')); else params.delete('startDate');
+    if (date?.to) params.set('endDate', format(date.to, 'yyyy-MM-dd')); else params.delete('endDate');
+    
+    params.set('minValue', String(value[0] / 100)); // Convert percentage to decimal
     params.set('minOdds', String(odds[0]));
     params.set('maxOdds', String(odds[1]));
+    params.set('page', '1'); // Reset to first page on filter change
     
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   const handleResetFilters = () => {
-      router.push(pathname);
+      const params = new URLSearchParams(searchParams.toString());
+      const keysToRemove = ['leagues', 'startDate', 'endDate', 'minValue', 'minOdds', 'maxOdds', 'page', 'sortBy', 'sortOrder'];
+      keysToRemove.forEach(key => params.delete(key));
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      setSelectedLeagues(new Set());
+      setDate({ from: new Date(), to: addDays(new Date(), 7) });
+      setValue([0]);
+      setOdds([1.0, 10.0]);
   }
 
   const handleLeagueSelect = (leagueId: string) => {
@@ -83,7 +91,7 @@ export function FilterSidebar() {
 
 
   return (
-    <aside className="w-80 h-full border-r bg-background p-6 flex flex-col gap-8">
+    <aside className="hidden lg:flex w-80 h-full border-r bg-background p-6 flex-col gap-8">
       <h2 className="text-xl font-bold">Filtros</h2>
 
       <div className="space-y-4">
@@ -93,7 +101,7 @@ export function FilterSidebar() {
 
       <div className="space-y-2">
         <Label>Ligas</Label>
-         <Command className="rounded-lg border shadow-md">
+         <Command className="rounded-lg border shadow-sm max-h-64">
             <CommandInput placeholder="Buscar liga..." />
             <CommandList>
                 <CommandEmpty>No se encontraron ligas.</CommandEmpty>
@@ -156,7 +164,7 @@ export function FilterSidebar() {
       <div className="space-y-2">
         <Label>Umbral de Valor ({value[0]}%)</Label>
         <Slider
-          defaultValue={value}
+          value={value}
           onValueChange={setValue}
           max={20}
           step={0.5}
@@ -166,7 +174,7 @@ export function FilterSidebar() {
        <div className="space-y-2">
         <Label>Rango de Cuotas ({odds[0].toFixed(2)} - {odds[1].toFixed(2)})</Label>
         <Slider
-          defaultValue={odds}
+          value={odds}
           onValueChange={setOdds}
           max={20}
           step={0.1}
