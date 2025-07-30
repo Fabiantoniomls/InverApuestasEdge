@@ -8,14 +8,19 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, BarChart2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 const ValueIndicator = ({ value }: { value: number | undefined }) => {
     if (value === undefined || value <= 0) {
         return <span className="text-muted-foreground">-</span>;
     }
-    const color = value > 0.05 ? 'text-green-600' : 'text-yellow-600';
-    return <div className={`font-bold font-mono ${color}`}>{`+${(value * 100).toFixed(1)}%`}</div>;
+    const colorClass = value > 0.05 ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
+    return (
+        <div className={`font-mono text-right ${colorClass}`}>
+            {`+${(value * 100).toFixed(1)}%`}
+        </div>
+    );
 };
 
 
@@ -43,23 +48,7 @@ export const columns: ColumnDef<Match>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "valueScore",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="text-right w-full justify-end"
-        >
-          Valor
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div className="text-right"><ValueIndicator value={row.original.valueScore} /></div>,
-  },
-  {
-    accessorKey: "startTime",
+    accessorKey: "eventTimestamp",
     header: ({ column }) => {
       return (
         <Button
@@ -72,7 +61,7 @@ export const columns: ColumnDef<Match>[] = [
       )
     },
     cell: ({ row }) => {
-        const date = new Date(row.getValue("startTime"));
+        const date = new Date(row.original.eventTimestamp);
         return (
             <div className="text-left">
                 <div>{format(date, "d MMM yyyy", { locale: es })}</div>
@@ -86,12 +75,12 @@ export const columns: ColumnDef<Match>[] = [
     cell: ({ row }) => {
       const match = row.original
       return (
-        <div className="flex items-center gap-2">
-            <Image src={match.homeTeam.logoUrl} alt={match.homeTeam.name} width={24} height={24} className="h-6 w-6" data-ai-hint="team logo" />
-            <span className="font-medium truncate">{match.homeTeam.name}</span>
+        <div className="flex items-center gap-2 max-w-xs">
+            <Image src={match.teams.home.logoUrl} alt={match.teams.home.name} width={24} height={24} className="h-6 w-6" data-ai-hint="team logo" />
+            <span className="font-medium truncate">{match.teams.home.name}</span>
             <span className="text-muted-foreground">vs</span>
-            <span className="font-medium truncate">{match.awayTeam.name}</span>
-            <Image src={match.awayTeam.logoUrl} alt={match.awayTeam.name} width={24} height={24} className="h-6 w-6" data-ai-hint="team logo" />
+            <span className="font-medium truncate">{match.teams.away.name}</span>
+            <Image src={match.teams.away.logoUrl} alt={match.teams.away.name} width={24} height={24} className="h-6 w-6" data-ai-hint="team logo" />
         </div>
       )
     },
@@ -109,29 +98,33 @@ export const columns: ColumnDef<Match>[] = [
     }
   },
   {
-    header: "1X2",
+    header: () => <div className="text-right">1X2</div>,
     cell: ({ row }) => {
-      const odds = row.original.odds
+      const odds = row.original.mainOdds
       return (
-        <div className="flex justify-end gap-2 text-xs w-full">
-          <Button variant="outline" size="sm" className="h-7 font-mono w-16 justify-end">{odds?.home?.toFixed(2) ?? '-'}</Button>
-          <Button variant="outline" size="sm" className="h-7 font-mono w-16 justify-end">{odds?.draw?.toFixed(2) ?? '-'}</Button>
-          <Button variant="outline" size="sm" className="h-7 font-mono w-16 justify-end">{odds?.away?.toFixed(2) ?? '-'}</Button>
+        <div className="flex justify-end gap-1 text-xs w-full font-mono">
+          <Button variant="outline" size="sm" className="h-7 w-14 justify-end">{odds?.[1]?.toFixed(2) ?? '-'}</Button>
+          <Button variant="outline" size="sm" className="h-7 w-14 justify-end">{odds?.['X']?.toFixed(2) ?? '-'}</Button>
+          <Button variant="outline" size="sm" className="h-7 w-14 justify-end">{odds?.[2]?.toFixed(2) ?? '-'}</Button>
         </div>
       )
     },
   },
-   {
-    header: "O/U 2.5",
-    cell: ({ row }) => {
-      const odds = row.original.odds
+  {
+    accessorKey: "valueMetrics.valueScore",
+    header: ({ column }) => {
       return (
-        <div className="flex justify-end gap-2 text-xs w-full">
-          <Button variant="outline" size="sm" className="h-7 font-mono w-16 justify-end">{odds?.over?.toFixed(2) ?? '-'}</Button>
-          <Button variant="outline" size="sm" className="h-7 font-mono w-16 justify-end">{odds?.under?.toFixed(2) ?? '-'}</Button>
-        </div>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="text-right w-full justify-end"
+        >
+          Valor
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
       )
     },
+    cell: ({ row }) => <ValueIndicator value={row.original.valueMetrics?.valueScore} />,
   },
   {
     id: "actions",
@@ -139,7 +132,10 @@ export const columns: ColumnDef<Match>[] = [
     cell: ({ row }) => {
       return (
         <div className="text-right">
-            <Button variant="default">Analizar Partido</Button>
+            <Button variant="default" size="sm">
+              <BarChart2 className="mr-2 h-4 w-4" />
+              Analizar
+            </Button>
         </div>
       )
     },

@@ -80,7 +80,7 @@ export function MatchDataTable<TData, TValue>({
   )
 
   const handlePageChange = (page: number) => {
-    router.push(`${pathname}?${createQueryString({ page: page })}`, {
+    router.push(`${pathname}?${createQueryString({ page: page, tab: searchParams.get('tab') })}`, {
         scroll: false
     })
   }
@@ -88,9 +88,9 @@ export function MatchDataTable<TData, TValue>({
   React.useEffect(() => {
     const [sort] = sorting;
     if (sort) {
-        router.push(`${pathname}?${createQueryString({ sortBy: sort.id, sortOrder: sort.desc ? 'desc' : 'asc' })}`, { scroll: false });
+        router.push(`${pathname}?${createQueryString({ sortBy: sort.id, sortOrder: sort.desc ? 'desc' : 'asc', tab: searchParams.get('tab') })}`, { scroll: false });
     }
-  }, [sorting, router, pathname, createQueryString]);
+  }, [sorting, router, pathname, createQueryString, searchParams]);
 
   return (
     <div>

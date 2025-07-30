@@ -1,5 +1,4 @@
 
-
 export interface UserProfile {
     uid: string;
     email: string;
@@ -7,12 +6,12 @@ export interface UserProfile {
     analysisCount: number;
     analysisLimit: number;
     // Preferences
-    preferredOddsFormat: 'decimal' | 'fractional' | 'american';
-    // Personalization
-    segment?: 'conservative' | 'balanced' | 'aggressive';
+    preferredOddsFormat?: 'decimal' | 'fractional' | 'american';
     // Gamification
     points?: number;
     medals?: string[];
+    // Personalization
+    segment?: 'conservative' | 'balanced' | 'aggressive';
 }
 
 
@@ -25,7 +24,7 @@ export interface League {
 }
 
 export interface Team {
-    id: string;
+    id?: string; // Can be optional if we don't always have it
     name: string;
     logoUrl: string;
 }
