@@ -1,5 +1,5 @@
 
-import { fetchDailySchedule } from "@/ai/flows/fetch-daily-schedule-flow";
+import { fetchLiveOdds } from "@/ai/flows/fetch-live-odds-flow";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Calendar, Clock, AlertCircle } from "lucide-react";
@@ -13,12 +13,11 @@ export async function UpcomingMatches() {
 
     try {
         // Fetch the schedule for the next few days. The flow handles the date logic.
-        const { matches } = await fetchDailySchedule({ sport: 'soccer' });
+        const { matches } = await fetchLiveOdds({ sport: 'soccer' });
         upcomingMatches = matches
             .sort((a, b) => new Date(a.scheduled).getTime() - new Date(b.scheduled).getTime())
             .slice(0, 4); // Limit to 4 matches
     } catch (error: any) {
-        // The flow itself is designed to be resilient, but we catch any unexpected errors.
         fetchError = error.message;
     }
 
@@ -46,7 +45,7 @@ export async function UpcomingMatches() {
                     <div className="flex flex-col items-center justify-center text-center p-4 bg-red-50 border border-red-200 rounded-lg">
                         <AlertCircle className="size-8 text-red-500 mb-2" />
                         <p className="font-semibold text-red-700">No se pudieron cargar los partidos</p>
-                        <p className="text-sm text-red-600">{fetchError}</p>
+                        <p className="text-sm text-red-600">La API de cuotas puede haber alcanzado su límite. Inténtalo más tarde.</p>
                     </div>
                 ) : upcomingMatches.length === 0 ? (
                      <p className="text-muted-foreground text-center py-4">No se encontraron próximos partidos en este momento.</p>

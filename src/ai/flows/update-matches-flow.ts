@@ -11,7 +11,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { db } from '@/lib/firebase-admin';
 import type { Match, Team, League } from '@/lib/types';
-import { fetchDailySchedule, FetchDailyScheduleOutput } from './fetch-daily-schedule-flow';
+import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
 
 const UpdateMatchesOutputSchema = z.object({
   success: z.boolean(),
@@ -21,7 +21,7 @@ export type UpdateMatchesOutput = z.infer<typeof UpdateMatchesOutputSchema>;
 
 
 // Helper function to transform Sportradar API data into our internal Match type
-function transformApiMatch(apiMatch: FetchDailyScheduleOutput['matches'][0]): Match | null {
+function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match | null {
     const homeCompetitor = apiMatch.competitors.find(c => c.qualifier === 'home');
     const awayCompetitor = apiMatch.competitors.find(c => c.qualifier === 'away');
 
@@ -83,7 +83,7 @@ const updateMatchesFlow = ai.defineFlow(
     console.log('Starting match update flow using Sportradar daily schedule...');
 
     // Fetch all available soccer matches from Sportradar for the next 7 days
-    const { matches: allMatchesFromApi } = await fetchDailySchedule({ sport: 'soccer' });
+    const { matches: allMatchesFromApi } = await fetchLiveOdds({ sport: 'soccer' });
     const transformedMatches = allMatchesFromApi.map(transformApiMatch).filter((m): m is Match => m !== null);
 
     if (transformedMatches.length === 0) {

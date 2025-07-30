@@ -15,7 +15,7 @@ import { format, addDays } from 'date-fns';
 
 const SportEventSchema = z.object({
     id: z.string(),
-    scheduled: z.string(), // Changed from start_time
+    scheduled: z.string(),
     sport_event_context: z.object({
         sport: z.object({ id: z.string(), name: z.string() }),
         category: z.object({ id: z.string(), name: z.string() }),
@@ -35,29 +35,29 @@ const DailyScheduleSchema = z.object({
 
 // --- Input and Output Schemas for the Flow ---
 
-const FetchLiveOddsInputSchema = z.object({
+const FetchDailyScheduleInputSchema = z.object({
   sport: z.string().describe('The sport to fetch, e.g., "soccer".'),
 });
-export type FetchLiveOddsInput = z.infer<typeof FetchLiveOddsInputSchema>;
+export type FetchDailyScheduleInput = z.infer<typeof FetchDailyScheduleInputSchema>;
 
-const FetchLiveOddsOutputSchema = z.object({
+const FetchDailyScheduleOutputSchema = z.object({
     matches: z.array(SportEventSchema).describe('An array of scheduled matches from Sportradar.'),
 });
-export type FetchLiveOddsOutput = z.infer<typeof FetchLiveOddsOutputSchema>;
+export type FetchDailyScheduleOutput = z.infer<typeof FetchDailyScheduleOutputSchema>;
 
 
 // --- Exported Wrapper Function ---
-export async function fetchLiveOdds(input: FetchLiveOddsInput): Promise<FetchLiveOddsOutput> {
-  return fetchLiveOddsFlow(input);
+export async function fetchDailySchedule(input: FetchDailyScheduleInput): Promise<FetchDailyScheduleOutput> {
+  return fetchDailyScheduleFlow(input);
 }
 
 
 // --- The Genkit Flow ---
-const fetchLiveOddsFlow = ai.defineFlow(
+const fetchDailyScheduleFlow = ai.defineFlow(
   {
-    name: 'fetchLiveOddsFlow',
-    inputSchema: FetchLiveOddsInputSchema,
-    outputSchema: FetchLiveOddsOutputSchema,
+    name: 'fetchDailyScheduleFlow',
+    inputSchema: FetchDailyScheduleInputSchema,
+    outputSchema: FetchDailyScheduleOutputSchema,
   },
   async ({ sport }) => {
     const apiKey = process.env.SPORTRADAR_API_KEY;
@@ -72,7 +72,6 @@ const fetchLiveOddsFlow = ai.defineFlow(
     const allScheduledEvents: z.infer<typeof SportEventSchema>[] = [];
 
     for (const date of dates) {
-        // Correct endpoint for daily schedules
         const apiUrl = `https://api.sportradar.com/soccer/trial/v4/en/schedules/${date}/schedule.json`;
         
         try {
@@ -83,8 +82,7 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
             if (!response.ok) {
                 const errorText = await response.text();
-                // Log a warning instead of throwing an error for a single failed day
-                console.warn(`[fetchLiveOddsFlow] API Warning for date ${date}: ${response.status} ${response.statusText} - ${errorText}`);
+                console.warn(`[fetchDailySchedule] API Warning for date ${date}: ${response.status} ${response.statusText} - ${errorText}`);
                 continue; // Skip to the next day on error
             }
 
@@ -92,15 +90,14 @@ const fetchLiveOddsFlow = ai.defineFlow(
             const validatedData = DailyScheduleSchema.safeParse(data);
 
             if (!validatedData.success) {
-                console.warn(`[fetchLiveOddsFlow] Zod validation warning for date ${date} (non-fatal):`, validatedData.error.issues);
+                console.warn(`[fetchDailySchedule] Zod validation warning for date ${date} (non-fatal):`, validatedData.error.issues);
                 continue;
             }
             
             allScheduledEvents.push(...validatedData.data.sport_events);
 
         } catch (e: any) {
-            // Log exceptions for individual dates but don't stop the whole flow
-            console.warn(`[fetchLiveOddsFlow] Exception for date ${date}: ${e.message}`);
+            console.warn(`[fetchDailySchedule] Exception for date ${date}: ${e.message}`);
             continue;
         }
     }

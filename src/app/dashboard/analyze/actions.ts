@@ -9,7 +9,7 @@ import { calculateValueBetManual } from '@/ai/flows/calculate-value-bet-manual-f
 import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
 import { calculateBatchValueBets } from '@/ai/flows/calculate-batch-value-bets-flow';
 import { calculateValueBetFromImage } from '@/ai/flows/calculate-value-bet-from-image-flow';
-import { fetchDailySchedule } from '@/ai/flows/fetch-daily-schedule-flow';
+import { fetchLiveOdds } from '@/ai/flows/fetch-live-odds-flow';
 import { fetchHistoricalOdds } from '@/ai/flows/fetch-historical-odds-flow';
 
 
@@ -367,7 +367,7 @@ const liveOddsSchema = z.object({
   sport: z.string().min(1, { message: 'El deporte es obligatorio.' }),
 });
 
-export async function handleFetchDailySchedule(
+export async function handleFetchLiveOdds(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
@@ -386,7 +386,7 @@ export async function handleFetchDailySchedule(
   }
 
   try {
-    const { matches } = await fetchDailySchedule(validatedFields.data);
+    const { matches } = await fetchLiveOdds(validatedFields.data);
 
     if (matches.length === 0) {
       return { message: "No se encontraron partidos programados para los criterios seleccionados." };

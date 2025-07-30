@@ -12,7 +12,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { GetMatchesResponse, Match, League, Team } from '@/lib/types';
-import { fetchDailySchedule, FetchDailyScheduleOutput } from './fetch-daily-schedule-flow';
+import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
 import { TEAM_LOGOS } from './_data/teams';
 
 const GetMatchesInputSchema = z.object({
@@ -36,15 +36,13 @@ export async function getMatches(input: GetMatchesInput): Promise<GetMatchesResp
 }
 
 // Helper function to transform Sportradar API data into our internal Match type
-function transformApiMatch(apiMatch: FetchDailyScheduleOutput['matches'][0]): Match {
+function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match | null {
     
     const homeCompetitor = apiMatch.competitors.find(c => c.qualifier === 'home');
     const awayCompetitor = apiMatch.competitors.find(c => c.qualifier === 'away');
 
     if (!homeCompetitor || !awayCompetitor) {
-        // This case should be rare, but we handle it to prevent crashes.
-        // We will filter out these incomplete matches later.
-        return null as any; 
+        return null; 
     }
 
     const homeTeam: Team = { id: homeCompetitor.id, name: homeCompetitor.name, logoUrl: TEAM_LOGOS[homeCompetitor.name] || 'https://placehold.co/40x40.png' };
@@ -93,11 +91,11 @@ const getMatchesFlow = ai.defineFlow(
   },
   async (filters) => {
     // Fetch all soccer matches for the next few days and then filter.
-    const { matches: allMatchesFromApi } = await fetchDailySchedule({ sport: 'soccer' });
+    const { matches: allMatchesFromApi } = await fetchLiveOdds({ sport: 'soccer' });
     
     let allMatches = allMatchesFromApi
         .map(transformApiMatch)
-        .filter(match => match !== null) // Filter out any matches that couldn't be transformed
+        .filter((match): match is Match => match !== null) // Filter out any matches that couldn't be transformed
         // Sort by date by default if no other sort is specified
         .sort((a, b) => {
             if (filters.sortBy && filters.sortBy !== 'eventTimestamp') return 0;
@@ -109,9 +107,11 @@ const getMatchesFlow = ai.defineFlow(
 
     if (filters.leagues && filters.leagues.length > 0) {
         const leagueSet = new Set(filters.leagues);
-        // Sportradar competition IDs are in the format "sr:competition:123"
-        // We are filtering by name here as IDs are not consistent across endpoints
-        filteredMatches = filteredMatches.filter(match => leagueSet.has(match.league.name));
+        // We filter by competition ID as it's more reliable than name
+        filteredMatches = filteredMatches.filter(match => {
+            const apiMatch = allMatchesFromApi.find(m => m.id === match.id);
+            return apiMatch && leagueSet.has(apiMatch.sport_event_context.competition.id);
+        });
     }
 
     if (filters.startDate) {
@@ -123,11 +123,11 @@ const getMatchesFlow = ai.defineFlow(
     if (filters.minValue) {
       filteredMatches = filteredMatches.filter(match => (match.valueMetrics?.valueScore || 0) >= filters.minValue!);
     }
-     if (filters.minOdds) {
-      filteredMatches = filteredMatches.filter(match => (match.mainOdds?.[1] || 0) >= filters.minOdds!);
+     if (filters.minOdds && filters.markets?.includes('1')) {
+        filteredMatches = filteredMatches.filter(match => (match.mainOdds?.[1] || Infinity) >= filters.minOdds!);
     }
-    if (filters.maxOdds) {
-      filteredMatches = filteredMatches.filter(match => (match.mainOdds?.[1] || 0) <= filters.maxOdds!);
+    if (filters.maxOdds && filters.markets?.includes('1')) {
+        filteredMatches = filteredMatches.filter(match => (match.mainOdds?.[1] || 0) <= filters.maxOdds!);
     }
 
     // Sorting logic

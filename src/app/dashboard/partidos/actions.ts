@@ -4,16 +4,28 @@
 import { getMatches } from "@/ai/flows/get-matches-flow";
 import { getLeaguesList as getLeagues } from "@/ai/flows/get-leagues-list-flow";
 import type { GetMatchesResponse, League, GetMatchesInput, Match } from "@/lib/types";
+import { fetchLiveOdds } from "@/ai/flows/fetch-live-odds-flow";
 
 export async function fetchMatches(filters: GetMatchesInput): Promise<GetMatchesResponse> {
-    return getMatches(filters);
+    // Add a try-catch block for robust error handling
+    try {
+        const response = await getMatches(filters);
+        return response;
+    } catch (error: any) {
+        console.error("Error fetching matches in action:", error.message);
+        // Return a structured error response that the UI can handle
+        return {
+            data: [],
+            totalMatches: 0,
+            totalPages: 0,
+            currentPage: filters.page || 1,
+        };
+    }
 }
 
 export async function getMatchesByLeague(): Promise<{ data: Record<string, Match[]>, error: string | null }> {
     try {
-        // We can fetch from a few popular soccer leagues for the "Competitions" view as fetching all is too slow.
-        const popularLeagues = ['soccer_spain_la_liga', 'soccer_epl', 'soccer_italy_serie_a', 'soccer_germany_bundesliga'];
-        const response = await getMatches({ limit: 100, leagues: popularLeagues }); 
+        const response = await getMatches({ limit: 100 }); 
         
         if (!response.data) {
             return { data: {}, error: 'No se recibieron datos de la API.' };
@@ -30,15 +42,14 @@ export async function getMatchesByLeague(): Promise<{ data: Record<string, Match
         
         return { data: groupedByLeague, error: null };
     } catch (error: any) {
+        console.error("Error in getMatchesByLeague:", error.message);
         return { data: {}, error: error.message };
     }
 }
 
 export async function getMatchesByValue(): Promise<{ data: Match[], error: string | null }> {
     try {
-        const popularLeagues = ['soccer_spain_la_liga', 'soccer_epl', 'soccer_italy_serie_a', 'soccer_germany_bundesliga', 'tennis_atp_aus_open_singles', 'tennis_wta_aus_open_singles'];
         const response = await getMatches({ 
-            leagues: popularLeagues,
             minValue: 0.01,
             sortBy: 'valueMetrics.valueScore', 
             sortOrder: 'desc',
@@ -51,12 +62,13 @@ export async function getMatchesByValue(): Promise<{ data: Match[], error: strin
 
         return { data: response.data, error: null };
     } catch (error: any) {
+        console.error("Error in getMatchesByValue:", error.message);
         return { data: [], error: error.message };
     }
 }
 
 type GetLeaguesListParams = {
-    sport?: 'soccer' | 'tennis_atp' | 'tennis_wta' | 'basketball';
+    sport?: 'soccer' | 'tennis' | 'basketball';
 }
 
 export async function getLeaguesList(params?: GetLeaguesListParams): Promise<{leagues: League[], error: string | null}> {

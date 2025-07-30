@@ -13,19 +13,13 @@ interface Competitor {
 
 interface SportEvent {
     id: string;
-    scheduled: string; // Changed from start_time
+    scheduled: string;
     competitors: Competitor[];
-}
-
-interface Match {
-    sport_event: SportEvent;
-    // Markets are not included in the daily schedule, so they are optional
-    markets?: any[]; 
 }
 
 interface LiveOddsResultsProps {
     data: {
-        matches: Match[];
+        matches: SportEvent[];
     };
 }
 
@@ -36,26 +30,25 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
 
     const { matches } = data;
 
-    const getBestOdds = (match: Match) => {
-        // Simulate odds since they are not in the daily schedule response
-        const odds = { 
+    const getSimulatedOdds = () => {
+        return { 
             home: parseFloat((Math.random() * (3.5 - 1.5) + 1.5).toFixed(2)),
             draw: parseFloat((Math.random() * (4.0 - 2.8) + 2.8).toFixed(2)),
             away: parseFloat((Math.random() * (5.0 - 1.8) + 1.8).toFixed(2)),
         };
-        
-        const homeTeamName = match.sport_event.competitors.find(c => c.qualifier === 'home')?.name;
-        const awayTeamName = match.sport_event.competitors.find(c => c.qualifier === 'away')?.name;
-        
-        return { odds, homeTeamName, awayTeamName };
     };
 
+    const getTeamNames = (match: SportEvent) => {
+        const homeTeamName = match.competitors.find(c => c.qualifier === 'home')?.name;
+        const awayTeamName = match.competitors.find(c => c.qualifier === 'away')?.name;
+        return { homeTeamName, awayTeamName };
+    };
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>Resultados de Partidos Programados</CardTitle>
-                <CardDescription>Se encontraron {matches.length} partidos. Estas son las cuotas simuladas.</CardDescription>
+                <CardDescription>Se encontraron {matches.length} partidos. Las cuotas son simuladas con fines demostrativos.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -71,12 +64,14 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
                     </TableHeader>
                     <TableBody>
                         {matches.map((match) => {
-                             const { odds, homeTeamName, awayTeamName } = getBestOdds(match);
-                             if (!homeTeamName || !awayTeamName) return null;
+                             const { homeTeamName, awayTeamName } = getTeamNames(match);
+                             if (!homeTeamName || !awayTeamName) return null; // Skip if team names are not found
+
+                             const odds = getSimulatedOdds(); // Get fresh simulated odds for each match
                              return (
-                                <TableRow key={match.sport_event.id}>
+                                <TableRow key={match.id}>
                                     <TableCell>
-                                        {format(new Date(match.sport_event.scheduled), "d MMM yyyy, HH:mm", { locale: es })}
+                                        {format(new Date(match.scheduled), "d MMM yyyy, HH:mm", { locale: es })}
                                     </TableCell>
                                     <TableCell className="font-medium">
                                         {homeTeamName} vs {awayTeamName}
