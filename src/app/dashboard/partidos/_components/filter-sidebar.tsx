@@ -46,7 +46,7 @@ export function FilterSidebar() {
   
   useEffect(() => {
     async function fetchLeagues() {
-      const { leagues } = await getLeaguesList({ sport: sport as 'soccer' | 'tennis_atp' | 'tennis_wta' | 'basketball' });
+      const { leagues } = await getLeaguesList({ sportGroup: sport as any });
       setLeagues(leagues);
     }
     fetchLeagues();

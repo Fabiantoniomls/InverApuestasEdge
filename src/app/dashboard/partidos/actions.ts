@@ -68,12 +68,12 @@ export async function getMatchesByValue(): Promise<{ data: Match[], error: strin
 }
 
 type GetLeaguesListParams = {
-    sport?: 'soccer' | 'tennis' | 'basketball';
+    sportGroup?: 'soccer' | 'tennis' | 'basketball' | 'tennis_atp' | 'tennis_wta';
 }
 
 export async function getLeaguesList(params?: GetLeaguesListParams): Promise<{leagues: League[], error: string | null}> {
   try {
-    const { leagues } = await getLeagues({ sportGroup: params?.sport || 'soccer' });
+    const { leagues } = await getLeagues({ sportGroup: params?.sportGroup || 'soccer' });
     const mappedLeagues = leagues.map(l => ({...l, id: l.id, name: l.name, country: l.country, sportId: l.sportId, logoUrl: l.logoUrl }))
     return { leagues: mappedLeagues, error: null };
   } catch (error: any) {

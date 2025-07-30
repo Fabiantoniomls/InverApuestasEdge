@@ -22,7 +22,7 @@ const CompetitionFromApiSchema = z.object({
 });
 
 const GetLeaguesListInputSchema = z.object({
-    sportGroup: z.enum(['soccer', 'tennis', 'basketball']).optional().default('soccer'),
+    sportGroup: z.enum(['soccer', 'tennis', 'basketball', 'tennis_atp', 'tennis_wta']).optional().default('soccer'),
 });
 
 const GetLeaguesListOutputSchema = z.object({
@@ -53,8 +53,13 @@ const getLeaguesListFlow = ai.defineFlow(
       throw new Error('SPORTRADAR_API_KEY is not configured in environment variables.');
     }
     
+    // Handle different tennis keys
+    let sportPath = sportGroup;
+    if (sportGroup === 'tennis_atp' || sportGroup === 'tennis_wta') {
+        sportPath = 'tennis';
+    }
+
     // Sportradar endpoint to get all competitions for a sport
-    const sportPath = sportGroup; // e.g., 'soccer'
     const apiUrl = `https://api.sportradar.com/${sportPath}/trial/v4/en/competitions.json`;
 
     try {
