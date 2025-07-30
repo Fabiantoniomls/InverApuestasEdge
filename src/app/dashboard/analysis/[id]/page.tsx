@@ -272,5 +272,3 @@ export default function SavedAnalysisPage({ params }: { params: { id: string } }
         </div>
     );
 }
-
-    
