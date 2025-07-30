@@ -12,7 +12,6 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase-admin';
 import type { Match, Team, League } from '@/lib/types';
 import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
-import { SOCCER_LEAGUES } from './_data/leagues';
 
 const UpdateMatchesOutputSchema = z.object({
   success: z.boolean(),
@@ -21,48 +20,44 @@ const UpdateMatchesOutputSchema = z.object({
 export type UpdateMatchesOutput = z.infer<typeof UpdateMatchesOutputSchema>;
 
 
-// Helper function to transform API data into our internal Match type
-function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
-    const leagueInfo = SOCCER_LEAGUES.find(l => l.id === apiMatch.sport_key) || { name: apiMatch.sport_title, country: 'Unknown', logoUrl: '' };
+// Helper function to transform Sportradar API data into our internal Match type
+function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match | null {
+    const homeCompetitor = apiMatch.sport_event.competitors.find(c => c.qualifier === 'home');
+    const awayCompetitor = apiMatch.sport_event.competitors.find(c => c.qualifier === 'away');
 
-    const homeTeam: Team = { id: apiMatch.home_team, name: apiMatch.home_team, logoUrl: 'https://placehold.co/40x40.png' };
-    const awayTeam: Team = { id: apiMatch.away_team, name: apiMatch.away_team, logoUrl: 'https://placehold.co/40x40.png' };
+    if (!homeCompetitor || !awayCompetitor) return null;
+
+    const homeTeam: Team = { id: homeCompetitor.id, name: homeCompetitor.name, logoUrl: 'https://placehold.co/40x40.png' };
+    const awayTeam: Team = { id: awayCompetitor.id, name: awayCompetitor.name, logoUrl: 'https://placehold.co/40x40.png' };
     
     const league: League = { 
-        id: apiMatch.sport_key, 
-        name: leagueInfo.name, 
-        country: leagueInfo.country, 
+        id: apiMatch.sport_event.sport_event_context.competition.id,
+        name: apiMatch.sport_event.sport_event_context.competition.name,
+        country: apiMatch.sport_event.sport_event_context.category.name,
         sportId: 'soccer',
-        logoUrl: leagueInfo.logoUrl 
+        logoUrl: '' 
     };
     
-    // Find best odds for h2h and totals
     let h2h_odds: { '1'?: number; 'X'?: number; '2'?: number; } = {};
-    apiMatch.bookmakers?.forEach(bookmaker => {
-        bookmaker.markets?.forEach(market => {
-            if (market.key === 'h2h') {
-                const home = market.outcomes.find(o => o.name === apiMatch.home_team)?.price;
-                const away = market.outcomes.find(o => o.name === apiMatch.away_team)?.price;
-                const draw = market.outcomes.find(o => o.name === 'Draw')?.price;
-                if (home && (!h2h_odds['1'] || home > h2h_odds['1'])) h2h_odds['1'] = home;
-                if (away && (!h2h_odds['2'] || away > h2h_odds['2'])) h2h_odds['2'] = away;
-                if (draw && (!h2h_odds['X'] || draw > h2h_odds['X'])) h2h_odds['X'] = draw;
-            }
-        });
-    });
+    const moneylineMarket = apiMatch.markets?.find(m => m.name.toLowerCase() === '3-way moneyline');
+    if (moneylineMarket) {
+        h2h_odds['1'] = moneylineMarket.outcomes.find(o => o.name.toLowerCase() === 'home team')?.odds;
+        h2h_odds['2'] = moneylineMarket.outcomes.find(o => o.name.toLowerCase() === 'away team')?.odds;
+        h2h_odds['X'] = moneylineMarket.outcomes.find(o => o.name.toLowerCase() === 'draw')?.odds;
+    }
 
     const hasValue = Math.random() > 0.8;
     const valueScore = hasValue ? Math.random() * 0.15 : 0;
     const explanations = ["Desajuste de la línea de mercado con nuestro modelo.", "Rendimiento reciente del equipo infravalorado por el mercado.", "Anomalía detectada en el movimiento de la línea de cuotas."];
 
     return {
-        id: apiMatch.id,
+        id: apiMatch.sport_event.id,
         league: {
-            name: leagueInfo.name,
-            country: leagueInfo.country,
-            logoUrl: leagueInfo.logoUrl,
+            name: league.name,
+            country: league.country,
+            logoUrl: league.logoUrl,
         },
-        eventTimestamp: new Date(apiMatch.commence_time).getTime(),
+        eventTimestamp: new Date(apiMatch.sport_event.start_time).getTime(),
         teams: {
             home: homeTeam,
             away: awayTeam,
@@ -86,17 +81,11 @@ const updateMatchesFlow = ai.defineFlow(
     outputSchema: UpdateMatchesOutputSchema,
   },
   async () => {
-    console.log('Starting match update flow...');
+    console.log('Starting match update flow using Sportradar...');
 
-    const apiPromises = SOCCER_LEAGUES.map(league => fetchLiveOdds({
-        sport: league.id,
-        regions: 'eu',
-        markets: 'h2h',
-    }));
-
-    const results = await Promise.all(apiPromises);
-    const allMatchesFromApi = results.flatMap(result => result.matches);
-    const transformedMatches = allMatchesFromApi.map(transformApiMatch);
+    // Fetch all available soccer matches from Sportradar
+    const { matches: allMatchesFromApi } = await fetchLiveOdds({ sport: 'soccer' });
+    const transformedMatches = allMatchesFromApi.map(transformApiMatch).filter((m): m is Match => m !== null);
 
     if (transformedMatches.length === 0) {
       console.log('No matches found to update.');

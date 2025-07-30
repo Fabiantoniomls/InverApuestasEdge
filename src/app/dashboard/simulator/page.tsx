@@ -20,12 +20,8 @@ import { SimulationResults } from './_components/simulation-results';
 
 
 const sportOptions = [
-    { value: "soccer_spain_la_liga", label: "La Liga (España)" },
-    { value: "soccer_epl", label: "Premier League (Inglaterra)" },
-    { value: "soccer_italy_serie_a", label: "Serie A (Italia)" },
-    { value: "soccer_germany_bundesliga", label: "Bundesliga (Alemania)" },
-    { value: "soccer_france_ligue_one", label: "Ligue 1 (Francia)" },
-    { value: "soccer_uefa_champs_league", label: "UEFA Champions League" },
+    { value: "sr:sport:1", label: "Fútbol" },
+    // Add more sports as Sportradar implementation expands
 ];
 
 const initialState: ActionState = {
@@ -80,7 +76,7 @@ export default function SimulatorPage() {
                         <CardHeader>
                             <CardTitle>Configurar Simulación</CardTitle>
                             <CardDescription>
-                                Elige una fecha histórica y una liga para realizar un backtest de tu estrategia.
+                                Elige una fecha histórica y un deporte para realizar un backtest de tu estrategia.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -89,29 +85,26 @@ export default function SimulatorPage() {
                                     <Bot className="h-4 w-4" />
                                     <AlertTitle>Acceso a Datos Históricos</AlertTitle>
                                     <AlertDescription>
-                                        Esta herramienta utiliza datos históricos de cuotas. Para un uso extensivo, se recomienda una suscripción a The Odds API.
-                                        <a href="https://the-odds-api.com" target="_blank" rel="noopener noreferrer">
+                                        Esta herramienta utiliza datos históricos de cuotas de Sportradar.
+                                        <a href="https://developer.sportradar.com/docs/read/getting-started" target="_blank" rel="noopener noreferrer">
                                             <Button variant="link" className="p-0 h-auto mt-2 text-primary">
-                                                Ver Planes <ExternalLink className="ml-2 h-4 w-4" />
+                                                Ver Documentación <ExternalLink className="ml-2 h-4 w-4" />
                                             </Button>
                                         </a>
                                     </AlertDescription>
                                 </Alert>
                                 <div>
-                                    <label htmlFor="sport" className="text-sm font-medium">Liga</label>
-                                     <Select name="sport" defaultValue="soccer_spain_la_liga" required>
+                                    <label htmlFor="sport" className="text-sm font-medium">Deporte</label>
+                                     <Select name="sport" defaultValue="sr:sport:1" required>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Selecciona una liga..." />
+                                            <SelectValue placeholder="Selecciona un deporte..." />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectGroup>
-                                                <SelectLabel>Fútbol</SelectLabel>
-                                                {sportOptions.map(option => (
-                                                    <SelectItem key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
+                                            {sportOptions.map(option => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                    </Select>
                                    {state.fields?.sport && <p className="text-red-500 text-sm mt-1">{state.fields.sport}</p>}

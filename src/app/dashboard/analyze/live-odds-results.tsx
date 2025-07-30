@@ -5,32 +5,31 @@ import { Button } from "@/components/ui/button";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+interface Competitor {
+    id: string;
+    name: string;
+    qualifier: string;
+}
+
+interface SportEvent {
+    id: string;
+    start_time: string;
+    competitors: Competitor[];
+}
+
 interface Outcome {
     name: string;
-    price: number;
+    odds: number;
 }
 
 interface Market {
-    key: string;
-    last_update: number;
+    name: string;
     outcomes: Outcome[];
 }
 
-interface Bookmaker {
-    key: string;
-    title: string;
-    last_update: number;
-    markets: Market[];
-}
-
 interface Match {
-    id: string;
-    sport_key: string;
-    sport_title: string;
-    commence_time: string;
-    home_team: string;
-    away_team: string;
-    bookmakers: Bookmaker[];
+    sport_event: SportEvent;
+    markets?: Market[];
 }
 
 interface LiveOddsResultsProps {
@@ -46,29 +45,22 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
 
     const { matches } = data;
 
-    // Helper to find the best odds for each outcome (Home, Away, Draw)
     const getBestOdds = (match: Match) => {
+        const homeTeamName = match.sport_event.competitors.find(c => c.qualifier === 'home')?.name;
+        const awayTeamName = match.sport_event.competitors.find(c => c.qualifier === 'away')?.name;
         const odds: { home: number | null, away: number | null, draw: number | null } = { home: null, away: null, draw: null };
         
-        match.bookmakers.forEach(bookmaker => {
-            const h2hMarket = bookmaker.markets.find(m => m.key === 'h2h');
-            if (h2hMarket) {
-                const homeOutcome = h2hMarket.outcomes.find(o => o.name === match.home_team);
-                const awayOutcome = h2hMarket.outcomes.find(o => o.name === match.away_team);
-                const drawOutcome = h2hMarket.outcomes.find(o => o.name === 'Draw');
+        const market = match.markets?.find(m => m.name.toLowerCase() === '3-way moneyline');
+        if (market) {
+            const homeOutcome = market.outcomes.find(o => o.name.toLowerCase() === 'home team');
+            const awayOutcome = market.outcomes.find(o => o.name.toLowerCase() === 'away team');
+            const drawOutcome = market.outcomes.find(o => o.name.toLowerCase() === 'draw');
 
-                if (homeOutcome && (!odds.home || homeOutcome.price > odds.home)) {
-                    odds.home = homeOutcome.price;
-                }
-                if (awayOutcome && (!odds.away || awayOutcome.price > odds.away)) {
-                    odds.away = awayOutcome.price;
-                }
-                if (drawOutcome && (!odds.draw || drawOutcome.price > odds.draw)) {
-                    odds.draw = drawOutcome.price;
-                }
-            }
-        });
-        return odds;
+            if (homeOutcome) odds.home = homeOutcome.odds;
+            if (awayOutcome) odds.away = awayOutcome.odds;
+            if (drawOutcome) odds.draw = drawOutcome.odds;
+        }
+        return { odds, homeTeamName, awayTeamName };
     };
 
 
@@ -76,7 +68,7 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
         <Card>
             <CardHeader>
                 <CardTitle>Resultados de Cuotas en Vivo</CardTitle>
-                <CardDescription>Se encontraron {matches.length} partidos. Estas son las mejores cuotas disponibles en el mercado seleccionado.</CardDescription>
+                <CardDescription>Se encontraron {matches.length} partidos. Estas son las mejores cuotas disponibles.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -84,26 +76,27 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
                         <TableRow>
                             <TableHead>Fecha y Hora</TableHead>
                             <TableHead>Partido</TableHead>
-                            <TableHead className="text-center">Mejor Cuota Local</TableHead>
-                            <TableHead className="text-center">Mejor Cuota Empate</TableHead>
-                            <TableHead className="text-center">Mejor Cuota Visitante</TableHead>
+                            <TableHead className="text-center">Cuota Local</TableHead>
+                            <TableHead className="text-center">Cuota Empate</TableHead>
+                            <TableHead className="text-center">Cuota Visitante</TableHead>
                             <TableHead className="text-right">Acción</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {matches.map((match) => {
-                             const bestOdds = getBestOdds(match);
+                             const { odds, homeTeamName, awayTeamName } = getBestOdds(match);
+                             if (!homeTeamName || !awayTeamName) return null;
                              return (
-                                <TableRow key={match.id}>
+                                <TableRow key={match.sport_event.id}>
                                     <TableCell>
-                                        {format(new Date(match.commence_time), "d MMM yyyy, HH:mm", { locale: es })}
+                                        {format(new Date(match.sport_event.start_time), "d MMM yyyy, HH:mm", { locale: es })}
                                     </TableCell>
                                     <TableCell className="font-medium">
-                                        {match.home_team} vs {match.away_team}
+                                        {homeTeamName} vs {awayTeamName}
                                     </TableCell>
-                                    <TableCell className="text-center font-semibold">{bestOdds.home?.toFixed(2) ?? 'N/A'}</TableCell>
-                                    <TableCell className="text-center font-semibold">{bestOdds.draw?.toFixed(2) ?? 'N/A'}</TableCell>
-                                    <TableCell className="text-center font-semibold">{bestOdds.away?.toFixed(2) ?? 'N/A'}</TableCell>
+                                    <TableCell className="text-center font-semibold">{odds.home?.toFixed(2) ?? 'N/A'}</TableCell>
+                                    <TableCell className="text-center font-semibold">{odds.draw?.toFixed(2) ?? 'N/A'}</TableCell>
+                                    <TableCell className="text-center font-semibold">{odds.away?.toFixed(2) ?? 'N/A'}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="outline" size="sm">Analizar</Button>
                                     </TableCell>

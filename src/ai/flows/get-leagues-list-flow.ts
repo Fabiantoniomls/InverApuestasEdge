@@ -1,6 +1,7 @@
+
 'use server';
 /**
- * @fileOverview A Genkit flow to get a list of available leagues from The Odds API.
+ * @fileOverview A Genkit flow to get a list of available leagues from Sportradar.
  * This flow fetches all active sports/leagues and groups them.
  *
  * - getLeaguesList - A function that returns a list of leagues for a given sport.
@@ -10,24 +11,25 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-const SportFromApiSchema = z.object({
-    key: z.string(),
-    group: z.string(),
-    title: z.string(),
-    description: z.string(),
-    active: z.boolean(),
-    has_outrights: z.boolean(),
+const CompetitionFromApiSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    gender: z.string().optional(),
+    category: z.object({
+        id: z.string(),
+        name: z.string(),
+    }),
 });
 
 const GetLeaguesListInputSchema = z.object({
-    sportGroup: z.enum(['soccer', 'tennis_atp', 'tennis_wta', 'basketball']).optional().default('soccer'),
+    sportGroup: z.enum(['soccer', 'tennis', 'basketball']).optional().default('soccer'),
 });
 
 const GetLeaguesListOutputSchema = z.object({
     leagues: z.array(z.object({
         id: z.string(),
         name: z.string(),
-        country: z.string().optional().default(''), // Country is not provided by this API endpoint
+        country: z.string().optional().default(''), 
         sportId: z.string(),
         logoUrl: z.string().optional(),
     }))
@@ -46,12 +48,14 @@ const getLeaguesListFlow = ai.defineFlow(
     outputSchema: GetLeaguesListOutputSchema,
   },
   async ({ sportGroup }) => {
-    const apiKey = process.env.ODDS_API_KEY;
+    const apiKey = process.env.SPORTRADAR_API_KEY;
     if (!apiKey) {
-      throw new Error('THE_ODDS_API_KEY is not configured in environment variables.');
+      throw new Error('SPORTRADAR_API_KEY is not configured in environment variables.');
     }
     
-    const apiUrl = `https://api.the-odds-api.com/v4/sports/?apiKey=${apiKey}`;
+    // Sportradar endpoint to get all competitions for a sport
+    const sportPath = sportGroup; // e.g., 'soccer'
+    const apiUrl = `https://api.sportradar.com/${sportPath}/trial/v4/en/competitions.json?api_key=${apiKey}`;
 
     try {
         const response = await fetch(apiUrl, { 
@@ -59,40 +63,23 @@ const getLeaguesListFlow = ai.defineFlow(
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch sports list: ${response.statusText}`);
+            throw new Error(`Failed to fetch competitions list: ${response.statusText}`);
         }
 
-        const sportsData: z.infer<typeof SportFromApiSchema>[] = await response.json();
+        const apiResponse: { competitions: z.infer<typeof CompetitionFromApiSchema>[] } = await response.json();
         
-        const sportGroupMapping: Record<string, string | null> = {
-            'soccer': 'Soccer',
-            'tennis_atp': 'Tennis',
-            'tennis_wta': 'Tennis',
-            'basketball': 'Basketball',
-        };
+        const mappedLeagues = apiResponse.competitions.map(comp => ({
+            id: comp.id,
+            name: `${comp.category.name}: ${comp.name}`,
+            sportId: sportGroup,
+            country: comp.category.name, 
+            logoUrl: '', // Sportradar competitions endpoint doesn't provide logos
+        }));
 
-        const targetGroup = sportGroupMapping[sportGroup] || 'Soccer';
-
-        const filteredLeagues = sportsData
-            .filter(sport => {
-                if (!sport.active || sport.group !== targetGroup) return false;
-                if (sportGroup === 'tennis_atp') return sport.key.includes('_atp_');
-                if (sportGroup === 'tennis_wta') return sport.key.includes('_wta_');
-                return true;
-            })
-            .map(sport => ({
-                id: sport.key,
-                name: sport.title,
-                sportId: sport.key,
-                // These fields are not available from the /sports endpoint, so we set defaults
-                country: '', 
-                logoUrl: '', 
-            }));
-
-        return { leagues: filteredLeagues };
+        return { leagues: mappedLeagues };
 
     } catch (error) {
-        console.error("Error fetching leagues from API:", error);
+        console.error("Error fetching leagues from Sportradar API:", error);
         return { leagues: [] }; // Return empty on error
     }
   }
