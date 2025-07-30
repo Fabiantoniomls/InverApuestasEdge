@@ -18,3 +18,4 @@ import '@/ai/flows/get-leagues-list-flow.ts';
 import '@/ai/flows/get-matches-flow.ts';
 import '@/ai/flows/get-participants-flow.ts';
 import '@/ai/flows/fetch-historical-odds-flow.ts';
+import '@/ai/flows/update-matches-flow.ts';

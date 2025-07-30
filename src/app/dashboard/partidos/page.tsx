@@ -27,7 +27,7 @@ async function MatchesList({ searchParams }: PartidosPageProps) {
     if (searchParams.endDate) filters.endDate = searchParams.endDate as string;
     if (searchParams.minValue) filters.minValue = parseFloat(searchParams.minValue as string);
     if (searchParams.minOdds) filters.minOdds = parseFloat(searchParams.minOdds as string);
-    if (searchParams.maxOdds) filters.maxOdds = parseFloat(searchParams.maxOdds as string);
+    if (search_params.maxOdds) filters.maxOdds = parseFloat(searchParams.maxOdds as string);
     if (searchParams.sortBy) filters.sortBy = searchParams.sortBy as string;
     if (searchParams.sortOrder) filters.sortOrder = searchParams.sortOrder as 'asc' | 'desc';
 
