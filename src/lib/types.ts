@@ -6,14 +6,15 @@ export interface UserProfile {
     is_premium: boolean;
     analysisCount: number;
     analysisLimit: number;
+    // Preferences
+    preferredOddsFormat: 'decimal' | 'fractional' | 'american';
+    // Personalization
+    segment?: 'conservative' | 'balanced' | 'aggressive';
+    // Gamification
+    points?: number;
+    medals?: string[];
 }
 
-// Based on Phase 1, Prompt 1.1
-export interface Sport {
-    id: string;
-    name: string;
-    sportKey: string;
-}
 
 export interface League {
     id: string;
@@ -27,27 +28,36 @@ export interface Team {
     id: string;
     name: string;
     logoUrl: string;
-    leagueId: string;
 }
 
+// Based on the strategic plan from the consultancy report
 export interface Match {
     id: string;
-    startTime: string; // ISO 8601 string
-    homeTeam: Team;
-    awayTeam: Team;
-    league: League;
-    odds?: {
-        home?: number;
-        draw?: number;
-        away?: number;
-        over?: number;
-        under?: number;
+    league: {
+        name: string;
+        logoUrl?: string;
+        country: string;
     };
-    valueScore?: number;
-    modelProbability?: Record<string, number>;
-    marketProbability?: Record<string, number>;
-    availableMarkets?: string[];
+    eventTimestamp: number; // Unix timestamp
+    teams: {
+        home: Team;
+        away: Team;
+    };
+    mainOdds?: {
+        '1'?: number;
+        'X'?: number;
+        '2'?: number;
+    };
+    valueMetrics?: {
+        hasValue: boolean;
+        market: string; // e.g., 'Home Win', 'Over 2.5'
+        valueScore: number; // e.g., 0.085 for 8.5%
+        recommendedStake?: number;
+    };
+    marketCount?: number;
+    liveStatus: 'pre-match' | 'live' | 'finished';
 }
+
 
 export interface GetMatchesResponse {
   data: Match[];
