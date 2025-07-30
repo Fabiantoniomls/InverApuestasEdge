@@ -14,6 +14,7 @@ import { z } from 'zod';
 import type { GetMatchesResponse, Match, League, Team } from '@/lib/types';
 import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
 import { SOCCER_LEAGUES } from './_data/leagues';
+import { TEAM_LOGOS } from './_data/teams';
 
 const GetMatchesInputSchema = z.object({
     leagues: z.array(z.string()).optional(),
@@ -39,8 +40,8 @@ export async function getMatches(input: GetMatchesInput): Promise<GetMatchesResp
 function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
     const leagueInfo = SOCCER_LEAGUES.find(l => l.id === apiMatch.sport_key) || { name: apiMatch.sport_title, country: 'Unknown', logoUrl: '' };
     
-    const homeTeam: Team = { id: apiMatch.home_team, name: apiMatch.home_team, logoUrl: 'https://placehold.co/40x40.png' };
-    const awayTeam: Team = { id: apiMatch.away_team, name: apiMatch.away_team, logoUrl: 'https://placehold.co/40x40.png' };
+    const homeTeam: Team = { id: apiMatch.home_team, name: apiMatch.home_team, logoUrl: TEAM_LOGOS[apiMatch.home_team] || 'https://placehold.co/40x40.png' };
+    const awayTeam: Team = { id: apiMatch.away_team, name: apiMatch.away_team, logoUrl: TEAM_LOGOS[apiMatch.away_team] || 'https://placehold.co/40x40.png' };
     
     // Find best odds for h2h
     let h2h_odds: { '1'?: number; 'X'?: number; '2'?: number; } = {};
