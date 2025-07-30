@@ -5,6 +5,7 @@ import * as React from 'react';
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { BarChart, Bar, Legend } from 'recharts';
+import { Button } from '@/components/ui/button';
 
 const profitLossData = [
     { name: '11 May', 'Beneficio Acumulado (€)': -40 },
