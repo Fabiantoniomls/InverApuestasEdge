@@ -73,7 +73,8 @@ const fetchLiveOddsFlow = ai.defineFlow(
   async (input) => {
     const apiKey = process.env.ODDS_API_KEY;
     if (!apiKey) {
-      throw new Error('THE_ODDS_API_KEY is not configured in environment variables.');
+      console.warn('THE_ODDS_API_KEY is not configured in environment variables.');
+      return { matches: [] };
     }
 
     const { sport, regions, markets, dateFormat, oddsFormat, eventIds, bookmakers, beginTimeFrom, beginTimeTo } = input;
@@ -95,33 +96,23 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
     const apiUrl = `https://api.the-odds-api.com/v4/sports/${sport}/odds/?${queryParams.toString()}`;
 
-    try {
-      const response = await fetch(apiUrl, { cache: 'no-store' });
+    const response = await fetch(apiUrl, { cache: 'no-store' });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        // Log the detailed error on the server for debugging, but throw a clean error to the client.
-        console.error(`[fetchLiveOddsFlow] API Error: ${response.status} ${response.statusText} - ${errorText}`);
-        throw new Error(`Failed to fetch live odds: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      const validatedData = z.array(MatchOddsSchema).safeParse(data);
-
-      if (!validatedData.success) {
-        console.warn("[fetchLiveOddsFlow] Zod validation warning (non-fatal):", validatedData.error.issues);
-        // If validation fails (e.g., empty array or unexpected format), return an empty list
-        // instead of throwing an error. The frontend will handle the "no matches found" case.
-        return { matches: [] };
-      }
-
-      return { matches: validatedData.data };
-
-    } catch (error) {
-      console.error('[fetchLiveOddsFlow] General fetch error:', error);
-      // Re-throw the error so the calling function can handle it.
-      throw error;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn(`[fetchLiveOddsFlow] API Error: ${response.status} ${response.statusText} - ${errorText}`);
+      return { matches: [] };
     }
+
+    const data = await response.json();
+    
+    const validatedData = z.array(MatchOddsSchema).safeParse(data);
+
+    if (!validatedData.success) {
+      console.warn("[fetchLiveOddsFlow] Zod validation warning (non-fatal):", validatedData.error.issues);
+      return { matches: [] };
+    }
+
+    return { matches: validatedData.data };
   }
 );
