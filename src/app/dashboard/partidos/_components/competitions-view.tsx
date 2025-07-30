@@ -16,7 +16,7 @@ export async function CompetitionsView() {
                     <AccordionItem value={leagueName} key={leagueName}>
                         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
                            <div className="flex items-center gap-3">
-                             {leagueInfo?.logoUrl && <Image src={leagueInfo.logoUrl} alt={leagueName} width={24} height={24} />}
+                             {leagueInfo?.logoUrl && <Image src={leagueInfo.logoUrl} alt={leagueName} width={24} height={24} data-ai-hint="league logo" />}
                              {leagueName}
                              <span className="text-sm font-normal text-muted-foreground">({matches.length} partidos)</span>
                            </div>

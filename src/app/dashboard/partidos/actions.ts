@@ -48,5 +48,5 @@ export async function getMatchesByValue(): Promise<Match[]> {
 
 export async function getLeaguesList(): Promise<League[]> {
   const { leagues } = await getLeagues();
-  return leagues.map(l => ({...l, id: l.id.replace(/_/g, ' ')}))
+  return leagues.map(l => ({...l, id: l.id, name: l.name, country: l.country, sportId: l.sportId, logoUrl: l.logoUrl }))
 }

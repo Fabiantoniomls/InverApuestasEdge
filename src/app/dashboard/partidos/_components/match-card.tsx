@@ -8,6 +8,7 @@ import { es } from 'date-fns/locale';
 import { Calendar, Clock, BarChart2, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import Link from "next/link";
 
 const ValueIndicator = ({ value, explanation }: { value: number | undefined, explanation?: string }) => {
     if (value === undefined || value <= 0) {
@@ -35,6 +36,14 @@ const ValueIndicator = ({ value, explanation }: { value: number | undefined, exp
 export function MatchCard({ match }: { match: Match }) {
     const { teams, mainOdds, eventTimestamp, valueMetrics } = match;
 
+    const params = new URLSearchParams();
+    params.set('teamA', teams.home.name);
+    params.set('teamB', teams.away.name);
+    if(mainOdds?.[1]) params.set('oddsHome', String(mainOdds[1]));
+    if(mainOdds?.['X']) params.set('oddsDraw', String(mainOdds['X']));
+    if(mainOdds?.[2]) params.set('oddsAway', String(mainOdds[2]));
+    params.set('tab', 'quantitative');
+
     return (
         <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="p-4 space-y-4">
@@ -60,19 +69,21 @@ export function MatchCard({ match }: { match: Match }) {
                  <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
                     <div className="flex items-center gap-1.5">
                         <Calendar className="size-3.5" />
-                        <span>{format(new Date(eventTimestamp), "d MMM yyyy", { locale: es })}</span>
+                        <span>{format(new Date(eventTimestamp * 1000), "d MMM yyyy", { locale: es })}</span>
                     </div>
                      <div className="flex items-center gap-1.5">
                         <Clock className="size-3.5" />
-                        <span>{format(new Date(eventTimestamp), "HH:mm", { locale: es })}h</span>
+                        <span>{format(new Date(eventTimestamp * 1000), "HH:mm", { locale: es })}h</span>
                     </div>
                 </div>
                 
                  <div className="flex items-center justify-between gap-2">
                      <ValueIndicator value={valueMetrics?.valueScore} explanation={valueMetrics?.explanation} />
-                    <Button variant="default" size="sm">
+                    <Button asChild variant="default" size="sm">
+                       <Link href={`/dashboard/analyze?${params.toString()}`}>
                         <BarChart2 className="mr-2 h-4 w-4" />
                         Analizar
+                       </Link>
                     </Button>
                 </div>
 

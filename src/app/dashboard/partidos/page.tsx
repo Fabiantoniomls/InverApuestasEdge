@@ -23,6 +23,12 @@ const FeaturedViewSkeleton = () => (
     </div>
 );
 
+const CompetitionsViewSkeleton = () => (
+     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(6)].map((_, i) => <MatchCardSkeleton key={i} />)}
+    </div>
+)
+
 async function MatchList({ filters }: { filters: GetMatchesInput }) {
     const { data, totalMatches, totalPages, currentPage } = await fetchMatches(filters);
     return <MatchDataTable columns={columns} data={data} totalMatches={totalMatches} totalPages={totalPages} currentPage={currentPage} />;
@@ -52,11 +58,10 @@ export default function PartidosPage({ searchParams }: PartidosPageProps) {
         </header>
 
          <Tabs defaultValue={tab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="destacados">Destacados</TabsTrigger>
                 <TabsTrigger value="todos">Todos</TabsTrigger>
                 <TabsTrigger value="competencias">Competencias</TabsTrigger>
-                <TabsTrigger value="tendencias">Tendencias</TabsTrigger>
             </TabsList>
             <TabsContent value="destacados" className="mt-6">
                  <Suspense fallback={<FeaturedViewSkeleton />}>
@@ -69,12 +74,9 @@ export default function PartidosPage({ searchParams }: PartidosPageProps) {
                 </Suspense>
             </TabsContent>
             <TabsContent value="competencias" className="mt-6">
-                 <Suspense fallback={<Loading />}>
+                 <Suspense fallback={<CompetitionsViewSkeleton />}>
                     <CompetitionsView />
                  </Suspense>
-            </TabsContent>
-             <TabsContent value="tendencias" className="mt-6">
-                <p>Vista de tendencias y market movers próximamente.</p>
             </TabsContent>
         </Tabs>
     </div>
