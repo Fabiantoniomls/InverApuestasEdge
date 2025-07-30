@@ -12,6 +12,8 @@ import {
   getSortedRowModel,
   ColumnFiltersState,
   getFilteredRowModel,
+  getExpandedRowModel,
+  ExpandedState,
 } from "@tanstack/react-table"
 
 import {
@@ -24,6 +26,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -46,6 +49,7 @@ export function MatchDataTable<TData, TValue>({
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [expanded, setExpanded] = React.useState<ExpandedState>({})
 
   const table = useReactTable({
     data,
@@ -56,9 +60,12 @@ export function MatchDataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onExpandedChange: setExpanded,
+    getExpandedRowModel: getExpandedRowModel(),
     state: {
       sorting,
       columnFilters,
+      expanded,
     },
     manualPagination: true,
     pageCount: totalPages,
@@ -117,16 +124,26 @@ export function MatchDataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <Collapsible asChild key={row.id} open={row.getIsExpanded()}>
+                  <>
+                    <TableRow data-state={row.getIsSelected() && "selected"}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    <CollapsibleContent asChild>
+                       <TableRow>
+                          <TableCell colSpan={columns.length} className="p-0">
+                               <div className="bg-muted/50 p-4">
+                                  Contenido expandido para el partido... Próximamente gráficos y más detalles.
+                               </div>
+                          </TableCell>
+                       </TableRow>
+                    </CollapsibleContent>
+                  </>
+                </Collapsible>
               ))
             ) : (
               <TableRow>

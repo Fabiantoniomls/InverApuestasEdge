@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { ArrowUpDown, BarChart2 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { ArrowUpDown, BarChart2, ChevronDown } from "lucide-react"
 import Link from "next/link"
+import { CollapsibleTrigger } from "@/components/ui/collapsible"
+import { useSearchParams } from "next/navigation"
 
 const ValueIndicator = ({ value }: { value: number | undefined }) => {
     if (value === undefined || value <= 0) {
@@ -23,6 +24,30 @@ const ValueIndicator = ({ value }: { value: number | undefined }) => {
         </div>
     );
 };
+
+const ActionCell = ({ row }: { row: any }) => {
+    const searchParams = useSearchParams();
+    const tab = searchParams.get('tab');
+    const match = row.original;
+    const params = new URLSearchParams();
+    params.set('teamA', match.teams.home.name);
+    params.set('teamB', match.teams.away.name);
+    if(match.mainOdds?.[1]) params.set('oddsHome', String(match.mainOdds[1]));
+    if(match.mainOdds?.['X']) params.set('oddsDraw', String(match.mainOdds['X']));
+    if(match.mainOdds?.[2]) params.set('oddsAway', String(match.mainOdds[2]));
+    if(tab) params.set('tab', tab);
+
+    return (
+        <div className="text-right">
+            <Button asChild variant="default" size="sm">
+              <Link href={`/dashboard/analyze?${params.toString()}`}>
+                <BarChart2 className="mr-2 h-4 w-4" />
+                Analizar
+              </Link>
+            </Button>
+        </div>
+    )
+}
 
 
 export const columns: ColumnDef<Match>[] = [
@@ -47,6 +72,24 @@ export const columns: ColumnDef<Match>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+      id: 'expander',
+      header: () => null,
+      cell: ({ row }) => {
+          return (
+              <CollapsibleTrigger asChild>
+                  <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => row.toggleExpanded(!row.getIsExpanded())}
+                  >
+                      <ChevronDown className={`h-4 w-4 transition-transform ${row.getIsExpanded() ? 'rotate-180' : ''}`} />
+                      <span className="sr-only">Toggle row</span>
+                  </Button>
+              </CollapsibleTrigger>
+          );
+      },
   },
   {
     accessorKey: "eventTimestamp",
@@ -130,25 +173,6 @@ export const columns: ColumnDef<Match>[] = [
   {
     id: "actions",
     header: () => <div className="text-right">Acción</div>,
-    cell: ({ row }) => {
-       const match = row.original;
-       const params = new URLSearchParams();
-       params.set('teamA', match.teams.home.name);
-       params.set('teamB', match.teams.away.name);
-       if(match.mainOdds?.[1]) params.set('oddsHome', String(match.mainOdds[1]));
-       if(match.mainOdds?.['X']) params.set('oddsDraw', String(match.mainOdds['X']));
-       if(match.mainOdds?.[2]) params.set('oddsAway', String(match.mainOdds[2]));
-
-      return (
-        <div className="text-right">
-            <Button asChild variant="default" size="sm">
-              <Link href={`/dashboard/analyze?${params.toString()}`}>
-                <BarChart2 className="mr-2 h-4 w-4" />
-                Analizar
-              </Link>
-            </Button>
-        </div>
-      )
-    },
+    cell: ActionCell,
   },
 ]
