@@ -7,13 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Search, SortAsc, ArrowDownUp, ChevronDown, ListFilter, FileDown } from 'lucide-react';
-import { SoccerBallIcon } from '../analyze/icons/soccer-ball';
-import { TennisBallIcon } from '../analyze/icons/tennis-ball';
-import { BasketballIcon } from './icons/basketball';
+import { Search, SortAsc, ArrowDownUp, FileDown, Plus } from 'lucide-react';
+import { AddBetDialog } from './_components/add-bet-dialog';
 
 
 const allBets = [
@@ -27,16 +24,12 @@ const allBets = [
     { id: 8, sport: "Baloncesto", match: "Lakers vs Celtics", selection: "Lakers +5.5", odds: 1.91, stake: 30, status: "Pendiente", pnl: 0.00, timestamp: "2024-05-20T02:30:00Z" },
 ];
 
-const FilterButton = ({ children, active, ...props }: React.ComponentProps<typeof Button> & { active?: boolean }) => (
-    <Button variant={active ? 'default' : 'outline'} {...props}>
-        {children}
-    </Button>
-);
 
 const BetRow = ({ bet }: { bet: typeof allBets[0] }) => {
     const [formattedDate, setFormattedDate] = React.useState('');
 
     React.useEffect(() => {
+        // This effect runs only on the client, ensuring no hydration mismatch.
         setFormattedDate(format(parseISO(bet.timestamp), "dd MMM yyyy, HH:mm", { locale: es }) + 'h');
     }, [bet.timestamp]);
 
@@ -72,14 +65,19 @@ const BetRow = ({ bet }: { bet: typeof allBets[0] }) => {
 
 
 export default function LedgerPage() {
-    const [activeTimeFilter, setActiveTimeFilter] = React.useState('Último mes');
-    const [activeSportFilter, setActiveSportFilter] = React.useState('Todos');
-    
     return (
         <div className="space-y-8">
-            <header>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Mis Apuestas</h1>
-                <p className="mt-1 text-muted-foreground">Un registro completo de todas tus apuestas realizadas.</p>
+            <header className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Mis Apuestas</h1>
+                    <p className="mt-1 text-muted-foreground">Un registro completo de todas tus apuestas realizadas.</p>
+                </div>
+                <AddBetDialog>
+                     <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Añadir Apuesta
+                    </Button>
+                </AddBetDialog>
             </header>
             <Card>
                 <CardHeader>
@@ -87,47 +85,16 @@ export default function LedgerPage() {
                     <CardDescription>Consulta el estado y rendimiento de cada una de tus inversiones.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                        <div className="flex flex-col md:flex-row items-center gap-4">
-                            <div className="relative flex-1 w-full md:w-auto">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                <Input placeholder="Buscar por partido, selección..." className="pl-10 w-full" />
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                               <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="gap-1">
-                                            <span>Filtrar</span>
-                                            <ListFilter className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem>Ganadas</DropdownMenuItem>
-                                        <DropdownMenuItem>Perdidas</DropdownMenuItem>
-                                        <DropdownMenuItem>Pendientes</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <Button variant="outline" className="gap-1">
-                                    <FileDown className="h-4 w-4" />
-                                    <span>Exportar</span>
-                                </Button>
-                            </div>
+                    <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
+                        <div className="relative flex-1 w-full md:w-auto">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input placeholder="Buscar por partido, selección..." className="pl-10 w-full" />
                         </div>
-
-                         <div className="flex items-center gap-2 flex-wrap">
-                            {['Todos', 'Fútbol', 'Tenis', 'Baloncesto'].map(sport => (
-                                <FilterButton 
-                                    key={sport} 
-                                    active={activeSportFilter === sport} 
-                                    onClick={() => setActiveSportFilter(sport)}
-                                    size="sm"
-                                >
-                                    {sport === 'Fútbol' && <SoccerBallIcon className="w-4 h-4" />}
-                                    {sport === 'Tenis' && <TennisBallIcon className="w-4 h-4" />}
-                                    {sport === 'Baloncesto' && <BasketballIcon className="w-4 h-4" />}
-                                    {sport}
-                                </FilterButton>
-                            ))}
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" className="gap-1">
+                                <FileDown className="h-4 w-4" />
+                                <span>Exportar</span>
+                            </Button>
                         </div>
                     </div>
 
