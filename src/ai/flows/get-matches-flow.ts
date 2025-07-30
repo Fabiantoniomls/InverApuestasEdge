@@ -103,8 +103,11 @@ const getMatchesFlow = ai.defineFlow(
 
     let allMatches = allMatchesFromApi
         .map(transformApiMatch)
-        // Sort by date by default
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        // Sort by date by default if no other sort is specified
+        .sort((a, b) => {
+            if (filters.sortBy) return 0; // Skip if other sorting is active
+            return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        });
         
     // 2. Apply filters on the server
     let filteredMatches = allMatches;
@@ -129,8 +132,16 @@ const getMatchesFlow = ai.defineFlow(
     // Sorting logic
     if (filters.sortBy) {
         filteredMatches.sort((a, b) => {
-            const aVal = (a as any)[filters.sortBy!] ?? 0;
-            const bVal = (b as any)[filters.sortBy!] ?? 0;
+            let aVal, bVal;
+
+            if (filters.sortBy === 'startTime') {
+                aVal = new Date(a.startTime).getTime();
+                bVal = new Date(b.startTime).getTime();
+            } else {
+                aVal = (a as any)[filters.sortBy!] ?? 0;
+                bVal = (b as any)[filters.sortBy!] ?? 0;
+            }
+
             if (aVal < bVal) return filters.sortOrder === 'asc' ? -1 : 1;
             if (aVal > bVal) return filters.sortOrder === 'asc' ? 1 : -1;
             return 0;

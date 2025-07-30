@@ -10,6 +10,8 @@ import {
   getPaginationRowModel,
   SortingState,
   getSortedRowModel,
+  ColumnFiltersState,
+  getFilteredRowModel,
 } from "@tanstack/react-table"
 
 import {
@@ -43,6 +45,7 @@ export function MatchDataTable<TData, TValue>({
   const searchParams = useSearchParams()
 
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
 
   const table = useReactTable({
     data,
@@ -51,11 +54,13 @@ export function MatchDataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
+      columnFilters,
     },
     manualPagination: true,
-    manualSorting: true,
     pageCount: totalPages,
   })
 
@@ -63,7 +68,7 @@ export function MatchDataTable<TData, TValue>({
     (params: Record<string, string | number | null>) => {
       const newSearchParams = new URLSearchParams(searchParams?.toString())
       for (const [key, value] of Object.entries(params)) {
-        if (value === null) {
+        if (value === null || value === '') {
           newSearchParams.delete(key)
         } else {
           newSearchParams.set(key, String(value))
@@ -75,8 +80,17 @@ export function MatchDataTable<TData, TValue>({
   )
 
   const handlePageChange = (page: number) => {
-    router.push(`${pathname}?${createQueryString({ page: page + 1 })}`)
+    router.push(`${pathname}?${createQueryString({ page: page })}`, {
+        scroll: false
+    })
   }
+  
+  React.useEffect(() => {
+    const [sort] = sorting;
+    if (sort) {
+        router.push(`${pathname}?${createQueryString({ sortBy: sort.id, sortOrder: sort.desc ? 'desc' : 'asc' })}`, { scroll: false });
+    }
+  }, [sorting, router, pathname, createQueryString]);
 
   return (
     <div>
@@ -132,7 +146,7 @@ export function MatchDataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handlePageChange(currentPage - 2)}
+          onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage <= 1}
         >
           Anterior
@@ -140,7 +154,7 @@ export function MatchDataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handlePageChange(currentPage)}
+          onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
         >
           Siguiente
