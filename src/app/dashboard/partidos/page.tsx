@@ -36,18 +36,28 @@ async function MatchList({ filters }: { filters: GetMatchesInput }) {
 
 export default function PartidosPage({ searchParams }: PartidosPageProps) {
   const tab = typeof searchParams.tab === 'string' ? searchParams.tab : 'destacados';
+  const page = searchParams.page ? parseInt(searchParams.page as string, 10) : 1;
+  const leagues = typeof searchParams.leagues === 'string' ? searchParams.leagues.split(',') : [];
+  const startDate = typeof searchParams.startDate === 'string' ? searchParams.startDate : undefined;
+  const endDate = typeof searchParams.endDate === 'string' ? searchParams.endDate : undefined;
+  const minValue = searchParams.minValue ? parseFloat(searchParams.minValue as string) : undefined;
+  const minOdds = searchParams.minOdds ? parseFloat(searchParams.minOdds as string) : undefined;
+  const maxOdds = searchParams.maxOdds ? parseFloat(searchParams.maxOdds as string) : undefined;
+  const sortBy = typeof searchParams.sortBy === 'string' ? searchParams.sortBy : 'eventTimestamp';
+  const sortOrderValue = typeof searchParams.sortOrder === 'string' ? searchParams.sortOrder : 'asc';
+  const sortOrder = ['asc', 'desc'].includes(sortOrderValue) ? (sortOrderValue as 'asc' | 'desc') : 'asc';
 
   const filters: GetMatchesInput = {
-    page: searchParams.page ? parseInt(searchParams.page as string, 10) : 1,
+    page,
     limit: 10,
-    leagues: typeof searchParams.leagues === 'string' ? searchParams.leagues.split(',') : [],
-    startDate: typeof searchParams.startDate === 'string' ? searchParams.startDate : undefined,
-    endDate: typeof searchParams.endDate === 'string' ? searchParams.endDate : undefined,
-    minValue: searchParams.minValue ? parseFloat(searchParams.minValue as string) : undefined,
-    minOdds: searchParams.minOdds ? parseFloat(searchParams.minOdds as string) : undefined,
-    maxOdds: searchParams.maxOdds ? parseFloat(searchParams.maxOdds as string) : undefined,
-    sortBy: typeof searchParams.sortBy === 'string' ? searchParams.sortBy : 'eventTimestamp',
-    sortOrder: typeof searchParams.sortOrder === 'string' && ['asc', 'desc'].includes(searchParams.sortOrder) ? (searchParams.sortOrder as 'asc' | 'desc') : 'asc',
+    leagues,
+    startDate,
+    endDate,
+    minValue,
+    minOdds,
+    maxOdds,
+    sortBy,
+    sortOrder,
   };
 
   return (
