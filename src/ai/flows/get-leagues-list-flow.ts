@@ -55,10 +55,11 @@ const getLeaguesListFlow = ai.defineFlow(
     
     // Sportradar endpoint to get all competitions for a sport
     const sportPath = sportGroup; // e.g., 'soccer'
-    const apiUrl = `https://api.sportradar.com/${sportPath}/trial/v4/en/competitions.json?api_key=${apiKey}`;
+    const apiUrl = `https://api.sportradar.com/${sportPath}/trial/v4/en/competitions.json`;
 
     try {
         const response = await fetch(apiUrl, { 
+            headers: { 'x-api-key': apiKey, 'accept': 'application/json' },
             next: { revalidate: 86400 } // Cache for 24 hours
         });
 

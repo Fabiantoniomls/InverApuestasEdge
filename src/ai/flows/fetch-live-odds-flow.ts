@@ -78,10 +78,13 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
     // Sportradar API calls are often structured around sports, not specific leagues for schedules.
     // We'll fetch a general soccer schedule and let the consuming flows filter.
-    const apiUrl = `https://api.sportradar.com/soccer/trial/v4/en/schedules/live/schedule.json?api_key=${apiKey}`;
+    const apiUrl = `https://api.sportradar.com/soccer/trial/v4/en/schedules/live/schedule.json`;
 
     try {
-      const response = await fetch(apiUrl, { cache: 'no-store' });
+      const response = await fetch(apiUrl, { 
+        headers: { 'x-api-key': apiKey, 'accept': 'application/json' },
+        cache: 'no-store' 
+      });
 
       if (!response.ok) {
         const errorText = await response.text();

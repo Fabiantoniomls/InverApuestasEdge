@@ -48,7 +48,9 @@ const fetchHistoricalOddsFlow = ai.defineFlow(
     
     // NOTE: This is a placeholder implementation.
     // The actual Sportradar API endpoint for historical odds needs to be used here.
-    // For now, we will return a mock response.
+    // const apiUrl = `https://api.sportradar.com/....`;
+    // const response = await fetch(apiUrl, { headers: { 'x-api-key': apiKey }});
+
     console.warn("fetchHistoricalOddsFlow is using mock data. Sportradar historical endpoint not yet implemented.");
 
     return {
