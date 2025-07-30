@@ -37,12 +37,12 @@ export function MatchCard({ match }: { match: Match }) {
     const { teams, mainOdds, eventTimestamp, valueMetrics } = match;
 
     const params = new URLSearchParams();
+    params.set('mode', 'quantitative');
     params.set('teamA', teams.home.name);
     params.set('teamB', teams.away.name);
     if(mainOdds?.[1]) params.set('oddsHome', String(mainOdds[1]));
     if(mainOdds?.['X']) params.set('oddsDraw', String(mainOdds['X']));
     if(mainOdds?.[2]) params.set('oddsAway', String(mainOdds[2]));
-    params.set('mode', 'quantitative');
 
     return (
         <Card className="hover:shadow-lg transition-shadow">

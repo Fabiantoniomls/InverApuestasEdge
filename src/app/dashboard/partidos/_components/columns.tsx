@@ -48,17 +48,15 @@ const ValueIndicator = ({ value, explanation }: { value: number | undefined, exp
 
 
 const ActionCell = ({ row }: { row: any }) => {
-    const searchParams = useSearchParams();
-    const tab = searchParams.get('tab');
     const match = row.original;
+    
     const params = new URLSearchParams();
+    params.set('mode', 'quantitative');
     params.set('teamA', match.teams.home.name);
     params.set('teamB', match.teams.away.name);
     if(match.mainOdds?.[1]) params.set('oddsHome', String(match.mainOdds[1]));
     if(match.mainOdds?.['X']) params.set('oddsDraw', String(match.mainOdds['X']));
     if(match.mainOdds?.[2]) params.set('oddsAway', String(match.mainOdds[2]));
-    params.set('mode', 'quantitative'); // Ensure it goes to the correct form
-    if(tab) params.set('tab', tab);
 
     return (
         <div className="text-right">
