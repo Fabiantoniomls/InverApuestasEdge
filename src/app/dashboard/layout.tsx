@@ -37,7 +37,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-800">
-        <aside className="w-64 bg-white p-6 flex flex-col justify-between h-screen sticky top-0 shadow-md">
+        <aside className="w-64 bg-white p-6 flex-col justify-between h-screen sticky top-0 shadow-md hidden lg:flex">
             <div>
                 <div className="flex items-center space-x-3 p-2 mb-8">
                   <div className="bg-blue-500 p-2 rounded-lg">
@@ -72,7 +72,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </Link>
             </div>
         </aside>
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto">
           <LanguageProvider>
             {children}
           </LanguageProvider>

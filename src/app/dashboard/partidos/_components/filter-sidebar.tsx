@@ -91,7 +91,7 @@ export function FilterSidebar() {
 
 
   return (
-    <aside className="hidden lg:flex w-80 h-full border-r bg-background p-6 flex-col gap-8">
+    <aside className="w-80 h-full border-r bg-background p-6 flex-col gap-8 hidden lg:flex">
       <h2 className="text-xl font-bold">Filtros</h2>
 
       <div className="space-y-4">
