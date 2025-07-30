@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { ResultsDisplay } from './results-display';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useSearchParams } from 'next/navigation';
 
 
 const initialState = {
@@ -29,6 +30,7 @@ function SubmitButton() {
 
 export function QuantitativeAnalysisForm() {
     const [state, formAction] = useActionState(handleQuantitativeAnalysis, initialState);
+    const searchParams = useSearchParams();
 
     return (
         <form action={formAction} className="space-y-6">
@@ -40,7 +42,7 @@ export function QuantitativeAnalysisForm() {
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <Label htmlFor="teamA">Equipo Local</Label>
-                        <Input id="teamA" name="teamA" placeholder="Ej: Real Madrid" required />
+                        <Input id="teamA" name="teamA" placeholder="Ej: Real Madrid" required defaultValue={searchParams.get('teamA') || ''} />
                          {state.fields?.teamA && <p className="text-red-500 text-sm">{state.fields.teamA}</p>}
                         
                         <Label htmlFor="teamAUrl">URL de Datos (FBref)</Label>
@@ -49,7 +51,7 @@ export function QuantitativeAnalysisForm() {
                     </div>
                     <div className="space-y-4">
                         <Label htmlFor="teamB">Equipo Visitante</Label>
-                        <Input id="teamB" name="teamB" placeholder="Ej: FC Barcelona" required />
+                        <Input id="teamB" name="teamB" placeholder="Ej: FC Barcelona" required defaultValue={searchParams.get('teamB') || ''} />
                         {state.fields?.teamB && <p className="text-red-500 text-sm">{state.fields.teamB}</p>}
 
                         <Label htmlFor="teamBUrl">URL de Datos (FBref)</Label>
@@ -82,15 +84,15 @@ export function QuantitativeAnalysisForm() {
                         <Label>Cuotas del Mercado 1X2</Label>
                         <div className="grid grid-cols-3 gap-4">
                             <div>
-                               <Input name="oddsHome" placeholder="Local" type="number" step="0.01" required/>
+                               <Input name="oddsHome" placeholder="Local" type="number" step="0.01" required defaultValue={searchParams.get('oddsHome') || ''} />
                                {state.fields?.oddsHome && <p className="text-red-500 text-sm">{state.fields.oddsHome}</p>}
                             </div>
                             <div>
-                               <Input name="oddsDraw" placeholder="Empate" type="number" step="0.01" required/>
+                               <Input name="oddsDraw" placeholder="Empate" type="number" step="0.01" required defaultValue={searchParams.get('oddsDraw') || ''} />
                                {state.fields?.oddsDraw && <p className="text-red-500 text-sm">{state.fields.oddsDraw}</p>}
                             </div>
                             <div>
-                               <Input name="oddsAway" placeholder="Visitante" type="number" step="0.01" required/>
+                               <Input name="oddsAway" placeholder="Visitante" type="number" step="0.01" required defaultValue={searchParams.get('oddsAway') || ''} />
                                {state.fields?.oddsAway && <p className="text-red-500 text-sm">{state.fields.oddsAway}</p>}
                             </div>
                         </div>

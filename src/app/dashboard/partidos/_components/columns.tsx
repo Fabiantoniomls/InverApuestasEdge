@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ArrowUpDown, BarChart2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
 
 const ValueIndicator = ({ value }: { value: number | undefined }) => {
     if (value === undefined || value <= 0) {
@@ -130,11 +131,21 @@ export const columns: ColumnDef<Match>[] = [
     id: "actions",
     header: () => <div className="text-right">Acción</div>,
     cell: ({ row }) => {
+       const match = row.original;
+       const params = new URLSearchParams();
+       params.set('teamA', match.teams.home.name);
+       params.set('teamB', match.teams.away.name);
+       if(match.mainOdds?.[1]) params.set('oddsHome', String(match.mainOdds[1]));
+       if(match.mainOdds?.['X']) params.set('oddsDraw', String(match.mainOdds['X']));
+       if(match.mainOdds?.[2]) params.set('oddsAway', String(match.mainOdds[2]));
+
       return (
         <div className="text-right">
-            <Button variant="default" size="sm">
-              <BarChart2 className="mr-2 h-4 w-4" />
-              Analizar
+            <Button asChild variant="default" size="sm">
+              <Link href={`/dashboard/analyze?${params.toString()}`}>
+                <BarChart2 className="mr-2 h-4 w-4" />
+                Analizar
+              </Link>
             </Button>
         </div>
       )
