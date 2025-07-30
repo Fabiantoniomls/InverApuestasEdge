@@ -62,6 +62,7 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match |
     return {
         id: apiMatch.id,
         league: {
+            id: apiMatch.sport_event_context.competition.id,
             name: apiMatch.sport_event_context.competition.name,
             country: apiMatch.sport_event_context.category.name,
             logoUrl: '', // Not provided by Sportradar in this context
@@ -109,8 +110,7 @@ const getMatchesFlow = ai.defineFlow(
         const leagueSet = new Set(filters.leagues);
         // We filter by competition ID as it's more reliable than name
         filteredMatches = filteredMatches.filter(match => {
-            const apiMatch = allMatchesFromApi.find(m => m.id === match.id);
-            return apiMatch && leagueSet.has(apiMatch.sport_event_context.competition.id);
+            return leagueSet.has(match.league.id);
         });
     }
 

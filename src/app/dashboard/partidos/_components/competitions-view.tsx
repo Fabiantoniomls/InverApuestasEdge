@@ -15,7 +15,7 @@ export async function CompetitionsView() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error al Cargar Competiciones</AlertTitle>
                 <AlertDescription>
-                    No se pudieron cargar los partidos por competición. La API externa puede haber alcanzado su límite de uso.
+                    {error}
                 </AlertDescription>
             </Alert>
         )

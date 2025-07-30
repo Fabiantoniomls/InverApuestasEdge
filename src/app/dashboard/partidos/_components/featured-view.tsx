@@ -13,7 +13,7 @@ export async function FeaturedView() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error al Cargar Partidos Destacados</AlertTitle>
                 <AlertDescription>
-                    No se pudieron cargar los partidos destacados. La API externa puede haber alcanzado su límite de uso.
+                    {error}
                 </AlertDescription>
             </Alert>
         )

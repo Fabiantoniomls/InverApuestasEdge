@@ -34,6 +34,7 @@ export interface Team {
 export interface Match {
     id: string;
     league: {
+        id: string;
         name: string;
         logoUrl?: string;
         country: string;
