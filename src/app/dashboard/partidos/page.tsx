@@ -29,7 +29,7 @@ async function MatchList({ filters }: { filters: GetMatchesInput }) {
 }
 
 export default function PartidosPage({ searchParams }: PartidosPageProps) {
-  const tab = typeof searchParams.tab === 'string' ? searchParams.tab : 'todos';
+  const tab = typeof searchParams.tab === 'string' ? searchParams.tab : 'destacados';
 
   const filters: GetMatchesInput = {
     page: searchParams.page ? parseInt(searchParams.page as string) : 1,

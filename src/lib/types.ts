@@ -43,7 +43,7 @@ export interface Match {
         home: Team;
         away: Team;
     };
-    mainOdds?: {
+    mainOdds: {
         '1'?: number;
         'X'?: number;
         '2'?: number;
