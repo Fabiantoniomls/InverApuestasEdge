@@ -36,11 +36,11 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-800">
-        <aside className="w-64 bg-white p-6 flex-col justify-between h-screen sticky top-0 shadow-md hidden lg:flex">
+    <div className="flex min-h-screen bg-gray-50 text-gray-800">
+        <aside className="sticky top-0 hidden h-screen w-64 flex-col justify-between bg-white p-6 shadow-md lg:flex">
             <div>
-                <div className="flex items-center space-x-3 p-2 mb-8">
-                  <div className="bg-blue-500 p-2 rounded-lg">
+                <div className="mb-8 flex items-center space-x-3 p-2">
+                  <div className="rounded-lg bg-blue-500 p-2">
                       <Scaling className="text-white" />
                   </div>
                   <h1 className="text-2xl font-bold text-blue-600">BetValuator</h1>
@@ -72,7 +72,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </Link>
             </div>
         </aside>
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <LanguageProvider>
             {children}
           </LanguageProvider>
