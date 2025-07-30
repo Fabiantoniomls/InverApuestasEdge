@@ -14,15 +14,17 @@ export async function CompetitionsView() {
         return (
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error de Conexión con la Base de Datos</AlertTitle>
+                <AlertTitle>Error al Cargar Competiciones</AlertTitle>
                 <AlertDescription>
-                    No se pudieron cargar los partidos por competición debido a un problema de conexión con el servidor. Por favor, inténtalo de nuevo más tarde.
+                    No se pudieron cargar los partidos por competición. Error: {error}
                 </AlertDescription>
             </Alert>
         )
     }
 
-    if (Object.keys(groupedMatches).length === 0) {
+    const leaguesWithMatches = Object.keys(groupedMatches);
+
+    if (leaguesWithMatches.length === 0) {
         return (
             <div className="text-center py-12">
                 <p className="text-muted-foreground">No se encontraron competiciones con partidos próximos.</p>
@@ -31,7 +33,7 @@ export async function CompetitionsView() {
     }
 
     return (
-        <Accordion type="multiple" defaultValue={Object.keys(groupedMatches)}>
+        <Accordion type="multiple" defaultValue={leaguesWithMatches}>
             {Object.entries(groupedMatches).map(([leagueName, matches]) => {
                 const leagueInfo = SOCCER_LEAGUES.find(l => l.name === leagueName);
                 return (

@@ -11,9 +11,9 @@ export async function FeaturedView() {
         return (
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error de Conexión con la Base de Datos</AlertTitle>
+                <AlertTitle>Error al Cargar Partidos Destacados</AlertTitle>
                 <AlertDescription>
-                    No se pudieron cargar los partidos destacados debido a un problema de conexión con el servidor. Por favor, inténtalo de nuevo más tarde.
+                    No se pudieron cargar los partidos destacados. Error: {error}
                 </AlertDescription>
             </Alert>
         )
