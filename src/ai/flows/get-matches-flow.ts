@@ -13,7 +13,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { GetMatchesResponse, Match, League, Team } from '@/lib/types';
 import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
-import { TEAM_LOGOS } from './_data/teams';
 
 const GetMatchesInputSchema = z.object({
     leagues: z.array(z.string()).optional(),
@@ -45,8 +44,8 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match |
         return null; 
     }
 
-    const homeTeam: Team = { id: homeCompetitor.id, name: homeCompetitor.name, logoUrl: TEAM_LOGOS[homeCompetitor.name] || 'https://placehold.co/40x40.png' };
-    const awayTeam: Team = { id: awayCompetitor.id, name: awayCompetitor.name, logoUrl: TEAM_LOGOS[awayCompetitor.name] || 'https://placehold.co/40x40.png' };
+    const homeTeam: Team = { id: homeCompetitor.id, name: homeCompetitor.name, logoUrl: 'https://placehold.co/40x40.png' };
+    const awayTeam: Team = { id: awayCompetitor.id, name: awayCompetitor.name, logoUrl: 'https://placehold.co/40x40.png' };
     
     // NOTE: Daily schedule endpoint does not include odds. We simulate them.
     let h2h_odds: { '1'?: number; 'X'?: number; '2'?: number; } = {
