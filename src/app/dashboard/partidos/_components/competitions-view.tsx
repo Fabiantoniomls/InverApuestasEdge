@@ -4,9 +4,31 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { MatchCard } from './match-card';
 import { SOCCER_LEAGUES } from '@/ai/flows/_data/leagues';
 import Image from 'next/image';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export async function CompetitionsView() {
-    const groupedMatches = await getMatchesByLeague();
+    const { data: groupedMatches, error } = await getMatchesByLeague();
+
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error de Conexión con la Base de Datos</AlertTitle>
+                <AlertDescription>
+                    No se pudieron cargar los partidos por competición debido a un problema de conexión con el servidor. Por favor, inténtalo de nuevo más tarde.
+                </AlertDescription>
+            </Alert>
+        )
+    }
+
+    if (Object.keys(groupedMatches).length === 0) {
+        return (
+            <div className="text-center py-12">
+                <p className="text-muted-foreground">No se encontraron competiciones con partidos próximos.</p>
+            </div>
+        )
+    }
 
     return (
         <Accordion type="multiple" defaultValue={Object.keys(groupedMatches)}>

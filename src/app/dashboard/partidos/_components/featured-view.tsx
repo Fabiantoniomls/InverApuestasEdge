@@ -1,9 +1,23 @@
 
 import { getMatchesByValue } from '../actions';
 import { MatchCard } from './match-card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export async function FeaturedView() {
-    const matches = await getMatchesByValue();
+    const { data: matches, error } = await getMatchesByValue();
+
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error de Conexión con la Base de Datos</AlertTitle>
+                <AlertDescription>
+                    No se pudieron cargar los partidos destacados debido a un problema de conexión con el servidor. Por favor, inténtalo de nuevo más tarde.
+                </AlertDescription>
+            </Alert>
+        )
+    }
 
     if (!matches || matches.length === 0) {
         return (

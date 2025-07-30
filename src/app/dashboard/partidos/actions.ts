@@ -10,7 +10,7 @@ export async function fetchMatches(filters: GetMatchesInput): Promise<GetMatches
     return getMatches(filters);
 }
 
-export async function getMatchesByLeague(): Promise<Record<string, Match[]>> {
+export async function getMatchesByLeague(): Promise<{ data: Record<string, Match[]>, error: string | null }> {
     try {
         const matchesSnapshot = await db.collection('matches').orderBy('eventTimestamp', 'asc').limit(50).get();
         const matches: Match[] = [];
@@ -28,14 +28,14 @@ export async function getMatchesByLeague(): Promise<Record<string, Match[]>> {
             return acc;
         }, {} as Record<string, Match[]>);
         
-        return groupedByLeague;
-    } catch (error) {
-        console.error("Error fetching matches by league from Firestore:", error);
-        return {};
+        return { data: groupedByLeague, error: null };
+    } catch (error: any) {
+        console.error("Error fetching matches by league from Firestore:", error.message);
+        return { data: {}, error: error.message };
     }
 }
 
-export async function getMatchesByValue(): Promise<Match[]> {
+export async function getMatchesByValue(): Promise<{ data: Match[], error: string | null }> {
     try {
         const matchesSnapshot = await db.collection('matches')
             .where('valueMetrics.hasValue', '==', true)
@@ -48,10 +48,10 @@ export async function getMatchesByValue(): Promise<Match[]> {
             matches.push(doc.data() as Match);
         });
 
-        return matches;
-    } catch (error) {
-        console.error("Error fetching matches by value from Firestore:", error);
-        return [];
+        return { data: matches, error: null };
+    } catch (error: any) {
+        console.error("Error fetching matches by value from Firestore:", error.message);
+        return { data: [], error: error.message };
     }
 }
 
