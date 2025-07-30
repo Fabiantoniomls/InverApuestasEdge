@@ -1,21 +1,21 @@
-
 'use server';
 /**
- * @fileOverview A Genkit flow to fetch live sports odds from Sportradar.
+ * @fileOverview A Genkit flow to fetch the daily schedule of sports events from Sportradar.
  * 
- * - fetchLiveOdds - A function that retrieves live odds for a given sport.
- * - FetchLiveOddsInput - The input type for the function.
- * - FetchLiveOddsOutput - The return type for the function.
+ * - fetchDailySchedule - A function that retrieves the schedule for a given sport and date range.
+ * - FetchDailyScheduleInput - The input type for the function.
+ * - FetchDailyScheduleOutput - The return type for the function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { format, addDays } from 'date-fns';
 
 // --- Schemas based on Sportradar API ---
 
 const SportEventSchema = z.object({
     id: z.string(),
-    start_time: z.string(),
+    scheduled: z.string(), // Changed from start_time
     sport_event_context: z.object({
         sport: z.object({ id: z.string(), name: z.string() }),
         category: z.object({ id: z.string(), name: z.string() }),
@@ -26,6 +26,10 @@ const SportEventSchema = z.object({
         name: z.string(),
         qualifier: z.string(), // "home" or "away"
     })),
+});
+
+const DailyScheduleSchema = z.object({
+    sport_events: z.array(SportEventSchema),
 });
 
 const MarketSchema = z.object({
@@ -44,72 +48,75 @@ const SportEventWithOddsSchema = z.object({
 
 // --- Input and Output Schemas for the Flow ---
 
-const FetchLiveOddsInputSchema = z.object({
-  sport: z.string().describe('The sport to fetch, e.g., "soccer". The flow will map this to the Sportradar competition IDs.'),
-  // Sportradar's live schedule API is less granular than The Odds API.
-  // We fetch a schedule and then filter.
+const FetchDailyScheduleInputSchema = z.object({
+  sport: z.string().describe('The sport to fetch, e.g., "soccer".'),
+  startDate: z.date().optional(),
+  endDate: z.date().optional(),
 });
-export type FetchLiveOddsInput = z.infer<typeof FetchLiveOddsInputSchema>;
+export type FetchDailyScheduleInput = z.infer<typeof FetchDailyScheduleInputSchema>;
 
-const FetchLiveOddsOutputSchema = z.object({
-    matches: z.array(SportEventWithOddsSchema).describe('An array of live matches with odds from Sportradar.'),
+const FetchDailyScheduleOutputSchema = z.object({
+    matches: z.array(SportEventSchema).describe('An array of scheduled matches from Sportradar.'),
 });
-export type FetchLiveOddsOutput = z.infer<typeof FetchLiveOddsOutputSchema>;
+export type FetchDailyScheduleOutput = z.infer<typeof FetchDailyScheduleOutputSchema>;
 
 
 // --- Exported Wrapper Function ---
-export async function fetchLiveOdds(input: FetchLiveOddsInput): Promise<FetchLiveOddsOutput> {
-  return fetchLiveOddsFlow(input);
+export async function fetchDailySchedule(input: FetchDailyScheduleInput): Promise<FetchDailyScheduleOutput> {
+  return fetchDailyScheduleFlow(input);
 }
 
 
 // --- The Genkit Flow ---
-const fetchLiveOddsFlow = ai.defineFlow(
+const fetchDailyScheduleFlow = ai.defineFlow(
   {
-    name: 'fetchLiveOddsFlow',
-    inputSchema: FetchLiveOddsInputSchema,
-    outputSchema: FetchLiveOddsOutputSchema,
+    name: 'fetchDailyScheduleFlow',
+    inputSchema: FetchDailyScheduleInputSchema,
+    outputSchema: FetchDailyScheduleOutputSchema,
   },
-  async (input) => {
+  async ({ sport }) => {
     const apiKey = process.env.SPORTRADAR_API_KEY;
     if (!apiKey) {
       throw new Error('SPORTRADAR_API_KEY is not configured in environment variables.');
     }
+    
+    // Fetch schedule for the next 7 days
+    const today = new Date();
+    const dates = Array.from({ length: 7 }).map((_, i) => format(addDays(today, i), 'yyyy-MM-dd'));
 
-    // Sportradar API calls are often structured around sports, not specific leagues for schedules.
-    // We'll fetch a general soccer schedule and let the consuming flows filter.
-    const apiUrl = `https://api.sportradar.com/soccer/trial/v4/en/schedules/live/schedule.json`;
+    const allScheduledEvents: z.infer<typeof SportEventSchema>[] = [];
 
-    try {
-      const response = await fetch(apiUrl, { 
-        headers: { 'x-api-key': apiKey, 'accept': 'application/json' },
-        cache: 'no-store' 
-      });
+    for (const date of dates) {
+        const apiUrl = `https://api.sportradar.com/soccer/trial/v4/en/schedules/${date}/schedule.json`;
+        
+        try {
+            const response = await fetch(apiUrl, { 
+                headers: { 'x-api-key': apiKey, 'accept': 'application/json' },
+                cache: 'no-store' 
+            });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        // Log the detailed error on the server for debugging
-        console.error(`[fetchLiveOddsFlow] API Error: ${response.status} ${response.statusText} - ${errorText}`);
-        // Throw a cleaner error to the client
-        throw new Error(`Failed to fetch live odds: ${response.statusText}`);
-      }
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.warn(`[fetchDailySchedule] API Warning for date ${date}: ${response.status} ${response.statusText} - ${errorText}`);
+                continue; // Skip to the next day on error
+            }
 
-      const data = await response.json();
+            const data = await response.json();
+            const validatedData = DailyScheduleSchema.safeParse(data);
 
-      // Sportradar returns an object with a `schedules` property
-      const schedules = data.schedules || [];
-      const validatedData = z.array(SportEventWithOddsSchema).safeParse(schedules);
+            if (!validatedData.success) {
+                console.warn(`[fetchDailySchedule] Zod validation warning for date ${date} (non-fatal):`, validatedData.error.issues);
+                continue;
+            }
+            
+            allScheduledEvents.push(...validatedData.data.sport_events);
 
-      if (!validatedData.success) {
-        console.warn("[fetchLiveOddsFlow] Zod validation warning (non-fatal):", validatedData.error.issues);
-        return { matches: [] };
-      }
-
-      return { matches: validatedData.data };
-
-    } catch (e: any) {
-        console.error(`[fetchLiveOddsFlow] Exception: ${e.message}`);
-        throw new Error(`An error occurred while fetching odds from Sportradar: ${e.message}`);
+        } catch (e: any) {
+            console.warn(`[fetchDailySchedule] Exception for date ${date}: ${e.message}`);
+            continue;
+        }
     }
+    
+    return { matches: allScheduledEvents };
   }
 );

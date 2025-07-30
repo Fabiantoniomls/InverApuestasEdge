@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { handleFetchLiveOdds } from './actions';
+import { handleFetchDailySchedule } from './actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -39,20 +39,20 @@ function SubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" disabled={pending}>
-            {pending ? 'Buscando...' : 'Obtener Cuotas en Vivo'}
+            {pending ? 'Buscando...' : 'Obtener Partidos Programados'}
         </Button>
     );
 }
 
 export function LiveOddsForm() {
-    const [state, formAction] = useActionState(handleFetchLiveOdds, initialState);
+    const [state, formAction] = useActionState(handleFetchDailySchedule, initialState);
 
     return (
         <form action={formAction} className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Buscar Cuotas en Vivo</CardTitle>
-                    <CardDescription>Selecciona una competición para buscar los próximos partidos y sus cuotas. (Datos de Sportradar)</CardDescription>
+                    <CardTitle>Buscar Partidos Programados</CardTitle>
+                    <CardDescription>Selecciona una competición para buscar los próximos partidos. (Datos de Sportradar)</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -79,7 +79,7 @@ export function LiveOddsForm() {
                         </div>
                     </div>
                      <p className="text-xs text-muted-foreground pt-2">
-                        Los datos de cuotas son proporcionados por Sportradar.
+                        Los datos de partidos son proporcionados por Sportradar.
                     </p>
                 </CardContent>
             </Card>

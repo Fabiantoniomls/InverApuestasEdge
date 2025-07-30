@@ -13,23 +13,14 @@ interface Competitor {
 
 interface SportEvent {
     id: string;
-    start_time: string;
+    scheduled: string; // Changed from start_time
     competitors: Competitor[];
-}
-
-interface Outcome {
-    name: string;
-    odds: number;
-}
-
-interface Market {
-    name: string;
-    outcomes: Outcome[];
 }
 
 interface Match {
     sport_event: SportEvent;
-    markets?: Market[];
+    // Markets are not included in the daily schedule, so they are optional
+    markets?: any[]; 
 }
 
 interface LiveOddsResultsProps {
@@ -46,20 +37,16 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
     const { matches } = data;
 
     const getBestOdds = (match: Match) => {
+        // Simulate odds since they are not in the daily schedule response
+        const odds = { 
+            home: parseFloat((Math.random() * (3.5 - 1.5) + 1.5).toFixed(2)),
+            draw: parseFloat((Math.random() * (4.0 - 2.8) + 2.8).toFixed(2)),
+            away: parseFloat((Math.random() * (5.0 - 1.8) + 1.8).toFixed(2)),
+        };
+        
         const homeTeamName = match.sport_event.competitors.find(c => c.qualifier === 'home')?.name;
         const awayTeamName = match.sport_event.competitors.find(c => c.qualifier === 'away')?.name;
-        const odds: { home: number | null, away: number | null, draw: number | null } = { home: null, away: null, draw: null };
         
-        const market = match.markets?.find(m => m.name.toLowerCase() === '3-way moneyline');
-        if (market) {
-            const homeOutcome = market.outcomes.find(o => o.name.toLowerCase() === 'home team');
-            const awayOutcome = market.outcomes.find(o => o.name.toLowerCase() === 'away team');
-            const drawOutcome = market.outcomes.find(o => o.name.toLowerCase() === 'draw');
-
-            if (homeOutcome) odds.home = homeOutcome.odds;
-            if (awayOutcome) odds.away = awayOutcome.odds;
-            if (drawOutcome) odds.draw = drawOutcome.odds;
-        }
         return { odds, homeTeamName, awayTeamName };
     };
 
@@ -67,8 +54,8 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Resultados de Cuotas en Vivo</CardTitle>
-                <CardDescription>Se encontraron {matches.length} partidos. Estas son las mejores cuotas disponibles.</CardDescription>
+                <CardTitle>Resultados de Partidos Programados</CardTitle>
+                <CardDescription>Se encontraron {matches.length} partidos. Estas son las cuotas simuladas.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -89,7 +76,7 @@ export function LiveOddsResults({ data }: LiveOddsResultsProps) {
                              return (
                                 <TableRow key={match.sport_event.id}>
                                     <TableCell>
-                                        {format(new Date(match.sport_event.start_time), "d MMM yyyy, HH:mm", { locale: es })}
+                                        {format(new Date(match.sport_event.scheduled), "d MMM yyyy, HH:mm", { locale: es })}
                                     </TableCell>
                                     <TableCell className="font-medium">
                                         {homeTeamName} vs {awayTeamName}

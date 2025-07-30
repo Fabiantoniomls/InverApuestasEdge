@@ -9,7 +9,7 @@ import { calculateValueBetManual } from '@/ai/flows/calculate-value-bet-manual-f
 import { analyzeSingleMatch } from '@/ai/flows/analyze-single-match-flow';
 import { calculateBatchValueBets } from '@/ai/flows/calculate-batch-value-bets-flow';
 import { calculateValueBetFromImage } from '@/ai/flows/calculate-value-bet-from-image-flow';
-import { fetchLiveOdds } from '@/ai/flows/fetch-live-odds-flow';
+import { fetchDailySchedule } from '@/ai/flows/fetch-daily-schedule-flow';
 import { fetchHistoricalOdds } from '@/ai/flows/fetch-historical-odds-flow';
 
 
@@ -365,11 +365,9 @@ export async function handleImageAnalysis(
 
 const liveOddsSchema = z.object({
   sport: z.string().min(1, { message: 'El deporte es obligatorio.' }),
-  regions: z.string().min(1, { message: 'La región es obligatoria.' }),
-  markets: z.string().min(1, { message: 'El mercado es obligatorio.' }),
 });
 
-export async function handleFetchLiveOdds(
+export async function handleFetchDailySchedule(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
@@ -388,16 +386,16 @@ export async function handleFetchLiveOdds(
   }
 
   try {
-    const { matches } = await fetchLiveOdds(validatedFields.data);
+    const { matches } = await fetchDailySchedule(validatedFields.data);
 
     if (matches.length === 0) {
-      return { message: "No se encontraron partidos en vivo para los criterios seleccionados." };
+      return { message: "No se encontraron partidos programados para los criterios seleccionados." };
     }
 
     return { message: `Se encontraron ${matches.length} partidos.`, data: { matches, isLiveOdds: true } };
   } catch (e: any) {
     return {
-      message: `Error al obtener las cuotas: ${e.message || 'Error desconocido'}.`,
+      message: `Error al obtener la programación: ${e.message || 'Error desconocido'}.`,
       issues: [e.message || 'Error desconocido'],
     };
   }
@@ -427,11 +425,7 @@ export async function handleRunSimulation(
   }
 
   try {
-    const results = await fetchHistoricalOdds({
-      ...validatedFields.data,
-      regions: 'eu',
-      markets: 'h2h',
-    });
+    const results = await fetchHistoricalOdds(validatedFields.data);
     
     return { message: `Simulación completada. Se encontraron ${results.data.length} partidos.`, data: { ...results, isSimulation: true } };
   } catch (e: any) {

@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A Genkit flow to fetch live odds, process them, and store them in Firestore.
+ * @fileOverview A Genkit flow to fetch daily schedules, process them, and store them in Firestore.
  * This acts as a background job to populate our match database.
  * 
  * - updateMatches - Fetches matches from the API and saves them to the 'matches' collection.
@@ -11,7 +11,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { db } from '@/lib/firebase-admin';
 import type { Match, Team, League } from '@/lib/types';
-import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
+import { fetchDailySchedule, FetchDailyScheduleOutput } from './fetch-daily-schedule-flow';
 
 const UpdateMatchesOutputSchema = z.object({
   success: z.boolean(),
@@ -21,9 +21,9 @@ export type UpdateMatchesOutput = z.infer<typeof UpdateMatchesOutputSchema>;
 
 
 // Helper function to transform Sportradar API data into our internal Match type
-function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match | null {
-    const homeCompetitor = apiMatch.sport_event.competitors.find(c => c.qualifier === 'home');
-    const awayCompetitor = apiMatch.sport_event.competitors.find(c => c.qualifier === 'away');
+function transformApiMatch(apiMatch: FetchDailyScheduleOutput['matches'][0]): Match | null {
+    const homeCompetitor = apiMatch.competitors.find(c => c.qualifier === 'home');
+    const awayCompetitor = apiMatch.competitors.find(c => c.qualifier === 'away');
 
     if (!homeCompetitor || !awayCompetitor) return null;
 
@@ -31,33 +31,32 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match |
     const awayTeam: Team = { id: awayCompetitor.id, name: awayCompetitor.name, logoUrl: 'https://placehold.co/40x40.png' };
     
     const league: League = { 
-        id: apiMatch.sport_event.sport_event_context.competition.id,
-        name: apiMatch.sport_event.sport_event_context.competition.name,
-        country: apiMatch.sport_event.sport_event_context.category.name,
+        id: apiMatch.sport_event_context.competition.id,
+        name: apiMatch.sport_event_context.competition.name,
+        country: apiMatch.sport_event_context.category.name,
         sportId: 'soccer',
         logoUrl: '' 
     };
     
-    let h2h_odds: { '1'?: number; 'X'?: number; '2'?: number; } = {};
-    const moneylineMarket = apiMatch.markets?.find(m => m.name.toLowerCase() === '3-way moneyline');
-    if (moneylineMarket) {
-        h2h_odds['1'] = moneylineMarket.outcomes.find(o => o.name.toLowerCase() === 'home team')?.odds;
-        h2h_odds['2'] = moneylineMarket.outcomes.find(o => o.name.toLowerCase() === 'away team')?.odds;
-        h2h_odds['X'] = moneylineMarket.outcomes.find(o => o.name.toLowerCase() === 'draw')?.odds;
-    }
+    // Simulate odds as they don't come from the daily schedule endpoint
+    let h2h_odds: { '1'?: number; 'X'?: number; '2'?: number; } = {
+        '1': parseFloat((Math.random() * (3.5 - 1.5) + 1.5).toFixed(2)),
+        'X': parseFloat((Math.random() * (4.0 - 2.8) + 2.8).toFixed(2)),
+        '2': parseFloat((Math.random() * (5.0 - 1.8) + 1.8).toFixed(2)),
+    };
 
     const hasValue = Math.random() > 0.8;
     const valueScore = hasValue ? Math.random() * 0.15 : 0;
     const explanations = ["Desajuste de la línea de mercado con nuestro modelo.", "Rendimiento reciente del equipo infravalorado por el mercado.", "Anomalía detectada en el movimiento de la línea de cuotas."];
 
     return {
-        id: apiMatch.sport_event.id,
+        id: apiMatch.id,
         league: {
             name: league.name,
             country: league.country,
             logoUrl: league.logoUrl,
         },
-        eventTimestamp: new Date(apiMatch.sport_event.start_time).getTime(),
+        eventTimestamp: new Date(apiMatch.scheduled).getTime(),
         teams: {
             home: homeTeam,
             away: awayTeam,
@@ -81,10 +80,10 @@ const updateMatchesFlow = ai.defineFlow(
     outputSchema: UpdateMatchesOutputSchema,
   },
   async () => {
-    console.log('Starting match update flow using Sportradar...');
+    console.log('Starting match update flow using Sportradar daily schedule...');
 
-    // Fetch all available soccer matches from Sportradar
-    const { matches: allMatchesFromApi } = await fetchLiveOdds({ sport: 'soccer' });
+    // Fetch all available soccer matches from Sportradar for the next 7 days
+    const { matches: allMatchesFromApi } = await fetchDailySchedule({ sport: 'soccer' });
     const transformedMatches = allMatchesFromApi.map(transformApiMatch).filter((m): m is Match => m !== null);
 
     if (transformedMatches.length === 0) {
