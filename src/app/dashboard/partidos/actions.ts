@@ -11,7 +11,7 @@ export async function fetchMatches(filters: GetMatchesInput): Promise<GetMatches
 }
 
 export async function getMatchesByLeague(): Promise<Record<string, Match[]>> {
-    const matchesSnapshot = await db.collection('matches').orderBy('eventTimestamp', 'asc').get();
+    const matchesSnapshot = await db.collection('matches').orderBy('eventTimestamp', 'asc').limit(50).get();
     const matches: Match[] = [];
     matchesSnapshot.forEach(doc => {
         matches.push(doc.data() as Match);
@@ -28,6 +28,20 @@ export async function getMatchesByLeague(): Promise<Record<string, Match[]>> {
     }, {} as Record<string, Match[]>);
     
     return groupedByLeague;
+}
+
+export async function getMatchesByValue(): Promise<Match[]> {
+    const matchesSnapshot = await db.collection('matches')
+        .orderBy('valueMetrics.valueScore', 'desc')
+        .limit(20)
+        .get();
+        
+    const matches: Match[] = [];
+    matchesSnapshot.forEach(doc => {
+        matches.push(doc.data() as Match);
+    });
+
+    return matches;
 }
 
 
