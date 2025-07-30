@@ -12,18 +12,40 @@ import { ArrowUpDown, BarChart2, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useSearchParams } from "next/navigation"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { HelpCircle } from "lucide-react"
 
-const ValueIndicator = ({ value }: { value: number | undefined }) => {
+const ValueIndicator = ({ value, explanation }: { value: number | undefined, explanation?: string }) => {
     if (value === undefined || value <= 0) {
         return <span className="text-muted-foreground">-</span>;
     }
     const colorClass = value > 0.05 ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
+    
+    const indicator = <Badge className={colorClass}>{`+${(value * 100).toFixed(1)}%`}</Badge>;
+
+    if (!explanation) {
+        return indicator;
+    }
+
     return (
-        <div className={`font-mono text-right ${colorClass}`}>
-            {`+${(value * 100).toFixed(1)}%`}
-        </div>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className={`font-mono text-right ${colorClass} cursor-help`}>
+                        {`+${(value * 100).toFixed(1)}%`}
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <div className="flex items-center gap-2">
+                        <HelpCircle className="h-4 w-4" />
+                        <p>{explanation}</p>
+                    </div>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 };
+
 
 const ActionCell = ({ row }: { row: any }) => {
     const searchParams = useSearchParams();
@@ -78,16 +100,15 @@ export const columns: ColumnDef<Match>[] = [
       header: () => null,
       cell: ({ row }) => {
           return (
-              <CollapsibleTrigger asChild>
-                  <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => row.toggleExpanded(!row.getIsExpanded())}
-                  >
-                      <ChevronDown className={`h-4 w-4 transition-transform ${row.getIsExpanded() ? 'rotate-180' : ''}`} />
-                      <span className="sr-only">Toggle row</span>
-                  </Button>
-              </CollapsibleTrigger>
+              <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => row.toggleExpanded(!row.getIsExpanded())}
+                  className="h-8 w-8"
+              >
+                  <ChevronDown className={`h-4 w-4 transition-transform ${row.getIsExpanded() ? 'rotate-180' : ''}`} />
+                  <span className="sr-only">Toggle row</span>
+              </Button>
           );
       },
   },
@@ -115,6 +136,7 @@ export const columns: ColumnDef<Match>[] = [
     }
   },
   {
+    id: "partido",
     header: "Partido",
     cell: ({ row }) => {
       const match = row.original
@@ -130,6 +152,7 @@ export const columns: ColumnDef<Match>[] = [
     },
   },
   {
+    id: "liga",
     header: "Liga",
     cell: ({ row }) => {
         const league = row.original.league;
@@ -142,6 +165,7 @@ export const columns: ColumnDef<Match>[] = [
     }
   },
   {
+    id: "1x2",
     header: () => <div className="text-right">1X2</div>,
     cell: ({ row }) => {
       const odds = row.original.mainOdds
@@ -168,7 +192,7 @@ export const columns: ColumnDef<Match>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <ValueIndicator value={row.original.valueMetrics?.valueScore} />,
+    cell: ({ row }) => <ValueIndicator value={row.original.valueMetrics?.valueScore} explanation={row.original.valueMetrics?.explanation} />,
   },
   {
     id: "actions",

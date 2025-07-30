@@ -33,6 +33,44 @@ const FilterButton = ({ children, active, ...props }: React.ComponentProps<typeo
     </Button>
 );
 
+const BetRow = ({ bet }: { bet: typeof allBets[0] }) => {
+    const [formattedDate, setFormattedDate] = React.useState('');
+
+    React.useEffect(() => {
+        setFormattedDate(format(parseISO(bet.timestamp), "dd MMM yyyy, HH:mm", { locale: es }) + 'h');
+    }, [bet.timestamp]);
+
+    return (
+        <TableRow>
+            <TableCell className="text-sm text-muted-foreground">
+                {formattedDate}
+            </TableCell>
+            <TableCell className="font-medium text-foreground">{bet.match}</TableCell>
+            <TableCell className="text-muted-foreground">{bet.selection}</TableCell>
+            <TableCell className="text-right text-muted-foreground">{bet.odds.toFixed(2)}</TableCell>
+            <TableCell className="text-right text-muted-foreground">{bet.stake.toFixed(2)}</TableCell>
+            <TableCell className="text-center">
+                <Badge
+                    variant={
+                        bet.status === 'Ganada' ? 'default' :
+                            bet.status === 'Perdida' ? 'destructive' : 'secondary'
+                    }
+                    className={
+                        bet.status === 'Ganada' ? 'bg-green-100 text-green-800' :
+                            bet.status === 'Perdida' ? 'bg-red-100 text-red-800' : ''
+                    }
+                >
+                    {bet.status}
+                </Badge>
+            </TableCell>
+            <TableCell className={`text-right font-semibold ${bet.pnl > 0 ? 'text-green-600' : bet.pnl < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+                {bet.pnl > 0 ? '+' : ''}{bet.pnl.toFixed(2)}
+            </TableCell>
+        </TableRow>
+    );
+};
+
+
 export default function LedgerPage() {
     const [activeTimeFilter, setActiveTimeFilter] = React.useState('Último mes');
     const [activeSportFilter, setActiveSportFilter] = React.useState('Todos');
@@ -124,32 +162,7 @@ export default function LedgerPage() {
                             </TableHeader>
                             <TableBody>
                                 {allBets.map((bet) => (
-                                    <TableRow key={bet.id}>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                            {format(parseISO(bet.timestamp), "dd MMM yyyy, HH:mm", { locale: es })}h
-                                        </TableCell>
-                                        <TableCell className="font-medium text-foreground">{bet.match}</TableCell>
-                                        <TableCell className="text-muted-foreground">{bet.selection}</TableCell>
-                                        <TableCell className="text-right text-muted-foreground">{bet.odds.toFixed(2)}</TableCell>
-                                        <TableCell className="text-right text-muted-foreground">{bet.stake.toFixed(2)}</TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge 
-                                                variant={
-                                                    bet.status === 'Ganada' ? 'default' : 
-                                                    bet.status === 'Perdida' ? 'destructive' : 'secondary'
-                                                } 
-                                                className={
-                                                    bet.status === 'Ganada' ? 'bg-green-100 text-green-800' :
-                                                    bet.status === 'Perdida' ? 'bg-red-100 text-red-800' : ''
-                                                }
-                                            >
-                                                {bet.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className={`text-right font-semibold ${bet.pnl > 0 ? 'text-green-600' : bet.pnl < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                                            {bet.pnl > 0 ? '+' : ''}{bet.pnl.toFixed(2)}
-                                        </TableCell>
-                                    </TableRow>
+                                    <BetRow key={bet.id} bet={bet} />
                                 ))}
                             </TableBody>
                         </Table>

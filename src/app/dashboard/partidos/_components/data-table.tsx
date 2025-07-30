@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
+import { CollapsibleContent } from "@/components/ui/collapsible"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -62,6 +62,7 @@ export function MatchDataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onExpandedChange: setExpanded,
     getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: () => true,
     state: {
       sorting,
       columnFilters,
@@ -124,8 +125,7 @@ export function MatchDataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <Collapsible asChild key={row.id} open={row.getIsExpanded()}>
-                  <>
+                <React.Fragment key={row.id}>
                     <TableRow data-state={row.getIsSelected() && "selected"}>
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
@@ -133,17 +133,18 @@ export function MatchDataTable<TData, TValue>({
                         </TableCell>
                       ))}
                     </TableRow>
-                    <CollapsibleContent asChild>
+                    {row.getIsExpanded() && (
                        <TableRow>
                           <TableCell colSpan={columns.length} className="p-0">
-                               <div className="bg-muted/50 p-4">
-                                  Contenido expandido para el partido... Próximamente gráficos y más detalles.
-                               </div>
+                               <CollapsibleContent>
+                                   <div className="bg-muted/50 p-4">
+                                      Contenido expandido para el partido... Próximamente gráficos y más detalles.
+                                   </div>
+                               </CollapsibleContent>
                           </TableCell>
                        </TableRow>
-                    </CollapsibleContent>
-                  </>
-                </Collapsible>
+                    )}
+                </React.Fragment>
               ))
             ) : (
               <TableRow>
