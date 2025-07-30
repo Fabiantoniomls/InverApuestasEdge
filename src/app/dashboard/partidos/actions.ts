@@ -30,7 +30,8 @@ export async function getMatchesByLeague(): Promise<{ data: Record<string, Match
         
         return { data: groupedByLeague, error: null };
     } catch (error: any) {
-        console.error("Error fetching matches by league from Firestore:", error.message);
+        // The error is intentionally not logged to the console here to avoid noise from environment-specific auth issues.
+        // The UI component handles displaying a user-friendly error message.
         return { data: {}, error: error.message };
     }
 }
@@ -50,7 +51,8 @@ export async function getMatchesByValue(): Promise<{ data: Match[], error: strin
 
         return { data: matches, error: null };
     } catch (error: any) {
-        console.error("Error fetching matches by value from Firestore:", error.message);
+        // The error is intentionally not logged to the console here to avoid noise from environment-specific auth issues.
+        // The UI component handles displaying a user-friendly error message.
         return { data: [], error: error.message };
     }
 }
