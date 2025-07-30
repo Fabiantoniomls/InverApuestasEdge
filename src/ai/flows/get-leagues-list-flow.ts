@@ -1,27 +1,33 @@
-
 'use server';
 /**
- * @fileOverview A Genkit flow to get a list of available leagues.
- * In a real application, this would fetch from a database or a live API.
- * For this prototype, it returns a hardcoded list of major leagues.
+ * @fileOverview A Genkit flow to get a list of available leagues from The Odds API.
+ * This flow fetches all active sports/leagues and groups them.
  *
- * - getLeaguesList - A function that returns a list of leagues.
+ * - getLeaguesList - A function that returns a list of leagues for a given sport.
  * - GetLeaguesListOutput - The return type for the function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { SOCCER_LEAGUES, TENNIS_LEAGUES } from './_data/leagues';
+
+const SportFromApiSchema = z.object({
+    key: z.string(),
+    group: z.string(),
+    title: z.string(),
+    description: z.string(),
+    active: z.boolean(),
+    has_outrights: z.boolean(),
+});
 
 const GetLeaguesListInputSchema = z.object({
-    sport: z.enum(['soccer', 'tennis']).optional().default('soccer'),
+    sportGroup: z.enum(['soccer', 'tennis', 'basketball']).optional().default('soccer'),
 });
 
 const GetLeaguesListOutputSchema = z.object({
     leagues: z.array(z.object({
         id: z.string(),
         name: z.string(),
-        country: z.string(),
+        country: z.string().optional().default(''), // Country is not provided by this API endpoint
         sportId: z.string(),
         logoUrl: z.string().optional(),
     }))
@@ -39,14 +45,49 @@ const getLeaguesListFlow = ai.defineFlow(
     inputSchema: GetLeaguesListInputSchema,
     outputSchema: GetLeaguesListOutputSchema,
   },
-  async ({ sport }) => {
-    let allLeagues: any[] = [];
-    if (sport === 'soccer') {
-        allLeagues = SOCCER_LEAGUES;
-    } else if (sport === 'tennis') {
-        allLeagues = TENNIS_LEAGUES;
+  async ({ sportGroup }) => {
+    const apiKey = process.env.ODDS_API_KEY;
+    if (!apiKey) {
+      throw new Error('THE_ODDS_API_KEY is not configured in environment variables.');
     }
     
-    return { leagues: allLeagues.map(l => ({...l, sportId: l.sportKey })) };
+    const apiUrl = `https://api.the-odds-api.com/v4/sports/?apiKey=${apiKey}`;
+
+    try {
+        const response = await fetch(apiUrl, { 
+            next: { revalidate: 86400 } // Cache for 24 hours
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch sports list: ${response.statusText}`);
+        }
+
+        const sportsData: z.infer<typeof SportFromApiSchema>[] = await response.json();
+        
+        const sportGroupMapping: Record<string, string> = {
+            'soccer': 'Soccer',
+            'tennis': 'Tennis',
+            'basketball': 'Basketball',
+        };
+
+        const targetGroup = sportGroupMapping[sportGroup] || 'Soccer';
+
+        const filteredLeagues = sportsData
+            .filter(sport => sport.active && sport.group === targetGroup)
+            .map(sport => ({
+                id: sport.key,
+                name: sport.title,
+                sportId: sport.key,
+                // These fields are not available from the /sports endpoint, so we set defaults
+                country: '', 
+                logoUrl: '', 
+            }));
+
+        return { leagues: filteredLeagues };
+
+    } catch (error) {
+        console.error("Error fetching leagues from API:", error);
+        return { leagues: [] }; // Return empty on error
+    }
   }
 );

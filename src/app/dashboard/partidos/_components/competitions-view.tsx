@@ -2,7 +2,6 @@
 import { getMatchesByLeague } from '../actions';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { MatchCard } from './match-card';
-import { SOCCER_LEAGUES } from '@/ai/flows/_data/leagues';
 import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -35,7 +34,7 @@ export async function CompetitionsView() {
     return (
         <Accordion type="multiple" defaultValue={leaguesWithMatches}>
             {Object.entries(groupedMatches).map(([leagueName, matches]) => {
-                const leagueInfo = SOCCER_LEAGUES.find(l => l.name === leagueName);
+                const leagueInfo = matches[0]?.league; // All matches in group have same league
                 return (
                     <AccordionItem value={leagueName} key={leagueName}>
                         <AccordionTrigger className="text-lg font-semibold hover:no-underline">

@@ -46,7 +46,7 @@ export function FilterSidebar() {
   
   useEffect(() => {
     async function fetchLeagues() {
-      const leaguesData = await getLeaguesList({ sport: sport as 'soccer' | 'tennis' });
+      const leaguesData = await getLeaguesList({ sport: sport as 'soccer' | 'tennis' | 'basketball' });
       setLeagues(leaguesData);
     }
     fetchLeagues();
@@ -114,6 +114,7 @@ export function FilterSidebar() {
                 <SelectContent>
                     <SelectItem value="soccer">Fútbol</SelectItem>
                     <SelectItem value="tennis">Tenis</SelectItem>
+                    <SelectItem value="basketball">Baloncesto</SelectItem>
                 </SelectContent>
             </Select>
        </div>

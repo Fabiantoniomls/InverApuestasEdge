@@ -13,7 +13,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { GetMatchesResponse, Match, League, Team } from '@/lib/types';
 import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
-import { SOCCER_LEAGUES } from './_data/leagues';
 import { TEAM_LOGOS } from './_data/teams';
 
 const GetMatchesInputSchema = z.object({
@@ -38,7 +37,6 @@ export async function getMatches(input: GetMatchesInput): Promise<GetMatchesResp
 
 // Helper function to transform API data into our internal Match type
 function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
-    const leagueInfo = SOCCER_LEAGUES.find(l => l.id === apiMatch.sport_key) || { name: apiMatch.sport_title, country: 'Unknown', logoUrl: '' };
     
     const homeTeam: Team = { id: apiMatch.home_team, name: apiMatch.home_team, logoUrl: TEAM_LOGOS[apiMatch.home_team] || 'https://placehold.co/40x40.png' };
     const awayTeam: Team = { id: apiMatch.away_team, name: apiMatch.away_team, logoUrl: TEAM_LOGOS[apiMatch.away_team] || 'https://placehold.co/40x40.png' };
@@ -65,9 +63,9 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
     return {
         id: apiMatch.id,
         league: {
-            name: leagueInfo.name,
-            country: leagueInfo.country,
-            logoUrl: leagueInfo.logoUrl,
+            name: apiMatch.sport_title,
+            country: '', // Not provided by API in this context
+            logoUrl: '', // Not provided by API in this context
         },
         eventTimestamp: new Date(apiMatch.commence_time).getTime() / 1000,
         teams: {
@@ -93,14 +91,22 @@ const getMatchesFlow = ai.defineFlow(
     outputSchema: z.any(), // Using any because GetMatchesResponse is complex
   },
   async (filters) => {
-    // 1. Fetch ALL upcoming matches from the API for the main soccer leagues
+    // 1. Fetch ALL upcoming matches from the API for the selected leagues.
     // The API only supports one sport key per request, so we make parallel calls.
-    const leaguesToFetch = filters.leagues && filters.leagues.length > 0 
-        ? SOCCER_LEAGUES.filter(l => filters.leagues!.includes(l.id))
-        : SOCCER_LEAGUES;
+    // If no leagues are selected, we don't fetch anything to avoid fetching all sports.
+    if (!filters.leagues || filters.leagues.length === 0) {
+        return {
+            data: [],
+            totalMatches: 0,
+            totalPages: 0,
+            currentPage: 1,
+        };
+    }
+    
+    const leaguesToFetch = filters.leagues;
 
     const apiPromises = leaguesToFetch.map(league => fetchLiveOdds({
-        sport: league.id,
+        sport: league,
         regions: 'eu',
         markets: 'h2h,totals',
     }));
