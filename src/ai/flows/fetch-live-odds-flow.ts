@@ -100,7 +100,9 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to fetch live odds: ${response.status} ${response.statusText} - ${errorText}`);
+        // Log the detailed error on the server for debugging, but throw a clean error to the client.
+        console.error(`[fetchLiveOddsFlow] API Error: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(`Failed to fetch live odds: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -108,7 +110,7 @@ const fetchLiveOddsFlow = ai.defineFlow(
       const validatedData = z.array(MatchOddsSchema).safeParse(data);
 
       if (!validatedData.success) {
-        console.warn("Zod validation warning (non-fatal):", validatedData.error.issues);
+        console.warn("[fetchLiveOddsFlow] Zod validation warning (non-fatal):", validatedData.error.issues);
         // If validation fails (e.g., empty array or unexpected format), return an empty list
         // instead of throwing an error. The frontend will handle the "no matches found" case.
         return { matches: [] };
@@ -117,7 +119,8 @@ const fetchLiveOddsFlow = ai.defineFlow(
       return { matches: validatedData.data };
 
     } catch (error) {
-      console.error('Error in fetchLiveOddsFlow:', error);
+      console.error('[fetchLiveOddsFlow] General fetch error:', error);
+      // Re-throw the error so the calling function can handle it.
       throw error;
     }
   }
