@@ -15,7 +15,7 @@ export async function CompetitionsView() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error al Cargar Competiciones</AlertTitle>
                 <AlertDescription>
-                    No se pudieron cargar los partidos por competición. Error: {error}
+                    No se pudieron cargar los partidos por competición. La API externa puede haber alcanzado su límite de uso.
                 </AlertDescription>
             </Alert>
         )
@@ -32,7 +32,7 @@ export async function CompetitionsView() {
     }
 
     return (
-        <Accordion type="multiple" defaultValue={leaguesWithMatches}>
+        <Accordion type="multiple" defaultValue={leaguesWithMatches.slice(0, 1)}>
             {Object.entries(groupedMatches).map(([leagueName, matches]) => {
                 const leagueInfo = matches[0]?.league; // All matches in group have same league
                 return (
