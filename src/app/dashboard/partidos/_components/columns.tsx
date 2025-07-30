@@ -10,10 +10,10 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ArrowUpDown, BarChart2, ChevronDown } from "lucide-react"
 import Link from "next/link"
-import { CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useSearchParams } from "next/navigation"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { HelpCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 const ValueIndicator = ({ value, explanation }: { value: number | undefined, explanation?: string }) => {
     if (value === undefined || value <= 0) {
@@ -21,7 +21,7 @@ const ValueIndicator = ({ value, explanation }: { value: number | undefined, exp
     }
     const colorClass = value > 0.05 ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold';
     
-    const indicator = <Badge className={colorClass}>{`+${(value * 100).toFixed(1)}%`}</Badge>;
+    const indicator = <Badge variant="outline" className={colorClass}>{`+${(value * 100).toFixed(1)}%`}</Badge>;
 
     if (!explanation) {
         return indicator;
@@ -32,7 +32,7 @@ const ValueIndicator = ({ value, explanation }: { value: number | undefined, exp
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div className={`font-mono text-right ${colorClass} cursor-help`}>
-                        {`+${(value * 100).toFixed(1)}%`}
+                        {indicator}
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -113,6 +113,7 @@ export const columns: ColumnDef<Match>[] = [
       },
   },
   {
+    id: "eventTimestamp",
     accessorKey: "eventTimestamp",
     header: ({ column }) => {
       return (
@@ -126,7 +127,7 @@ export const columns: ColumnDef<Match>[] = [
       )
     },
     cell: ({ row }) => {
-        const date = new Date(row.original.eventTimestamp);
+        const date = new Date(row.original.eventTimestamp * 1000);
         return (
             <div className="text-left">
                 <div>{format(date, "d MMM yyyy", { locale: es })}</div>
@@ -179,6 +180,7 @@ export const columns: ColumnDef<Match>[] = [
     },
   },
   {
+    id: "valueScore",
     accessorKey: "valueMetrics.valueScore",
     header: ({ column }) => {
       return (
