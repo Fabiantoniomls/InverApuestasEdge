@@ -17,6 +17,8 @@ import { DateRange } from 'react-day-picker';
 import { addDays, format } from 'date-fns';
 import { getLeaguesList } from '../actions';
 import { League } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 export function FilterSidebar() {
@@ -29,6 +31,8 @@ export function FilterSidebar() {
     new Set(searchParams.get('leagues')?.split(',') || [])
   );
   
+  const [sport, setSport] = useState(searchParams.get('sport') || 'soccer');
+
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: searchParams.get('startDate') ? new Date(searchParams.get('startDate')!) : new Date(),
     to: searchParams.get('endDate') ? new Date(searchParams.get('endDate')!) : addDays(new Date(), 7),
@@ -42,11 +46,11 @@ export function FilterSidebar() {
   
   useEffect(() => {
     async function fetchLeagues() {
-      const leaguesData = await getLeaguesList();
+      const leaguesData = await getLeaguesList({ sport: sport as 'soccer' | 'tennis' });
       setLeagues(leaguesData);
     }
     fetchLeagues();
-  }, []);
+  }, [sport]);
   
   const handleApplyFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -64,19 +68,21 @@ export function FilterSidebar() {
     params.set('minOdds', String(odds[0]));
     params.set('maxOdds', String(odds[1]));
     params.set('page', '1'); // Reset to first page on filter change
+    params.set('sport', sport);
     
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   const handleResetFilters = () => {
       const params = new URLSearchParams(searchParams.toString());
-      const keysToRemove = ['leagues', 'startDate', 'endDate', 'minValue', 'minOdds', 'maxOdds', 'page', 'sortBy', 'sortOrder'];
+      const keysToRemove = ['leagues', 'startDate', 'endDate', 'minValue', 'minOdds', 'maxOdds', 'page', 'sortBy', 'sortOrder', 'sport'];
       keysToRemove.forEach(key => params.delete(key));
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
       setSelectedLeagues(new Set());
       setDate({ from: new Date(), to: addDays(new Date(), 7) });
       setValue([0]);
       setOdds([1.0, 10.0]);
+      setSport('soccer');
   }
 
   const handleLeagueSelect = (leagueId: string) => {
@@ -89,36 +95,55 @@ export function FilterSidebar() {
     setSelectedLeagues(newSelectedLeagues);
   };
 
+  const handleSportChange = (newSport: string) => {
+    setSport(newSport);
+    setSelectedLeagues(new Set()); // Reset selected leagues when sport changes
+  };
+
 
   return (
-    <aside className="w-80 h-full border-r bg-background p-6 flex-col gap-8 hidden lg:flex">
+    <aside className="w-80 h-full border-r bg-background p-6 flex flex-col gap-6 hidden lg:flex">
       <h2 className="text-xl font-bold">Filtros</h2>
 
-      <div className="space-y-4">
-        <Label htmlFor="search-team">Buscar Equipo</Label>
-        <Input id="search-team" placeholder="Ej: Real Madrid..." />
-      </div>
+       <div className="space-y-2">
+            <Label htmlFor="sport">Deporte</Label>
+            <Select value={sport} onValueChange={handleSportChange}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un deporte" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="soccer">Fútbol</SelectItem>
+                    <SelectItem value="tennis">Tenis</SelectItem>
+                </SelectContent>
+            </Select>
+       </div>
 
       <div className="space-y-2">
-        <Label>Ligas</Label>
-         <Command className="rounded-lg border shadow-sm max-h-64">
-            <CommandInput placeholder="Buscar liga..." />
-            <CommandList>
-                <CommandEmpty>No se encontraron ligas.</CommandEmpty>
-                <CommandGroup>
-                {leagues.map((league) => (
-                    <CommandItem
-                        key={league.id}
-                        onSelect={() => handleLeagueSelect(league.id)}
-                        className="cursor-pointer"
-                    >
-                         <Checkbox checked={selectedLeagues.has(league.id)} className="mr-2" />
-                        {league.name}
-                    </CommandItem>
-                ))}
-                </CommandGroup>
-            </CommandList>
-        </Command>
+        <Accordion type="single" collapsible defaultValue="item-1">
+            <AccordionItem value="item-1">
+                <AccordionTrigger>Ligas</AccordionTrigger>
+                <AccordionContent>
+                    <Command className="rounded-lg border shadow-sm max-h-64">
+                        <CommandInput placeholder="Buscar liga..." />
+                        <CommandList>
+                            <CommandEmpty>No se encontraron ligas.</CommandEmpty>
+                            <CommandGroup>
+                            {leagues.map((league) => (
+                                <CommandItem
+                                    key={league.id}
+                                    onSelect={() => handleLeagueSelect(league.id)}
+                                    className="cursor-pointer"
+                                >
+                                    <Checkbox checked={selectedLeagues.has(league.id)} className="mr-2" />
+                                    {league.name}
+                                </CommandItem>
+                            ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
       </div>
 
       <div className={cn("grid gap-2")}>

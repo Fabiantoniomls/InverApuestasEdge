@@ -11,7 +11,11 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { SOCCER_LEAGUES } from './_data/leagues';
+import { SOCCER_LEAGUES, TENNIS_LEAGUES } from './_data/leagues';
+
+const GetLeaguesListInputSchema = z.object({
+    sport: z.enum(['soccer', 'tennis']).optional().default('soccer'),
+});
 
 const GetLeaguesListOutputSchema = z.object({
     leagues: z.array(z.object({
@@ -25,19 +29,24 @@ const GetLeaguesListOutputSchema = z.object({
 
 export type GetLeaguesListOutput = z.infer<typeof GetLeaguesListOutputSchema>;
 
-export async function getLeaguesList(): Promise<GetLeaguesListOutput> {
-  return getLeaguesListFlow();
+export async function getLeaguesList(input: z.infer<typeof GetLeaguesListInputSchema>): Promise<GetLeaguesListOutput> {
+  return getLeaguesListFlow(input);
 }
 
 const getLeaguesListFlow = ai.defineFlow(
   {
     name: 'getLeaguesListFlow',
-    inputSchema: z.void(),
+    inputSchema: GetLeaguesListInputSchema,
     outputSchema: GetLeaguesListOutputSchema,
   },
-  async () => {
-    // In a real-world scenario, you might fetch this from a database
-    // or The Odds API's /sports endpoint. For the prototype, we use a static list.
-    return { leagues: SOCCER_LEAGUES.map(l => ({...l, sportId: l.sportKey })) };
+  async ({ sport }) => {
+    let allLeagues: any[] = [];
+    if (sport === 'soccer') {
+        allLeagues = SOCCER_LEAGUES;
+    } else if (sport === 'tennis') {
+        allLeagues = TENNIS_LEAGUES;
+    }
+    
+    return { leagues: allLeagues.map(l => ({...l, sportId: l.sportKey })) };
   }
 );

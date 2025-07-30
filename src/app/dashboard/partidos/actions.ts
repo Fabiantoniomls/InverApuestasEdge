@@ -11,13 +11,11 @@ export async function fetchMatches(filters: GetMatchesInput): Promise<GetMatches
 
 export async function getMatchesByLeague(): Promise<{ data: Record<string, Match[]>, error: string | null }> {
     try {
-        // Fetch all matches from the live API
-        const response = await getMatches({ limit: 100 }); // Fetch a larger number to group
+        const response = await getMatches({ limit: 100 }); 
         if (!response.data) {
-            return { data: {}, error: 'No data received from the API.' };
+            return { data: {}, error: 'No se recibieron datos de la API.' };
         }
 
-        // Group matches by league name
         const groupedByLeague = response.data.reduce((acc, match) => {
             const leagueName = match.league.name;
             if (!acc[leagueName]) {
@@ -35,16 +33,15 @@ export async function getMatchesByLeague(): Promise<{ data: Record<string, Match
 
 export async function getMatchesByValue(): Promise<{ data: Match[], error: string | null }> {
     try {
-        // Fetch matches from the live API, filtering by value
         const response = await getMatches({ 
-            minValue: 0.01, // Filter for matches that have a value score > 0
+            minValue: 0.01,
             sortBy: 'valueMetrics.valueScore', 
             sortOrder: 'desc',
             limit: 8 
         });
 
         if (!response.data) {
-            return { data: [], error: 'No data received from the API.' };
+            return { data: [], error: 'No se recibieron datos de la API.' };
         }
 
         return { data: response.data, error: null };
@@ -53,8 +50,11 @@ export async function getMatchesByValue(): Promise<{ data: Match[], error: strin
     }
 }
 
+type GetLeaguesListParams = {
+    sport?: 'soccer' | 'tennis';
+}
 
-export async function getLeaguesList(): Promise<League[]> {
-  const { leagues } = await getLeagues();
+export async function getLeaguesList(params?: GetLeaguesListParams): Promise<League[]> {
+  const { leagues } = await getLeagues({ sport: params?.sport || 'soccer' });
   return leagues.map(l => ({...l, id: l.id, name: l.name, country: l.country, sportId: l.sportId, logoUrl: l.logoUrl }))
 }
