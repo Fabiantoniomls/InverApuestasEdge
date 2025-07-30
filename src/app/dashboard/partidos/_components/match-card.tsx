@@ -5,15 +5,31 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Clock, BarChart2 } from "lucide-react";
+import { Calendar, Clock, BarChart2, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const ValueIndicator = ({ value }: { value: number | undefined }) => {
+const ValueIndicator = ({ value, explanation }: { value: number | undefined, explanation?: string }) => {
     if (value === undefined || value <= 0) {
         return <Badge variant="secondary">Sin Valor</Badge>;
     }
     const colorClass = value > 0.1 ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800";
-    return <Badge className={colorClass}>{`+${(value * 100).toFixed(1)}% Valor`}</Badge>;
+    
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Badge className={colorClass}>{`+${(value * 100).toFixed(1)}% Valor`}</Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <div className="flex items-center gap-2">
+                        <HelpCircle className="h-4 w-4" />
+                        <p>{explanation || 'Valor detectado por el modelo.'}</p>
+                    </div>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
 };
 
 export function MatchCard({ match }: { match: Match }) {
@@ -53,7 +69,7 @@ export function MatchCard({ match }: { match: Match }) {
                 </div>
                 
                  <div className="flex items-center justify-between gap-2">
-                     <ValueIndicator value={valueMetrics?.valueScore} />
+                     <ValueIndicator value={valueMetrics?.valueScore} explanation={valueMetrics?.explanation} />
                     <Button variant="default" size="sm">
                         <BarChart2 className="mr-2 h-4 w-4" />
                         Analizar

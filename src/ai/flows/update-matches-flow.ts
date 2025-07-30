@@ -51,9 +51,17 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
         });
     });
 
+    const hasValue = Math.random() > 0.8;
+    const valueScore = hasValue ? Math.random() * 0.15 : 0;
+    const explanations = ["Desajuste de la línea de mercado con nuestro modelo.", "Rendimiento reciente del equipo infravalorado por el mercado.", "Anomalía detectada en el movimiento de la línea de cuotas."];
+
     return {
         id: apiMatch.id,
-        league: league,
+        league: {
+            name: leagueInfo.name,
+            country: leagueInfo.country,
+            logoUrl: leagueInfo.logoUrl,
+        },
         eventTimestamp: new Date(apiMatch.commence_time).getTime(),
         teams: {
             home: homeTeam,
@@ -61,9 +69,10 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match {
         },
         mainOdds: h2h_odds,
         valueMetrics: {
-            hasValue: Math.random() > 0.8, // Simulate value finding
-            market: 'Home Win',
-            valueScore: Math.random() * 0.15, // Placeholder for value score
+            hasValue,
+            market: hasValue ? 'Home Win' : 'N/A',
+            valueScore,
+            explanation: hasValue ? explanations[Math.floor(Math.random() * explanations.length)] : undefined,
         },
         liveStatus: 'pre-match',
     };

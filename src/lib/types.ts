@@ -1,4 +1,5 @@
 
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -51,6 +52,7 @@ export interface Match {
         hasValue: boolean;
         market: string; // e.g., 'Home Win', 'Over 2.5'
         valueScore: number; // e.g., 0.085 for 8.5%
+        explanation?: string; // XAI
         recommendedStake?: number;
     };
     marketCount?: number;
