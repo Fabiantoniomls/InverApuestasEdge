@@ -20,7 +20,7 @@ const SportFromApiSchema = z.object({
 });
 
 const GetLeaguesListInputSchema = z.object({
-    sportGroup: z.enum(['soccer', 'tennis', 'basketball']).optional().default('soccer'),
+    sportGroup: z.enum(['soccer', 'tennis_atp', 'tennis_wta', 'basketball']).optional().default('soccer'),
 });
 
 const GetLeaguesListOutputSchema = z.object({
@@ -64,16 +64,22 @@ const getLeaguesListFlow = ai.defineFlow(
 
         const sportsData: z.infer<typeof SportFromApiSchema>[] = await response.json();
         
-        const sportGroupMapping: Record<string, string> = {
+        const sportGroupMapping: Record<string, string | null> = {
             'soccer': 'Soccer',
-            'tennis': 'Tennis',
+            'tennis_atp': 'Tennis',
+            'tennis_wta': 'Tennis',
             'basketball': 'Basketball',
         };
 
         const targetGroup = sportGroupMapping[sportGroup] || 'Soccer';
 
         const filteredLeagues = sportsData
-            .filter(sport => sport.active && sport.group === targetGroup)
+            .filter(sport => {
+                if (!sport.active || sport.group !== targetGroup) return false;
+                if (sportGroup === 'tennis_atp') return sport.key.includes('_atp_');
+                if (sportGroup === 'tennis_wta') return sport.key.includes('_wta_');
+                return true;
+            })
             .map(sport => ({
                 id: sport.key,
                 name: sport.title,

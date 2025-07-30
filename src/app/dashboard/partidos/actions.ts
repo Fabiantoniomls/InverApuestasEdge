@@ -36,7 +36,9 @@ export async function getMatchesByLeague(): Promise<{ data: Record<string, Match
 
 export async function getMatchesByValue(): Promise<{ data: Match[], error: string | null }> {
     try {
+        const popularLeagues = ['soccer_spain_la_liga', 'soccer_epl', 'soccer_italy_serie_a', 'soccer_germany_bundesliga', 'tennis_atp_aus_open_singles', 'tennis_wta_aus_open_singles'];
         const response = await getMatches({ 
+            leagues: popularLeagues,
             minValue: 0.01,
             sortBy: 'valueMetrics.valueScore', 
             sortOrder: 'desc',
@@ -54,10 +56,15 @@ export async function getMatchesByValue(): Promise<{ data: Match[], error: strin
 }
 
 type GetLeaguesListParams = {
-    sport?: 'soccer' | 'tennis' | 'basketball';
+    sport?: 'soccer' | 'tennis_atp' | 'tennis_wta' | 'basketball';
 }
 
-export async function getLeaguesList(params?: GetLeaguesListParams): Promise<League[]> {
-  const { leagues } = await getLeagues({ sportGroup: params?.sport || 'soccer' });
-  return leagues.map(l => ({...l, id: l.id, name: l.name, country: l.country, sportId: l.sportId, logoUrl: l.logoUrl }))
+export async function getLeaguesList(params?: GetLeaguesListParams): Promise<{leagues: League[], error: string | null}> {
+  try {
+    const { leagues } = await getLeagues({ sportGroup: params?.sport || 'soccer' });
+    const mappedLeagues = leagues.map(l => ({...l, id: l.id, name: l.name, country: l.country, sportId: l.sportId, logoUrl: l.logoUrl }))
+    return { leagues: mappedLeagues, error: null };
+  } catch (error: any) {
+    return { leagues: [], error: error.message };
+  }
 }
