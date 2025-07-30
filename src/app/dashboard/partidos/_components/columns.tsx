@@ -57,12 +57,13 @@ const ActionCell = ({ row }: { row: any }) => {
     if(match.mainOdds?.[1]) params.set('oddsHome', String(match.mainOdds[1]));
     if(match.mainOdds?.['X']) params.set('oddsDraw', String(match.mainOdds['X']));
     if(match.mainOdds?.[2]) params.set('oddsAway', String(match.mainOdds[2]));
+    params.set('mode', 'quantitative'); // Ensure it goes to the correct form
     if(tab) params.set('tab', tab);
 
     return (
         <div className="text-right">
             <Button asChild variant="default" size="sm">
-              <Link href={`/dashboard/analyze?mode=quantitative&${params.toString()}`}>
+              <Link href={`/dashboard/analyze?${params.toString()}`}>
                 <BarChart2 className="mr-2 h-4 w-4" />
                 Analizar
               </Link>
