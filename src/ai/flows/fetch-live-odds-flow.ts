@@ -73,8 +73,7 @@ const fetchLiveOddsFlow = ai.defineFlow(
   async (input) => {
     const apiKey = process.env.ODDS_API_KEY;
     if (!apiKey) {
-      console.warn('THE_ODDS_API_KEY is not configured in environment variables.');
-      return { matches: [] };
+      throw new Error('THE_ODDS_API_KEY is not configured in environment variables.');
     }
 
     const { sport, regions, markets, dateFormat, oddsFormat, eventIds, bookmakers, beginTimeFrom, beginTimeTo } = input;
@@ -100,8 +99,8 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.warn(`[fetchLiveOddsFlow] API Error: ${response.status} ${response.statusText} - ${errorText}`);
-      return { matches: [] };
+      // Throw an error that consuming components can catch and handle.
+      throw new Error(`Failed to fetch live odds: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -110,6 +109,7 @@ const fetchLiveOddsFlow = ai.defineFlow(
 
     if (!validatedData.success) {
       console.warn("[fetchLiveOddsFlow] Zod validation warning (non-fatal):", validatedData.error.issues);
+      // This could happen if the API changes its structure. Returning empty is safer.
       return { matches: [] };
     }
 
