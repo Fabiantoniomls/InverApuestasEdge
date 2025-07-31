@@ -2,7 +2,8 @@
 'use server';
 /**
  * @fileOverview A Genkit flow to get a filtered, sorted, and paginated list of matches.
- * This flow fetches the daily schedule from Sportradar and then applies server-side filtering.
+ * This flow acts as an orchestrator with a fallback mechanism. It first tries to fetch
+ * data from Sportradar, and if that fails, it falls back to The Odds API.
  * 
  * - getMatches - A function that returns a list of matches based on filters.
  * - GetMatchesInput - The input type for the function.
@@ -12,7 +13,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { GetMatchesResponse, Match, League, Team } from '@/lib/types';
-import { fetchLiveOdds, FetchLiveOddsOutput } from './fetch-live-odds-flow';
+import { fetchLiveOdds, FetchLiveOddsOutput as SportradarMatch } from './fetch-live-odds-flow';
+import { fetchTheOddsApi, FetchTheOddsApiOutput as TheOddsApiMatch } from './fetch-the-odds-api-flow';
 
 const GetMatchesInputSchema = z.object({
     leagues: z.array(z.string()).optional(),
@@ -34,20 +36,17 @@ export async function getMatches(input: GetMatchesInput): Promise<GetMatchesResp
   return getMatchesFlow(input);
 }
 
-// Helper function to transform Sportradar API data into our internal Match type
-function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match | null {
-    
+
+function transformSportradarMatch(apiMatch: SportradarMatch['matches'][0]): Match | null {
     const homeCompetitor = apiMatch.competitors.find(c => c.qualifier === 'home');
     const awayCompetitor = apiMatch.competitors.find(c => c.qualifier === 'away');
 
-    if (!homeCompetitor || !awayCompetitor) {
-        return null; 
-    }
+    if (!homeCompetitor || !awayCompetitor) return null;
 
     const homeTeam: Team = { id: homeCompetitor.id, name: homeCompetitor.name, logoUrl: 'https://placehold.co/40x40.png' };
     const awayTeam: Team = { id: awayCompetitor.id, name: awayCompetitor.name, logoUrl: 'https://placehold.co/40x40.png' };
     
-    // NOTE: Daily schedule endpoint does not include odds. We simulate them.
+    // Simulate odds as they don't come from the daily schedule endpoint
     let h2h_odds: { '1'?: number; 'X'?: number; '2'?: number; } = {
         '1': parseFloat((Math.random() * (3.5 - 1.5) + 1.5).toFixed(2)),
         'X': parseFloat((Math.random() * (4.0 - 2.8) + 2.8).toFixed(2)),
@@ -64,7 +63,7 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match |
             id: apiMatch.sport_event_context.competition.id,
             name: apiMatch.sport_event_context.competition.name,
             country: apiMatch.sport_event_context.category.name,
-            logoUrl: '', // Not provided by Sportradar in this context
+            logoUrl: '',
         },
         eventTimestamp: new Date(apiMatch.scheduled).getTime() / 1000,
         teams: {
@@ -82,6 +81,35 @@ function transformApiMatch(apiMatch: FetchLiveOddsOutput['matches'][0]): Match |
     };
 }
 
+function transformTheOddsApiMatch(apiMatch: TheOddsApiMatch[0]): Match {
+     const homeTeam: Team = { name: apiMatch.home_team, logoUrl: 'https://placehold.co/40x40.png' };
+     const awayTeam: Team = { name: apiMatch.away_team, logoUrl: 'https://placehold.co/40x40.png' };
+
+    // Find the h2h odds from a bookmaker
+    const bookmaker = apiMatch.bookmakers?.find(b => b.markets.some(m => m.key === 'h2h'));
+    const h2hMarket = bookmaker?.markets.find(m => m.key === 'h2h');
+    const homeOdds = h2hMarket?.outcomes.find(o => o.name === apiMatch.home_team)?.price;
+    const awayOdds = h2hMarket?.outcomes.find(o => o.name === apiMatch.away_team)?.price;
+    const drawOdds = h2hMarket?.outcomes.find(o => o.name === 'Draw')?.price;
+
+    return {
+        id: apiMatch.id,
+        league: {
+            id: apiMatch.sport_key,
+            name: apiMatch.sport_title,
+            country: '',
+            logoUrl: '',
+        },
+        eventTimestamp: new Date(apiMatch.commence_time).getTime() / 1000,
+        teams: { home: homeTeam, away: awayTeam },
+        mainOdds: {
+            '1': homeOdds,
+            'X': drawOdds,
+            '2': awayOdds,
+        },
+        liveStatus: 'pre-match',
+    };
+}
 
 const getMatchesFlow = ai.defineFlow(
   {
@@ -90,29 +118,48 @@ const getMatchesFlow = ai.defineFlow(
     outputSchema: z.any(), // Using any because GetMatchesResponse is complex
   },
   async (filters) => {
-    // Fetch all soccer matches for the next few days and then filter.
-    const { matches: allMatchesFromApi } = await fetchLiveOdds({ sport: 'soccer' });
-    
-    let allMatches = allMatchesFromApi
-        .map(transformApiMatch)
-        .filter((match): match is Match => match !== null) // Filter out any matches that couldn't be transformed
-        // Sort by date by default if no other sort is specified
-        .sort((a, b) => {
-            if (filters.sortBy && filters.sortBy !== 'eventTimestamp') return 0;
-            return a.eventTimestamp - b.eventTimestamp
-        });
+    let allMatches: Match[] = [];
+
+    try {
+        console.log("Attempting to fetch matches from Sportradar...");
+        const { matches: sportradarMatches } = await fetchLiveOdds({ sport: 'soccer' });
+        allMatches = sportradarMatches
+            .map(transformSportradarMatch)
+            .filter((match): match is Match => match !== null);
+        console.log(`Successfully fetched ${allMatches.length} matches from Sportradar.`);
+
+    } catch (error: any) {
+        console.warn(`[getMatchesFlow] Sportradar fetch failed: ${error.message}. Falling back to The Odds API.`);
+        
+        try {
+            const theOddsApiMatches = await fetchTheOddsApi({ sport: 'soccer_epl' }); // Default to a popular league
+            allMatches = theOddsApiMatches.map(transformTheOddsApiMatch);
+             console.log(`Successfully fetched ${allMatches.length} matches from The Odds API.`);
+        } catch (fallbackError: any) {
+             console.error(`[getMatchesFlow] Fallback to The Odds API also failed: ${fallbackError.message}.`);
+             // Return empty response if both fail
+             return {
+                data: [],
+                totalMatches: 0,
+                totalPages: 0,
+                currentPage: filters.page || 1,
+            };
+        }
+    }
+        
+    // Default sorting by date if no other sort is specified
+    allMatches.sort((a, b) => {
+        if (filters.sortBy && filters.sortBy !== 'eventTimestamp') return 0;
+        return a.eventTimestamp - b.eventTimestamp
+    });
         
     // Apply filters on the server
     let filteredMatches = allMatches;
 
     if (filters.leagues && filters.leagues.length > 0) {
         const leagueSet = new Set(filters.leagues);
-        // We filter by competition ID as it's more reliable than name
-        filteredMatches = filteredMatches.filter(match => {
-            return leagueSet.has(match.league.id);
-        });
+        filteredMatches = filteredMatches.filter(match => leagueSet.has(match.league.id));
     }
-
     if (filters.startDate) {
       filteredMatches = filteredMatches.filter(match => new Date(match.eventTimestamp * 1000) >= new Date(filters.startDate!));
     }
@@ -122,7 +169,7 @@ const getMatchesFlow = ai.defineFlow(
     if (filters.minValue) {
       filteredMatches = filteredMatches.filter(match => (match.valueMetrics?.valueScore || 0) >= filters.minValue!);
     }
-     if (filters.minOdds && filters.markets?.includes('1')) {
+    if (filters.minOdds && filters.markets?.includes('1')) {
         filteredMatches = filteredMatches.filter(match => (match.mainOdds?.[1] || Infinity) >= filters.minOdds!);
     }
     if (filters.maxOdds && filters.markets?.includes('1')) {
