@@ -13,7 +13,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { GetMatchesResponse, Match, League, Team } from '@/lib/types';
-import { fetchLiveOdds, FetchLiveOddsOutput as SportradarMatch } from './fetch-live-odds-flow';
+import { fetchLiveOdds } from './fetch-live-odds-flow';
+import type { FetchLiveOddsOutput as SportradarOutputType } from './fetch-live-odds-flow';
 import { fetchTheOddsApi, FetchTheOddsApiOutput as TheOddsApiMatch } from './fetch-the-odds-api-flow';
 
 const GetMatchesInputSchema = z.object({
@@ -37,7 +38,7 @@ export async function getMatches(input: GetMatchesInput): Promise<GetMatchesResp
 }
 
 
-function transformSportradarMatch(apiMatch: SportradarMatch['matches'][0]): Match | null {
+function transformSportradarMatch(apiMatch: SportradarOutputType['matches'][0]): Match | null {
     const homeCompetitor = apiMatch.competitors.find(c => c.qualifier === 'home');
     const awayCompetitor = apiMatch.competitors.find(c => c.qualifier === 'away');
 
@@ -149,7 +150,7 @@ const getMatchesFlow = ai.defineFlow(
         
     // Default sorting by date if no other sort is specified
     allMatches.sort((a, b) => {
-        if (filters.sortBy && filters.sortBy !== 'eventTimestamp') return 0;
+        if (!a.eventTimestamp || !b.eventTimestamp) return 0;
         return a.eventTimestamp - b.eventTimestamp
     });
         
