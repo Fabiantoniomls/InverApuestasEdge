@@ -148,12 +148,6 @@ const getMatchesFlow = ai.defineFlow(
         }
     }
         
-    // Default sorting by date if no other sort is specified
-    allMatches.sort((a, b) => {
-        if (!a.eventTimestamp || !b.eventTimestamp) return 0;
-        return a.eventTimestamp - b.eventTimestamp
-    });
-        
     // Apply filters on the server
     let filteredMatches = allMatches;
 
@@ -162,10 +156,10 @@ const getMatchesFlow = ai.defineFlow(
         filteredMatches = filteredMatches.filter(match => leagueSet.has(match.league.id));
     }
     if (filters.startDate) {
-      filteredMatches = filteredMatches.filter(match => new Date(match.eventTimestamp * 1000) >= new Date(filters.startDate!));
+      filteredMatches = filteredMatches.filter(match => (match.eventTimestamp * 1000) >= new Date(filters.startDate!).getTime());
     }
     if (filters.endDate) {
-      filteredMatches = filteredMatches.filter(match => new Date(match.eventTimestamp * 1000) <= new Date(filters.endDate!));
+      filteredMatches = filteredMatches.filter(match => (match.eventTimestamp * 1000) <= new Date(filters.endDate!).getTime());
     }
     if (filters.minValue) {
       filteredMatches = filteredMatches.filter(match => (match.valueMetrics?.valueScore || 0) >= filters.minValue!);
@@ -178,21 +172,31 @@ const getMatchesFlow = ai.defineFlow(
     }
 
     // Sorting logic
-    if (filters.sortBy && filters.sortBy !== 'eventTimestamp') {
+    if (filters.sortBy && filters.sortOrder) {
         filteredMatches.sort((a, b) => {
-            let aVal, bVal;
+            let aVal: any, bVal: any;
 
             if (filters.sortBy === 'valueMetrics.valueScore') {
                 aVal = a.valueMetrics?.valueScore ?? 0;
                 bVal = b.valueMetrics?.valueScore ?? 0;
-            } else {
+            } else if (filters.sortBy === 'eventTimestamp') {
+                aVal = a.eventTimestamp;
+                bVal = b.eventTimestamp;
+            }
+             else {
                 aVal = (a as any)[filters.sortBy!] ?? 0;
                 bVal = (b as any)[filters.sortBy!] ?? 0;
             }
-
+            
             if (aVal < bVal) return filters.sortOrder === 'asc' ? -1 : 1;
             if (aVal > bVal) return filters.sortOrder === 'asc' ? 1 : -1;
             return 0;
+        });
+    } else {
+        // Default sorting by date if no other sort is specified
+        filteredMatches.sort((a, b) => {
+            if (!a.eventTimestamp || !b.eventTimestamp) return 0;
+            return a.eventTimestamp - b.eventTimestamp;
         });
     }
 
@@ -212,3 +216,5 @@ const getMatchesFlow = ai.defineFlow(
     };
   }
 );
+
+    
