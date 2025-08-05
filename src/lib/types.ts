@@ -1,5 +1,6 @@
 
 
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -80,4 +81,24 @@ export interface GetMatchesInput {
     sortOrder?: 'asc' | 'desc';
     page?: number;
     limit?: number;
+}
+
+
+export interface AnalysisPayload {
+  matchDetails: {
+    sport: 'football' | 'tennis';
+    participants: string; // Ej: "Real Madrid vs FC Barcelona"
+    marketOdds: { home: number; draw?: number; away: number };
+  };
+  quantitativeAnalysis?: {
+    modelUsed: 'Poisson-xG' | 'Elo';
+    scrapedStats: Record<string, any>; // Datos brutos del dataExplorer
+    probabilities: { home: number; draw?: number; away: number }; // Salida del quantitativeModel
+  };
+  qualitativeAnalysis?: {
+    userInput: Record<string, any>; // Datos del formulario de análisis fundamental
+    narrative: string; // Salida del flujo calculateValueBetManual
+  };
+  liveOdds: any; // Salida del flujo fetchLiveOdds
+  confidenceScore?: number; // Se añadirá en un paso posterior
 }
