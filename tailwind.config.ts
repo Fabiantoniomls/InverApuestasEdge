@@ -62,6 +62,12 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        success: {
+          DEFAULT: "hsl(142.1 76.2% 36.3%)",
+        },
+        warning: {
+            DEFAULT: "hsl(47.9 95.8% 53.1%)",
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -84,5 +90,5 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;

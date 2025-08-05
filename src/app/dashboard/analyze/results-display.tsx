@@ -1,7 +1,9 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ConfidenceGauge } from "./_components/confidence-gauge";
+import type { NarrativeSynthesisOutput } from "@/ai/flows/narrativeSynthesisFlow";
 
 interface ValueBet {
     match: string;
@@ -39,14 +41,79 @@ interface ResultsDisplayProps {
         batchAnalysis?: BatchAnalysisResult[];
         isBatch?: boolean;
         isLiveOdds?: boolean; // To prevent rendering in this component
+        narrativeSynthesis?: NarrativeSynthesisOutput;
+        confidence?: number;
     };
 }
 
 export function ResultsDisplay({ data }: ResultsDisplayProps) {
     if (!data || data.isLiveOdds) return null;
 
-    const { analysis, valueBets, recommendations, batchAnalysis, isBatch } = data;
+    const { analysis, valueBets, recommendations, batchAnalysis, isBatch, narrativeSynthesis, confidence } = data;
 
+    // --- New Narrative Synthesis Display ---
+    if (narrativeSynthesis && confidence) {
+        return (
+            <div className="space-y-4">
+                {narrativeSynthesis.valueBets.map((bet, index) => (
+                    <Card key={index}>
+                        <CardHeader>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle>{bet.market}</CardTitle>
+                                    <CardDescription>Mercado: {valueBets?.[index]?.match || "Partido"}</CardDescription>
+                                </div>
+                                <ConfidenceGauge value={confidence} />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center border-y py-4 my-4">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Cuota</p>
+                                    <p className="font-bold text-lg">{bet.odds.toFixed(2)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Prob. Modelo</p>
+                                    <p className="font-bold text-lg">{(bet.modelProbability * 100).toFixed(1)}%</p>
+                                </div>
+                                <div className="text-green-600">
+                                    <p className="text-sm">Valor Esperado (EV)</p>
+                                    <p className="font-bold text-lg">+{(bet.expectedValue * 100).toFixed(1)}%</p>
+                                </div>
+                                <div className="text-primary">
+                                    <p className="text-sm">Stake Sugerido</p>
+                                    <p className="font-bold text-lg">{recommendations?.[index]?.recommendedStake.toFixed(2) || 'N/A'} Uds.</p>
+                                </div>
+                            </div>
+                            
+                            <Accordion type="single" collapsible>
+                                <AccordionItem value="item-1">
+                                    <AccordionTrigger>Ver Análisis Detallado</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: narrativeSynthesis.narrative.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </CardContent>
+                    </Card>
+                ))}
+                 {narrativeSynthesis.valueBets.length === 0 && (
+                     <Card>
+                        <CardHeader>
+                           <CardTitle>Análisis Completado</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">{narrativeSynthesis.narrative}</p>
+                             <p className="mt-4 font-semibold">No se han encontrado apuestas de valor con los criterios actuales.</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        )
+    }
+
+
+    // --- Existing Displays (for other forms) ---
     if (isBatch && batchAnalysis) {
         return (
              <Card>
