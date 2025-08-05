@@ -20,3 +20,4 @@ import '@/ai/flows/get-participants-flow.ts';
 import '@/ai/flows/fetch-historical-odds-flow.ts';
 import '@/ai/flows/update-matches-flow.ts';
 import '@/ai/flows/fetch-the-odds-api-flow.ts';
+import '@/ai/flows/masterAnalysisFlow.ts';
