@@ -2,6 +2,7 @@
 
 
 
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -102,4 +103,27 @@ export interface AnalysisPayload {
   };
   liveOdds: any; // Salida del flujo fetchLiveOdds
   confidenceScore?: number; // Se añadirá en un paso posterior
+}
+
+export interface SavedAnalysis {
+    id: string;
+    createdAt: string; // ISO 8601
+    updatedAt: string; // ISO 8601
+    analysisTitle: string;
+    analysisType: 'quantitative' | 'fundamental' | 'batch';
+    isBetPlaced: boolean;
+    betOutcome: 'PENDING' | 'WON' | 'LOST' | 'VOID';
+    matchResult?: string; // e.g., '3-1'
+    profitAndLoss?: number;
+    confidenceScore: number;
+    valueBetResult: {
+        market: string;
+        odds: number;
+        modelProbability: number;
+        expectedValue: number;
+        recommendedStake?: number;
+    };
+    tags: string[];
+    notes?: string;
+    fullPayload: AnalysisPayload; // The complete, original payload used for the analysis
 }
