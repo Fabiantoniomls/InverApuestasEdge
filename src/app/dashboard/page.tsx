@@ -217,26 +217,28 @@ export default function DashboardPage() {
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-b border-border">
-                                <TableHead className="text-sm font-semibold text-muted-foreground">Partido</TableHead>
-                                <TableHead className="text-sm font-semibold text-muted-foreground">Mercado</TableHead>
-                                <TableHead className="text-sm font-semibold text-muted-foreground">Cuota</TableHead>
-                                <TableHead className="text-sm font-semibold text-muted-foreground">Prob. Calculada</TableHead>
-                                <TableHead className="text-sm font-semibold text-muted-foreground">Valor (+EV)</TableHead>
+                            <TableRow className="border-b-0">
+                                <TableHead className="text-left">Partido</TableHead>
+                                <TableHead className="text-left">Mercado</TableHead>
+                                <TableHead className="text-right">Cuota</TableHead>
+                                <TableHead className="text-right">Prob. Calculada</TableHead>
+                                <TableHead className="text-right">Valor (+EV)</TableHead>
                                 <TableHead className="text-right"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {valueOpportunities.map((opp, index) => (
                                 <TableRow key={index} className="border-b border-border hover:bg-muted/50">
-                                    <TableCell>{opp.match}</TableCell>
-                                    <TableCell>{opp.market}</TableCell>
-                                    <TableCell>{opp.odds}</TableCell>
-                                    <TableCell>{opp.probability}</TableCell>
-                                    <TableCell className="font-bold text-success">{opp.ev}</TableCell>
+                                    <TableCell className="text-left">{opp.match}</TableCell>
+                                    <TableCell className="text-left">{opp.market}</TableCell>
+                                    <TableCell className="text-right font-mono">{opp.odds}</TableCell>
+                                    <TableCell className="text-right font-mono">{opp.probability}</TableCell>
+                                    <TableCell className="text-right font-bold text-success">{opp.ev}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="link" asChild className="p-0 h-auto">
-                                            <Link href="/dashboard/analyze">Analizar</Link>
+                                            <Link href="/dashboard/analyze">
+                                                Analizar <ArrowRight className="ml-1" />
+                                            </Link>
                                         </Button>
                                     </TableCell>
                                 </TableRow>
@@ -248,3 +250,5 @@ export default function DashboardPage() {
         </div>
     );
 }
+
+    
