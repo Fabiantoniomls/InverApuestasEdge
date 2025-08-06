@@ -22,8 +22,8 @@ const initialState = {
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
-        <Button type="submit" disabled={pending}>
-            {pending ? 'Analizando...' : 'Ejecutar Análisis Cuantitativo'}
+        <Button type="submit" disabled={pending} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+            {pending ? 'Analizando...' : 'Calcular Valor'}
         </Button>
     );
 }

@@ -23,8 +23,8 @@ const initialState = {
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
-        <Button type="submit" disabled={pending}>
-            {pending ? 'Analizando...' : 'Ejecutar Análisis Fundamental'}
+        <Button type="submit" disabled={pending} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+            {pending ? 'Analizando...' : 'Calcular Valor'}
         </Button>
     );
 }
@@ -39,7 +39,7 @@ export function FundamentalAnalysisForm() {
             <Card>
                 <CardHeader>
                     <CardTitle>1. Deporte y Participantes</CardTitle>
-                    <CardDescription>Selecciona el deporte e introduce los datos del partido.</CardDescription>
+                    <CardDescription>Selecciona el deporte e introduce los datos del partido que quieres analizar manualmente.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
@@ -67,15 +67,30 @@ export function FundamentalAnalysisForm() {
                             </button>
                         </div>
                     </div>
-
-                    {sport === 'futbol' ? (
-                        <FootballFields errors={state.fields} />
-                    ) : (
-                        <TennisFields errors={state.fields} />
-                    )}
-
                 </CardContent>
             </Card>
+
+            {sport === 'futbol' ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>2. Datos del Partido de Fútbol</CardTitle>
+                        <CardDescription>Introduce las cuotas de mercado y las estadísticas clave para el análisis.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <FootballFields errors={state.fields} />
+                    </CardContent>
+                </Card>
+            ) : (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>2. Datos del Partido de Tenis</CardTitle>
+                        <CardDescription>Introduce las cuotas y las estadísticas de servicio de ambos jugadores.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <TennisFields errors={state.fields} />
+                    </CardContent>
+                </Card>
+            )}
 
             <div className="flex justify-end">
                 <SubmitButton />
