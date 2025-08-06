@@ -1,10 +1,31 @@
 
+'use client';
+
+import * as React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, TrendingUp, Banknote, Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { UpcomingMatches } from "./upcoming-matches";
+import { LineChart, Line, BarChart, Bar, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+
+const roiData = [
+  { value: 12.1 }, { value: 12.5 }, { value: 11.9 }, { value: 13.5 },
+  { value: 14.8 }, { value: 15.1 }, { value: 15.7 },
+];
+
+const profitData = [
+  { value: 1800 }, { value: 1950 }, { value: 1900 }, { value: 2100 },
+  { value: 2200 }, { value: 2250 }, { value: 2345 },
+];
+
+const valueBetsData = [
+  { day: 'L', count: 2 }, { day: 'M', count: 5 }, { day: 'X', count: 3 },
+  { day: 'J', count: 6 }, { day: 'V', count: 4 }, { day: 'S', count: 8 },
+  { day: 'D', count: 1 },
+];
+
 
 const kpiCards = [
     {
@@ -12,32 +33,53 @@ const kpiCards = [
         value: "+15.7%",
         period: "Últimos 30 días",
         icon: TrendingUp,
-        color: "text-green-400",
-        bgColor: "bg-green-500/10"
+        color: "text-success",
+        bgColor: "bg-green-500/10",
+        chart: (
+             <ResponsiveContainer width="100%" height={40}>
+                <LineChart data={roiData}>
+                    <Line type="monotone" dataKey="value" stroke="hsl(var(--success))" strokeWidth={2} dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+        )
     },
     {
         title: "Beneficio Neto",
-        value: "$2,345.67",
+        value: "€2,345.67",
         period: "Total histórico",
         icon: Banknote,
-        color: "text-green-400",
-        bgColor: "bg-green-500/10"
+        color: "text-success",
+        bgColor: "bg-green-500/10",
+        chart: (
+             <ResponsiveContainer width="100%" height={40}>
+                <LineChart data={profitData}>
+                    <Line type="monotone" dataKey="value" stroke="hsl(var(--success))" strokeWidth={2} dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+        )
     },
     {
         title: "Apuestas con Valor",
         value: "8",
         period: "Disponibles esta semana",
         icon: Star,
-        color: "text-blue-400",
-        bgColor: "bg-blue-500/10"
+        color: "text-primary",
+        bgColor: "bg-blue-500/10",
+        chart: (
+            <ResponsiveContainer width="100%" height={40}>
+                <BarChart data={valueBetsData}>
+                    <Bar dataKey="count" fill="hsl(var(--primary))" />
+                </BarChart>
+            </ResponsiveContainer>
+        )
     }
 ];
 
 const recentBets = [
-    { match: "Real Madrid vs FC Barcelona", selection: "Gana Real Madrid @ 2.10", pnl: "+$55.00", status: "positive" },
-    { match: "C. Alcaraz vs J. Sinner", selection: "Más de 22.5 juegos @ 1.85", pnl: "-$50.00", status: "negative" },
-    { match: "Liverpool vs Man City", selection: "Ambos marcan @ 1.66", pnl: "+$33.00", status: "positive" },
-    { match: "Boston Celtics vs LA Lakers", selection: "Celtics -5.5 @ 1.91", pnl: "Pendiente", status: "text-gray-400" },
+    { match: "Real Madrid vs FC Barcelona", selection: "Gana Real Madrid @ 2.10", pnl: "+€55.00", status: "text-success" },
+    { match: "C. Alcaraz vs J. Sinner", selection: "Más de 22.5 juegos @ 1.85", pnl: "-€50.00", status: "text-destructive" },
+    { match: "Liverpool vs Man City", selection: "Ambos marcan @ 1.66", pnl: "+€33.00", status: "text-success" },
+    { match: "Boston Celtics vs LA Lakers", selection: "Celtics -5.5 @ 1.91", pnl: "Pendiente", status: "text-muted-foreground" },
 ];
 
 const valueOpportunities = [
@@ -67,14 +109,19 @@ export default function DashboardPage() {
                 {kpiCards.map(card => {
                     const Icon = card.icon;
                     return (
-                        <Card key={card.title} className="p-6 flex items-center justify-between">
-                            <div>
-                                <p className="text-muted-foreground text-sm font-medium">{card.title}</p>
-                                <p className={`text-3xl font-bold ${card.color}`}>{card.value}</p>
-                                <p className="text-sm text-muted-foreground">{card.period}</p>
+                        <Card key={card.title} className="p-6 flex flex-col justify-between">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-muted-foreground text-sm font-medium">{card.title}</p>
+                                    <p className={`text-3xl font-bold ${card.color}`}>{card.value}</p>
+                                    <p className="text-sm text-muted-foreground">{card.period}</p>
+                                </div>
+                                <div className={`p-3 rounded-full ${card.bgColor}`}>
+                                    <Icon className={`h-6 w-6 ${card.color}`} />
+                                </div>
                             </div>
-                            <div className={`p-4 rounded-full ${card.bgColor}`}>
-                                <Icon className={`h-8 w-8 ${card.color}`} />
+                            <div className="mt-4">
+                                {card.chart}
                             </div>
                         </Card>
                     )
@@ -141,7 +188,7 @@ export default function DashboardPage() {
                                     <TableCell>{opp.market}</TableCell>
                                     <TableCell>{opp.odds}</TableCell>
                                     <TableCell>{opp.probability}</TableCell>
-                                    <TableCell className="font-bold text-green-400">{opp.ev}</TableCell>
+                                    <TableCell className="font-bold text-success">{opp.ev}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="link" asChild className="p-0 h-auto">
                                             <Link href="/dashboard/analyze">Analizar</Link>
