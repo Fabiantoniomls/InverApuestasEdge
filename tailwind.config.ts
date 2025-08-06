@@ -36,7 +36,7 @@ export default {
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
+          DEFAULT: "hsl(0, 84.2%, 60.2%)",
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
@@ -63,10 +63,12 @@ export default {
           '5': 'hsl(var(--chart-5))',
         },
         success: {
-          DEFAULT: "hsl(142.1 76.2% 36.3%)",
+          DEFAULT: "hsl(142.1, 76.2%, 46.3%)",
+          foreground: "hsl(142.1, 76.2%, 96.3%)",
         },
         warning: {
-            DEFAULT: "hsl(47.9 95.8% 53.1%)",
+            DEFAULT: "hsl(47.9, 95.8%, 53.1%)",
+            foreground: "hsl(47.9, 95.8%, 93.1%)",
         }
       },
       borderRadius: {
@@ -88,6 +90,18 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      typography: ({ theme }: { theme: (path: string) => string }) => ({
+        DEFAULT: {
+          css: {
+            '--tw-prose-invert-body': theme('colors.muted-foreground'),
+            '--tw-prose-invert-headings': theme('colors.foreground'),
+             strong: {
+              color: theme('colors.primary.DEFAULT'),
+              fontWeight: '600',
+            },
+          },
+        },
+      }),
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],

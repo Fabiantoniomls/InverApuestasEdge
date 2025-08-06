@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Edit, Trash2, Share2, Copy, Image as ImageIcon, Save, Calendar, Clock, Facebook, Twitter, Linkedin, Bot } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { ConfidenceGauge } from "../_components/confidence-gauge";
 
 // Mock data - in a real app, you would fetch this based on the `id` param
 const analysisData = {
@@ -15,13 +16,14 @@ const analysisData = {
     createdAt: "25 de Octubre, 2024 - 10:30 AM",
     updatedAt: "Hoy - 14:15 PM",
     recommendation: "Apostar por Real Madrid",
-    confidence: 70,
+    confidence: 85,
+    ev: 15.2,
     probabilities: {
         teamA: 55,
         teamB: 25,
         draw: 20,
     },
-    textualAnalysis: "Basado en la forma actual del equipo y datos históricos, el Real Madrid tiene una mayor probabilidad de ganar. La defensa del Barcelona ha mostrado vulnerabilidades que el ataque del Madrid puede explotar. Sin embargo, el potencial del FC Barcelona no debe ser subestimado, especialmente en un clásico.",
+    textualAnalysis: "El modelo identifica un valor significativo en la victoria del Real Madrid. Esto se debe principalmente a que su rendimiento en Goles Esperados (xG) de **1.8** por partido supera ampliamente su promedio de goles anotados, lo que sugiere que el mercado está subestimando su potencial ofensivo. Aunque el FC Barcelona tiene un ataque potente, su xGA (Goles Esperados en Contra) de **1.4** indica una vulnerabilidad defensiva que el ataque del Madrid, en plena forma, puede y debe explotar. La cuota de 2.10 para la victoria local ofrece un margen de valor del **+15.2%**.",
     shareUrl: "https://betvaluator.edge/analysis/12345",
     personalNotes: "Actualización: Considerar la posible lesión de Vinicius Jr. podría afectar la ofensiva del Madrid. Revisar cuotas de apuestas en vivo.",
     stats: {
@@ -37,7 +39,12 @@ const analysisData = {
         context: "El Real Madrid está en excelente forma, habiendo ganado sus últimos 5 partidos. El FC Barcelona ha sido inconsistente, con 2 victorias, 2 derrotas y 1 empate en sus últimos 5.",
         initialOdds: "Real Madrid: 45%, FC Barcelona: 30%, Empate: 25%",
         modelUsed: "Poisson-xG v2.1"
-    }
+    },
+    valueBets: [
+        { market: "Gana Real Madrid", odds: 2.10, probability: 55, value: 15.5 },
+        { market: "Empate", odds: 3.50, probability: 25, value: -12.5 },
+        { market: "Gana FC Barcelona", odds: 3.80, probability: 20, value: -24.0 },
+    ]
 };
 
 const SocialButton = ({ href, children, className }: { href: string, children: React.ReactNode, className: string }) => (
@@ -55,7 +62,7 @@ const WhatsAppIcon = () => (
 export default function SavedAnalysisPage({ params }: { params: { id: string } }) {
     
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 max-w-4xl mx-auto">
             <nav aria-label="breadcrumb">
                 <ol className="flex items-center gap-2 text-sm">
                     <li>
@@ -66,209 +73,90 @@ export default function SavedAnalysisPage({ params }: { params: { id: string } }
                 </ol>
             </nav>
 
-            <div className="flex flex-wrap justify-between items-start gap-4">
-                <div className="flex flex-col gap-2">
-                    <h1 className="text-foreground text-3xl md:text-4xl font-bold leading-tight tracking-tight">{analysisData.title}</h1>
-                    <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                        <div className="flex items-center gap-1.5">
-                            <Calendar className="size-4" />
-                            <span>Creado: {analysisData.createdAt}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="size-4" />
-                            <span>Última act: {analysisData.updatedAt}</span>
-                        </div>
+             <header className="space-y-2">
+                <h1 className="text-foreground text-3xl md:text-4xl font-bold leading-tight tracking-tight">{analysisData.title}</h1>
+                 <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                    <div className="flex items-center gap-1.5">
+                        <Calendar className="size-4" />
+                        <span>Analizado el: {analysisData.createdAt}</span>
                     </div>
                 </div>
-                <div className="flex gap-3 flex-wrap">
-                    <Button variant="secondary">
-                        <Edit className="mr-2" />
-                        <span className="truncate">Editar Análisis</span>
-                    </Button>
-                    <Button variant="destructive">
-                        <Trash2 className="mr-2" />
-                        <span className="truncate">Eliminar Análisis</span>
-                    </Button>
-                </div>
-            </div>
+            </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 flex flex-col gap-8">
-                    <Card>
-                        <CardHeader className="flex-row justify-between items-start">
-                            <div>
-                                <CardTitle className="font-bold text-xl">Resultado del Análisis</CardTitle>
-                                <CardDescription>Resumen de las probabilidades y recomendaciones.</CardDescription>
-                            </div>
-                             <Button variant="primary">
-                                <Share2 className="mr-2" />
-                                <span>Compartir</span>
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div className="border-l-4 border-primary pl-4">
-                                        <p className="text-sm text-muted-foreground">Recomendación</p>
-                                        <p className="text-lg font-semibold text-foreground">{analysisData.recommendation}</p>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between items-center">
-                                            <p className="text-sm text-muted-foreground">Nivel de Confianza</p>
-                                            <p className="text-lg font-semibold text-green-600">{analysisData.confidence}%</p>
-                                        </div>
-                                        <Progress value={analysisData.confidence} className="h-2.5" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground mb-2">Probabilidades Actualizadas</p>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-20 text-xs text-foreground truncate">Real Madrid</div>
-                                            <Progress value={analysisData.probabilities.teamA} className="h-2.5 flex-1" />
-                                            <div className="w-10 text-xs font-semibold">{analysisData.probabilities.teamA}%</div>
-                                        </div>
-                                         <div className="flex items-center gap-2">
-                                            <div className="w-20 text-xs text-foreground truncate">FC Barcelona</div>
-                                            <Progress value={analysisData.probabilities.teamB} className="h-2.5 flex-1" />
-                                            <div className="w-10 text-xs font-semibold">{analysisData.probabilities.teamB}%</div>
-                                        </div>
-                                         <div className="flex items-center gap-2">
-                                            <div className="w-20 text-xs text-foreground truncate">Empate</div>
-                                            <Progress value={analysisData.probabilities.draw} className="h-2.5 flex-1" />
-                                            <div className="w-10 text-xs font-semibold">{analysisData.probabilities.draw}%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="mt-6 border-t pt-4">
-                                <h3 className="text-base font-semibold text-foreground mb-2">Análisis Textual por IA</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">{analysisData.textualAnalysis}</p>
-                            </div>
-                             <div className="mt-6 border-t pt-4">
-                                <h3 className="text-base font-semibold text-foreground mb-2">Compartir Análisis</h3>
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                    <div className="relative flex-grow">
-                                        <Input readOnly type="text" value={analysisData.shareUrl} className="pr-12 rounded-lg h-10"/>
-                                        <Button variant="ghost" size="icon" className="absolute inset-y-0 right-0 h-full">
-                                            <Copy className="size-4" />
-                                        </Button>
-                                    </div>
-                                    <Button variant="secondary">
-                                        <ImageIcon className="mr-2" />
-                                        <span>Generar Imagen</span>
-                                    </Button>
-                                </div>
-                                <div className="flex items-center gap-3 mt-4">
-                                    <p className="text-sm text-muted-foreground">O compartir en:</p>
-                                    <div className="flex gap-2">
-                                        <SocialButton href="#" className="bg-[#1877F2]"><Facebook className="h-4 w-4" /></SocialButton>
-                                        <SocialButton href="#" className="bg-[#1DA1F2]"><Twitter className="h-4 w-4" /></SocialButton>
-                                        <SocialButton href="#" className="bg-[#25D366]"><WhatsAppIcon /></SocialButton>
-                                        <SocialButton href="#" className="bg-[#0A66C2]"><Linkedin className="h-4 w-4" /></SocialButton>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+            <Card className="bg-card shadow-lg border-primary/20">
+                <CardHeader>
+                    <CardTitle className="text-primary text-sm uppercase tracking-wider">Recomendación Principal</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div className="md:col-span-2 space-y-2">
+                        <p className="text-3xl font-bold text-foreground">{analysisData.recommendation}</p>
+                        <p className="text-4xl font-bold text-success">EV: +{analysisData.ev.toFixed(1)}%</p>
+                        <p className="text-muted-foreground">Stake Sugerido: 2.5 Unidades (Kelly)</p>
+                    </div>
+                    <div className="flex justify-center md:justify-end">
+                        <ConfidenceGauge value={analysisData.confidence} />
+                    </div>
+                </CardContent>
+            </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="font-bold text-xl">Estadísticas Clave del Partido</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader className="text-xs text-muted-foreground uppercase bg-gray-50 dark:bg-gray-800">
-                                        <TableRow>
-                                            <TableHead>Equipo</TableHead>
-                                            <TableHead className="text-center">Goles Marcados (Últ. 5)</TableHead>
-                                            <TableHead className="text-center">Goles Recibidos (Últ. 5)</TableHead>
-                                            <TableHead className="text-center">Posesión Media</TableHead>
-                                            <TableHead className="text-center">Tasa de Victorias</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell className="font-medium">{analysisData.stats.teamA.name}</TableCell>
-                                            <TableCell className="text-center">{analysisData.stats.teamA.goalsFor}</TableCell>
-                                            <TableCell className="text-center">{analysisData.stats.teamA.goalsAgainst}</TableCell>
-                                            <TableCell className="text-center">{analysisData.stats.teamA.possession}</TableCell>
-                                            <TableCell className="text-center text-green-600 font-semibold">{analysisData.stats.teamA.winRate}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">{analysisData.stats.teamB.name}</TableCell>
-                                            <TableCell className="text-center">{analysisData.stats.teamB.goalsFor}</TableCell>
-                                            <TableCell className="text-center">{analysisData.stats.teamB.goalsAgainst}</TableCell>
-                                            <TableCell className="text-center">{analysisData.stats.teamB.possession}</TableCell>
-                                            <TableCell className="text-center text-red-600 font-semibold">{analysisData.stats.teamB.winRate}</TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        </CardContent>
-                    </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                        <Bot className="text-primary"/> Análisis del Experto
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="prose prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: analysisData.textualAnalysis.replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary font-bold">$1</strong>') }} />
+                </CardContent>
+            </Card>
 
-                </div>
-                <div className="lg:col-span-1 flex flex-col gap-8">
-                     <Card>
-                        <CardHeader>
-                           <CardTitle className="font-bold text-xl">Detalles del Partido</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <ul className="space-y-4 text-sm">
-                                <li className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Competición</span>
-                                    <span className="font-medium text-foreground">{analysisData.matchDetails.competition}</span>
-                                </li>
-                                <li className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Fecha</span>
-                                    <span className="font-medium text-foreground">{analysisData.matchDetails.date}</span>
-                                </li>
-                                <li className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Hora</span>
-                                    <span className="font-medium text-foreground">{analysisData.matchDetails.time}</span>
-                                </li>
-                            </ul>
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader>
-                           <CardTitle className="font-bold text-xl">Datos de Entrada del Análisis</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <h3 className="text-base font-semibold text-foreground mb-2">Contexto de los Equipos</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">{analysisData.inputData.context}</p>
-                            </div>
-                            <div className="border-t pt-4">
-                                <h3 className="text-base font-semibold text-foreground mb-2">Probabilidades Iniciales</h3>
-                                <p className="text-sm text-muted-foreground">{analysisData.inputData.initialOdds}</p>
-                            </div>
-                             <div className="border-t pt-4">
-                                <h3 className="text-base font-semibold text-foreground mb-2">Modelo Utilizado</h3>
-                                <div className="flex items-center gap-2">
-                                     <Bot className="text-primary size-5" />
-                                    <Badge variant="secondary">{analysisData.inputData.modelUsed}</Badge>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="font-bold text-xl">Notas Personales</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Textarea placeholder="Añade tus notas aquí..." defaultValue={analysisData.personalNotes} rows={5} className="rounded-lg"/>
-                            <div className="flex justify-end mt-4">
-                                <Button variant="primary">
-                                    <Save className="mr-2"/> Guardar Nota
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-bold text-xl">Tabla de Apuestas de Valor</CardTitle>
+                    <CardDescription>Análisis completo de todos los mercados principales.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Mercado</TableHead>
+                                    <TableHead className="text-center">Cuota</TableHead>
+                                    <TableHead className="text-center">Prob. Modelo</TableHead>
+                                    <TableHead className="text-center">Valor Calculado</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {analysisData.valueBets.sort((a, b) => b.value - a.value).map((bet, index) => (
+                                    <TableRow key={index} className={bet.value > 0 ? "bg-green-500/5" : "bg-red-500/5"}>
+                                        <TableCell className="font-medium">{bet.market}</TableCell>
+                                        <TableCell className="text-center font-mono">{bet.odds.toFixed(2)}</TableCell>
+                                        <TableCell className="text-center font-mono">{bet.probability.toFixed(1)}%</TableCell>
+                                        <TableCell className={`text-center font-bold font-mono ${bet.value > 0 ? 'text-success' : 'text-destructive'}`}>
+                                            {bet.value > 0 ? '+' : ''}{bet.value.toFixed(1)}%
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-bold text-xl">Datos de Entrada del Análisis</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <div>
+                        <h3 className="font-semibold text-foreground mb-1">Contexto de los Equipos</h3>
+                        <p className="text-muted-foreground">{analysisData.inputData.context}</p>
+                    </div>
+                    <div className="border-t pt-4">
+                        <h3 className="font-semibold text-foreground mb-1">Modelo Utilizado</h3>
+                        <Badge variant="secondary">{analysisData.inputData.modelUsed}</Badge>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

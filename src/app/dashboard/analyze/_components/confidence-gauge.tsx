@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -30,13 +31,13 @@ export function ConfidenceGauge({ value }: ConfidenceGaugeProps) {
 
   // A real implementation would get this from the analysis payload
   const tooltipContent = (
-    <div className="text-sm">
-        <p><strong>Desglose de Confianza:</strong></p>
-        <ul className="list-disc pl-4 mt-1">
-            <li>Nivel de Fuente: Nivel 1 (100 pts)</li>
-            <li>Completitud de Datos: Completo (100 pts)</li>
-            <li>Modelo Aplicado: Poisson-xG (100 pts)</li>
-            <li>Frescura de Datos: Alta (100 pts)</li>
+    <div className="text-sm p-1">
+        <p className="font-bold mb-2">Confianza del Análisis: {value}/100</p>
+        <ul className="space-y-1">
+            <li className="flex items-center gap-2"><span className="text-green-400">●</span> Fuente de Datos: Fiable</li>
+            <li className="flex items-center gap-2"><span className="text-green-400">●</span> Completitud de Datos: Alta</li>
+            <li className="flex items-center gap-2"><span className="text-green-400">●</span> Modelo Aplicado: Poisson-xG</li>
+            <li className="flex items-center gap-2"><span className="text-yellow-400">●</span> Frescura de Datos: Reciente</li>
         </ul>
     </div>
   );
@@ -45,12 +46,12 @@ export function ConfidenceGauge({ value }: ConfidenceGaugeProps) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="relative h-20 w-20 cursor-help">
+          <div className="relative h-28 w-28 cursor-help">
             <svg className="h-full w-full" viewBox="0 0 100 100">
               {/* Background circle */}
               <circle
-                className="stroke-current text-gray-200"
-                strokeWidth="10"
+                className="stroke-current text-muted/30"
+                strokeWidth="8"
                 cx="50"
                 cy="50"
                 r="45"
@@ -58,8 +59,8 @@ export function ConfidenceGauge({ value }: ConfidenceGaugeProps) {
               />
               {/* Progress circle */}
               <circle
-                className={`transform -rotate-90 origin-center ${getColor()}`}
-                strokeWidth="10"
+                className={`transform -rotate-90 origin-center transition-all duration-500 ${getColor()}`}
+                strokeWidth="8"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
@@ -69,8 +70,11 @@ export function ConfidenceGauge({ value }: ConfidenceGaugeProps) {
                 fill="transparent"
               />
                {/* Text */}
-               <text x="50" y="55" textAnchor="middle" className={`text-2xl font-bold ${getTextColor()}`}>
+               <text x="50" y="55" textAnchor="middle" className={`text-3xl font-bold ${getTextColor()}`}>
                  {value}
+               </text>
+                 <text x="50" y="70" textAnchor="middle" className="text-xs fill-muted-foreground">
+                 Confianza
                </text>
             </svg>
           </div>
