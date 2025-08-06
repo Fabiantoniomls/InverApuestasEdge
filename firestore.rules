@@ -1,0 +1,47 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions para mejorar la legibilidad y reutilización.
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Reglas para la colección de usuarios
+    match /users/{userId} {
+      // Un usuario puede leer su propio perfil, pero no el de otros.
+      allow read: if isLoggedIn() && isOwner(userId);
+
+      // Un usuario puede crear su propio perfil.
+      // Se asegura que el uid del documento coincida con el uid del usuario autenticado.
+      allow create: if isLoggedIn() && isOwner(userId)
+                    && request.resource.data.uid == request.auth.uid;
+
+      // Un usuario puede actualizar su propio perfil.
+      // Se impide que campos inmutables como 'uid' o 'email' sean modificados.
+      allow update: if isLoggedIn() && isOwner(userId)
+                     && request.resource.data.uid == resource.data.uid
+                     && request.resource.data.email == resource.data.email;
+
+      // Se prohíbe explícitamente el borrado de perfiles de usuario desde el cliente.
+      allow delete: if false;
+
+      // Reglas para la subcolección de análisis
+      // Un usuario tiene control total (CRUD) sobre sus propios análisis.
+      match /analyses/{analysisId} {
+        allow read, write: if isLoggedIn() && isOwner(userId);
+      }
+    }
+
+    // Por defecto, se deniega el acceso a cualquier otra colección que no esté explícitamente definida.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
