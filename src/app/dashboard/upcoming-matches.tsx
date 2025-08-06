@@ -42,10 +42,10 @@ export async function UpcomingMatches() {
             </CardHeader>
             <CardContent>
                 {fetchError ? (
-                    <div className="flex flex-col items-center justify-center text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex flex-col items-center justify-center text-center p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                         <AlertCircle className="size-8 text-red-500 mb-2" />
-                        <p className="font-semibold text-red-700">No se pudieron cargar los partidos</p>
-                        <p className="text-sm text-red-600">La API de cuotas puede haber alcanzado su límite. Inténtalo más tarde.</p>
+                        <p className="font-semibold text-red-400">No se pudieron cargar los partidos</p>
+                        <p className="text-sm text-red-400/80">La API de cuotas puede haber alcanzado su límite. Inténtalo más tarde.</p>
                     </div>
                 ) : upcomingMatches.length === 0 ? (
                      <p className="text-muted-foreground text-center py-4">No se encontraron próximos partidos en este momento.</p>
@@ -54,7 +54,7 @@ export async function UpcomingMatches() {
                         {upcomingMatches.map(match => {
                             const { homeTeam, awayTeam } = getTeamNames(match);
                             return (
-                                <div key={match.id} className="p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                                <div key={match.id} className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
                                     <div className="font-semibold text-foreground">{homeTeam} vs {awayTeam}</div>
                                     <div className="text-sm text-muted-foreground flex items-center gap-2 mt-2">
                                         <Calendar className="size-4" />

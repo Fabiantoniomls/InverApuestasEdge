@@ -13,14 +13,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" style={{ colorScheme: 'dark' }} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900&display=swap" rel="stylesheet" />
         <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
       </head>
-      <body className="antialiased bg-gray-50">
+      <body className="antialiased bg-background text-foreground">
         {children}
         <Toaster />
       </body>

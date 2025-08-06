@@ -13,6 +13,7 @@ import {
   Receipt,
   FlaskConical,
   LogOut,
+  LineChart, // Added for consistency
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -22,22 +23,23 @@ import { LanguageProvider } from '@/context/language-context';
 const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/partidos', label: 'Explorar Partidos', icon: Search },
-    { href: '/dashboard/analyze', label: 'Mis Análisis', icon: BarChart },
+    { href: '/dashboard/analyze', label: 'Mis Análisis', icon: LineChart },
     { href: '/dashboard/ledger', label: 'Mis Apuestas', icon: Receipt },
     { href: '/dashboard/simulator', label: 'Simulador', icon: FlaskConical },
     { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
+    { href: '/dashboard/community', label: 'Comunidad', icon: Users },
 ];
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen w-full bg-background">
         <aside className="sidebar sticky top-0 hidden h-screen w-64 flex-col justify-between p-4 lg:flex">
             <div>
                 <div className="mb-10 text-center">
-                    <h1 className="text-3xl font-bold text-white">BetValuator</h1>
-                    <span className="text-sm text-gray-400">Edge</span>
+                    <h1 className="text-3xl font-bold text-foreground">BetValuator</h1>
+                    <span className="text-sm text-muted-foreground">Edge</span>
                 </div>
                 <nav className="space-y-2">
                      {navLinks.map(link => {
@@ -45,27 +47,27 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                         const isActive = pathname.startsWith(link.href) && (link.href !== '/dashboard' || pathname === '/dashboard');
                         return (
                              <Link key={link.label} href={link.href} className={cn(
-                                 "flex items-center p-3 text-gray-300 rounded-lg",
-                                 isActive ? "active-link" : "hover:bg-gray-700"
+                                 "flex items-center gap-3 p-3 rounded-lg text-muted-foreground transition-colors hover:text-foreground hover:bg-accent",
+                                 isActive && "bg-primary/10 text-primary font-semibold"
                               )}>
-                                <Icon className="mr-3 h-5 w-5" />
+                                <Icon className="h-5 w-5" />
                                 {link.label}
                             </Link>
                         )
                     })}
                 </nav>
             </div>
-            <div>
-                 <Link href="/dashboard/profile" className="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg">
-                    <Avatar className="w-8 h-8 mr-3">
+            <div className="space-y-2">
+                 <Link href="/dashboard/profile" className="flex items-center gap-3 p-3 text-muted-foreground rounded-lg transition-colors hover:text-foreground hover:bg-accent">
+                    <Avatar className="w-8 h-8">
                         <AvatarImage src="https://placehold.co/32x32.png" alt="User" data-ai-hint="user avatar" />
                         <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
-                    <span>John Doe</span>
+                    <span className="font-medium">John Doe</span>
                 </Link>
-                 <Link href="/" className="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg">
-                    <LogOut className="mr-3 h-5 w-5" />
-                    Cerrar Sesión
+                 <Link href="/" className="flex items-center gap-3 p-3 text-muted-foreground rounded-lg transition-colors hover:text-foreground hover:bg-accent">
+                    <LogOut className="h-5 w-5" />
+                    <span className="font-medium">Cerrar Sesión</span>
                 </Link>
             </div>
         </aside>

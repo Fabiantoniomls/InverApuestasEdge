@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, TrendingUp, Banknote, Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { UpcomingMatches } from "./upcoming-matches";
 
 const kpiCards = [
     {
@@ -48,14 +49,14 @@ const valueOpportunities = [
 
 export default function DashboardPage() {
     return (
-        <div className="space-y-8">
+        <div className="space-y-12">
             <header className="flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-                    <p className="text-gray-400">Bienvenido de nuevo, John. Aquí tienes un resumen de tu actividad.</p>
+                    <h1 className="text-4xl font-bold tracking-tight text-foreground">Dashboard</h1>
+                    <p className="text-muted-foreground mt-1">Bienvenido de nuevo, John. Aquí tienes un resumen de tu actividad.</p>
                 </div>
                  <Link href="/dashboard/analyze">
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-5 py-2.5">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-5 py-2.5 text-base">
                         <Plus className="mr-2 h-5 w-5" />
                         Nuevo Análisis
                     </Button>
@@ -68,31 +69,33 @@ export default function DashboardPage() {
                     return (
                         <Card key={card.title} className="p-6 flex items-center justify-between">
                             <div>
-                                <p className="text-gray-400 text-sm">{card.title}</p>
-                                <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-                                <p className="text-sm text-gray-500">{card.period}</p>
+                                <p className="text-muted-foreground text-sm font-medium">{card.title}</p>
+                                <p className={`text-3xl font-bold ${card.color}`}>{card.value}</p>
+                                <p className="text-sm text-muted-foreground">{card.period}</p>
                             </div>
-                            <div className={`p-3 rounded-full ${card.bgColor}`}>
+                            <div className={`p-4 rounded-full ${card.bgColor}`}>
                                 <Icon className={`h-8 w-8 ${card.color}`} />
                             </div>
                         </Card>
                     )
                 })}
             </div>
+            
+            <UpcomingMatches />
 
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
                 <Card className="xl:col-span-3 p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold">Rendimiento Histórico</h3>
                         <div className="flex space-x-2">
-                             <Button variant="ghost" className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-gray-700/50">1M</Button>
-                             <Button variant="ghost" className="text-xs text-white px-2 py-1 rounded bg-primary">6M</Button>
-                             <Button variant="ghost" className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-gray-700/50">1A</Button>
-                             <Button variant="ghost" className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-gray-700/50">Todo</Button>
+                             <Button variant="ghost" className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded bg-accent/50">1M</Button>
+                             <Button variant="ghost" className="text-xs text-foreground px-2 py-1 rounded bg-primary">6M</Button>
+                             <Button variant="ghost" className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded bg-accent/50">1A</Button>
+                             <Button variant="ghost" className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded bg-accent/50">Todo</Button>
                         </div>
                     </div>
                     <div className="h-64 bg-background/50 rounded-md flex items-center justify-center">
-                        <p className="text-gray-500">Gráfico de Rendimiento</p>
+                        <p className="text-muted-foreground">Gráfico de Rendimiento</p>
                     </div>
                 </Card>
 
@@ -103,7 +106,7 @@ export default function DashboardPage() {
                             <div key={index} className="flex items-center justify-between">
                                 <div>
                                     <p className="font-semibold">{bet.match}</p>
-                                    <p className="text-sm text-gray-400">{bet.selection}</p>
+                                    <p className="text-sm text-muted-foreground">{bet.selection}</p>
                                 </div>
                                 <span className={`font-semibold ${bet.status}`}>{bet.pnl}</span>
                             </div>
@@ -117,23 +120,23 @@ export default function DashboardPage() {
                 </Card>
             </div>
 
-            <Card className="p-6 mt-8">
+            <Card className="p-6">
                 <h3 className="text-xl font-semibold mb-4">Oportunidades de Valor Destacadas</h3>
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-b border-gray-700">
-                                <TableHead className="text-sm font-semibold text-gray-400">Partido</TableHead>
-                                <TableHead className="text-sm font-semibold text-gray-400">Mercado</TableHead>
-                                <TableHead className="text-sm font-semibold text-gray-400">Cuota</TableHead>
-                                <TableHead className="text-sm font-semibold text-gray-400">Prob. Calculada</TableHead>
-                                <TableHead className="text-sm font-semibold text-gray-400">Valor (+EV)</TableHead>
+                            <TableRow className="border-b border-border">
+                                <TableHead className="text-sm font-semibold text-muted-foreground">Partido</TableHead>
+                                <TableHead className="text-sm font-semibold text-muted-foreground">Mercado</TableHead>
+                                <TableHead className="text-sm font-semibold text-muted-foreground">Cuota</TableHead>
+                                <TableHead className="text-sm font-semibold text-muted-foreground">Prob. Calculada</TableHead>
+                                <TableHead className="text-sm font-semibold text-muted-foreground">Valor (+EV)</TableHead>
                                 <TableHead className="text-right"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {valueOpportunities.map((opp, index) => (
-                                <TableRow key={index} className="border-b border-gray-700 hover:bg-gray-800/50">
+                                <TableRow key={index} className="border-b border-border hover:bg-muted/50">
                                     <TableCell>{opp.match}</TableCell>
                                     <TableCell>{opp.market}</TableCell>
                                     <TableCell>{opp.odds}</TableCell>
