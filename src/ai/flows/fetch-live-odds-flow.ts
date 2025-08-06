@@ -13,6 +13,11 @@ import { format, addDays } from 'date-fns';
 
 // --- Schemas based on Sportradar API ---
 
+const MarketSchema = z.object({
+    key: z.string(),
+    outcomes: z.array(z.object({ name: z.string(), price: z.number() })),
+});
+
 const SportEventSchema = z.object({
     id: z.string(),
     scheduled: z.string(), // Changed from start_time
@@ -26,6 +31,7 @@ const SportEventSchema = z.object({
         name: z.string(),
         qualifier: z.string(), // "home" or "away"
     })),
+    markets: z.array(MarketSchema).optional().describe("Live odds markets for the event, if available."),
 });
 
 const DailyScheduleSchema = z.object({
