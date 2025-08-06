@@ -1,8 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, TrendingUp, Banknote, Star } from "lucide-react";
+import { Plus, TrendingUp, Banknote, Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const kpiCards = [
@@ -55,7 +55,7 @@ export default function DashboardPage() {
                     <p className="text-gray-400">Bienvenido de nuevo, John. Aquí tienes un resumen de tu actividad.</p>
                 </div>
                  <Link href="/dashboard/analyze">
-                    <Button className="bg-blue-600 text-white hover:bg-blue-700 font-semibold rounded-lg px-5 py-2.5">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-5 py-2.5">
                         <Plus className="mr-2 h-5 w-5" />
                         Nuevo Análisis
                     </Button>
@@ -66,7 +66,7 @@ export default function DashboardPage() {
                 {kpiCards.map(card => {
                     const Icon = card.icon;
                     return (
-                        <Card key={card.title} className="p-6 flex items-center justify-between bg-[#1E1E1E] border border-gray-700/50">
+                        <Card key={card.title} className="p-6 flex items-center justify-between">
                             <div>
                                 <p className="text-gray-400 text-sm">{card.title}</p>
                                 <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
@@ -81,22 +81,22 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
-                <Card className="xl:col-span-3 p-6 bg-[#1E1E1E] border border-gray-700/50">
+                <Card className="xl:col-span-3 p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold">Rendimiento Histórico</h3>
                         <div className="flex space-x-2">
                              <Button variant="ghost" className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-gray-700/50">1M</Button>
-                             <Button variant="ghost" className="text-xs text-white px-2 py-1 rounded bg-blue-500">6M</Button>
+                             <Button variant="ghost" className="text-xs text-white px-2 py-1 rounded bg-primary">6M</Button>
                              <Button variant="ghost" className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-gray-700/50">1A</Button>
                              <Button variant="ghost" className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-gray-700/50">Todo</Button>
                         </div>
                     </div>
-                    <div className="h-64 bg-[#2C2C2C] rounded-md flex items-center justify-center">
+                    <div className="h-64 bg-background/50 rounded-md flex items-center justify-center">
                         <p className="text-gray-500">Gráfico de Rendimiento</p>
                     </div>
                 </Card>
 
-                <Card className="xl:col-span-2 p-6 bg-[#1E1E1E] border border-gray-700/50">
+                <Card className="xl:col-span-2 p-6">
                     <h3 className="text-xl font-semibold mb-4">Mis Apuestas Recientes</h3>
                     <div className="space-y-4">
                          {recentBets.map((bet, index) => (
@@ -109,7 +109,7 @@ export default function DashboardPage() {
                             </div>
                          ))}
                          <div className="flex justify-end">
-                            <Link href="/dashboard/ledger" className="text-sm text-blue-400 hover:underline mt-2">
+                            <Link href="/dashboard/ledger" className="text-sm text-primary hover:underline mt-2">
                                 Ver todas
                             </Link>
                         </div>
@@ -117,7 +117,7 @@ export default function DashboardPage() {
                 </Card>
             </div>
 
-            <Card className="p-6 mt-8 bg-[#1E1E1E] border border-gray-700/50">
+            <Card className="p-6 mt-8">
                 <h3 className="text-xl font-semibold mb-4">Oportunidades de Valor Destacadas</h3>
                 <div className="overflow-x-auto">
                     <Table>
@@ -140,7 +140,9 @@ export default function DashboardPage() {
                                     <TableCell>{opp.probability}</TableCell>
                                     <TableCell className="font-bold text-green-400">{opp.ev}</TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="link" className="text-blue-400 hover:text-blue-300 p-0">Analizar</Button>
+                                        <Button variant="link" asChild className="p-0 h-auto">
+                                            <Link href="/dashboard/analyze">Analizar</Link>
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -32,8 +32,8 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-[#121212] text-[#E0E0E0]">
-        <aside className="sticky top-0 hidden h-screen w-64 flex-col justify-between bg-[#1E1E1E] p-4 lg:flex">
+    <div className="flex min-h-screen">
+        <aside className="sidebar sticky top-0 hidden h-screen w-64 flex-col justify-between p-4 lg:flex">
             <div>
                 <div className="mb-10 text-center">
                     <h1 className="text-3xl font-bold text-white">BetValuator</h1>
@@ -46,7 +46,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                         return (
                              <Link key={link.label} href={link.href} className={cn(
                                  "flex items-center p-3 text-gray-300 rounded-lg",
-                                 isActive ? "bg-blue-500/10 text-blue-400 border-l-4 border-blue-500" : "hover:bg-gray-700"
+                                 isActive ? "active-link" : "hover:bg-gray-700"
                               )}>
                                 <Icon className="mr-3 h-5 w-5" />
                                 {link.label}
@@ -55,7 +55,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                     })}
                 </nav>
             </div>
-            <div className="space-y-2">
+            <div>
                  <Link href="/dashboard/profile" className="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg">
                     <Avatar className="w-8 h-8 mr-3">
                         <AvatarImage src="https://placehold.co/32x32.png" alt="User" data-ai-hint="user avatar" />
@@ -69,7 +69,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </Link>
             </div>
         </aside>
-        <main className="flex-1 overflow-y-auto p-8 bg-[#121212]">
+        <main className="main-content flex-1 overflow-y-auto p-8">
           <LanguageProvider>
             {children}
           </LanguageProvider>
